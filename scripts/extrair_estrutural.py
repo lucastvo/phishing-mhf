@@ -3,8 +3,8 @@ Extrai a impressão digital estrutural (s) de todas as amostras listadas num ín
 gerado por inspecionar_dataset.py e grava uma linha JSON por amostra.
 
 Uso:
-    python scripts/extrair_estrutural.py --indice data/phishing.csv \
-        --raiz data/phishpedia/phishing --saida data/estrutural_phishing.jsonl
+    python scripts/extrair_estrutural.py --indice data/phish360.csv \
+        --raiz data/Phish360 --saida data/estrutural_phish360.jsonl
 """
 
 import argparse
@@ -33,12 +33,12 @@ def main():
     inicio = time.perf_counter()
     with open(a.saida, "w", encoding="utf-8") as out:
         for i, l in enumerate(linhas, 1):
-            with open(os.path.join(a.raiz, l["id"], "html.txt"), "rb") as f:
+            with open(os.path.join(a.raiz, l["caminho_html"]), "rb") as f:
                 s = estrutural.extrair(f.read(), l["url"])
             if s is None:
                 falhas += 1
                 continue
-            out.write(json.dumps({"id": l["id"], "rotulo": l["rotulo"], "marca": l["marca"],
+            out.write(json.dumps({"id": l["id"], "particao": l["particao"], "rotulo": l["rotulo"], "marca": l["marca"],
                                   "url": l["url"], **s.para_dict()}, ensure_ascii=False) + "\n")
             ok += 1
             if i % 1000 == 0:
