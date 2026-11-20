@@ -20,11 +20,15 @@ Dependências: só a biblioteca padrão + Pillow (pip install pillow).
 """
 
 import argparse
+import ast
 import csv
 import os
 from collections import Counter
 
-from PIL import Image
+from PIL import Image, ImageFile
+
+Image.MAX_IMAGE_PIXELS = None  # capturas de página inteira do Phishpedia são enormes, mas legítimas
+ImageFile.LOAD_TRUNCATED_IMAGES = True  # alguns PNGs do Phish360 têm um bloco corrompido, mas abrem
 
 HTML_MINIMO = 200  # bytes; abaixo disso o HTML provavelmente é inútil para o DOM
 
@@ -42,18 +46,31 @@ def ler_texto(caminho):
     return ""
 
 
+def ler_info(caminho):
+    """info.txt do Phishpedia: no phishing é um dict Python ({'url': ..., 'brand': ..., 'family_id': ...});
+    no benigno é só a URL. Devolve (url, marca, familia)."""
+    texto = ler_texto(caminho)
+    if texto.startswith("{"):
+        try:
+            d = ast.literal_eval(texto)
+            return d.get("url", ""), d.get("brand", ""), d.get("family_id", "")
+        except (ValueError, SyntaxError):
+            pass
+    return texto, "", ""
+
+
+def classe_phish360(nome_pasta):
+    """No Phish360 o nome da pasta é a fonte mais confiável: L00001_legitimate, P01000_phish
+    (teste, sem marca) ou P14209_tmobile (treino, com marca). O label.txt às vezes vem vazio."""
+    prefixo, _, sufixo = nome_pasta.partition("_")
+    if prefixo.startswith("L"):
+        return "benigno", ""
+    return "phishing", ("" if sufixo == "phish" else sufixo)
+
+
 def inferir_marca(nome_pasta):
     """No Phishpedia as pastas de phishing seguem o padrão 'Marca+timestamp'."""
     return nome_pasta.split("+")[0].strip() if "+" in nome_pasta else ""
-
-
-def normalizar_rotulo(texto):
-    t = texto.strip().lower()
-    if t.startswith("phish"):
-        return "phishing"
-    if t.startswith(("legit", "benign")):
-        return "benigno"
-    return t
 
 
 def localizar(pasta, arquivos):
@@ -87,14 +104,21 @@ def inspecionar(raiz, rotulo_padrao=None):
             shot_ok = False
 
         tam_html = os.path.getsize(html) if os.path.exists(html) else 0
-        rotulo = normalizar_rotulo(ler_texto(label)) if label else (rotulo_padrao or "")
+        if label:  # Phish360
+            rotulo, marca = classe_phish360(nome)
+            url, familia = ler_texto(info), ""
+        else:      # Phishpedia
+            url, marca, familia = ler_info(info)
+            rotulo = rotulo_padrao or ""
+            marca = marca or inferir_marca(nome)
 
         linhas.append({
             "id": rel,
             "particao": rel.replace("\\", "/").split("/")[0] if os.sep in rel or "/" in rel else "",
             "rotulo": rotulo,
-            "marca": inferir_marca(nome),
-            "url": ler_texto(info),
+            "marca": marca,
+            "familia": familia,
+            "url": url,
             "caminho_shot": os.path.relpath(shot, raiz),
             "caminho_html": os.path.relpath(html, raiz),
             "tem_html": int(tam_html > 0),
