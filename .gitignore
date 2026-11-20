@@ -1,0 +1,13 @@
+# Dados (dataset Phishpedia, templates, índices) ficam fora do Git
+data/*
+!data/.gitkeep
+*.csv
+*.faiss
+*.npy
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
