@@ -30,3 +30,12 @@ pip install -r requirements.txt
 python scripts/inspecionar_dataset.py --raiz data/phishpedia/phishing --rotulo phishing --saida data/phishing.csv
 python scripts/inspecionar_dataset.py --raiz data/phishpedia/benign   --rotulo benigno  --saida data/benigno.csv
 ```
+
+## Passo 1 — impressão digital estrutural (s)
+
+`src/mhf/estrutural.py`: normaliza o DOM e extrai o hash canônico, os caminhos de tags, os XPaths críticos e as contagens. A função `comparar` devolve as similaridades por componente.
+
+```bash
+python -m unittest discover -s tests
+python scripts/extrair_estrutural.py --indice data/phishing.csv --raiz data/phishpedia/phishing --saida data/estrutural_phishing.jsonl
+```
