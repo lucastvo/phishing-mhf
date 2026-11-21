@@ -71,5 +71,32 @@ class TestPlano(unittest.TestCase):
         self.assertIsNone(m["x/y/ao-vivo"]["aprovado"])
 
 
+class TestWayback(unittest.TestCase):
+    def test_url_wayback(self):
+        self.assertEqual(templates.url_wayback("20200601224504", "https://www.paypal.com/signin"),
+                         "https://web.archive.org/web/20200601224504if_/https://www.paypal.com/signin")
+        self.assertEqual(templates.url_wayback("20200601224504", "https://x.com/", "id_"),
+                         "https://web.archive.org/web/20200601224504id_/https://x.com/")
+
+    def test_remove_prefixos(self):
+        casos = {
+            'action="https://web.archive.org/web/20200601224504/https://login.live.com/ppsecure/post.srf"':
+                'action="https://login.live.com/ppsecure/post.srf"',
+            'src="//web.archive.org/web/20200601224504im_/https://x.com/a.png"': 'src="https://x.com/a.png"',
+            'src="/web/20200601224504js_/https://x.com/a.js"': 'src="https://x.com/a.js"',
+            'href="http://web.archive.org/web/20200601224504if_/http://x.com/"': 'href="http://x.com/"',
+            'href="/web/2020/relatorio"': 'href="/web/2020/relatorio"',  # caminho legítimo: intocado
+        }
+        for entrada, esperado in casos.items():
+            with self.subTest(entrada=entrada):
+                self.assertEqual(templates.remover_prefixo_wayback(entrada), esperado)
+
+    def test_remove_varios_no_mesmo_documento(self):
+        html = ('<form action="/web/20200601224504/https://a.com/post">'
+                '<img src="https://web.archive.org/web/20200601224504im_/https://a.com/logo.png"></form>')
+        self.assertEqual(templates.remover_prefixo_wayback(html),
+                         '<form action="https://a.com/post"><img src="https://a.com/logo.png"></form>')
+
+
 if __name__ == "__main__":
     unittest.main()

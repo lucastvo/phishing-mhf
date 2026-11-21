@@ -20,6 +20,15 @@ ANOS_PADRAO = range(2019, 2027)    # anos-alvo dos snapshots do Wayback (alvo = 
 TOLERANCIA = timedelta(days=183)   # mais longe que isso do alvo, o ano vira buraco
 ANO_AO_VIVO = 2026                 # ano da captura ao vivo (cenário "só 2026" da avaliação)
 
+# Campo que indica que o formulário de login já apareceu (a captura espera por ele, não por um tempo fixo).
+SELETOR_CREDENCIAL = ('input[type=password], input[type=email], input[name*=user i], '
+                      'input[name*=login i], input[name*=email i], input[id*=user i]')
+
+# Prefixo que o Wayback põe nas URLs da página arquivada, em qualquer das formas: absoluta, sem esquema
+# (//web.archive.org) ou relativa (/web/...), com ou sem modificador (if_, im_, js_, cs_...). Só é
+# removido quando vem seguido de uma URL com esquema, para não tocar em caminhos legítimos como /web/2020/.
+_PREFIXO_WAYBACK = re.compile(r"(?:(?:https?:)?//web\.archive\.org)?/web/\d{1,14}(?:[a-z]{2}_)?/(?=https?:)")
+
 
 @dataclass(frozen=True)
 class VarianteLogin:
@@ -110,3 +119,17 @@ def mesclar_plano(novo: list[dict], antigo: list[dict]) -> list[dict]:
             e = {**e, "aprovado": anterior.get("aprovado"), "motivo": anterior.get("motivo", "")}
         mescladas.append(e)
     return mescladas
+
+
+# ---------------------------------------------------------------- Wayback (fase "capturar")
+
+def url_wayback(timestamp: str, url: str, modo: str = "if_") -> str:
+    """URL de um snapshot. `if_` renderiza sem a barra do Wayback e com os recursos (CSS, imagens)
+    arquivados na mesma época; `id_` devolve o HTML original como foi arquivado, sem reescrita."""
+    return f"https://web.archive.org/web/{timestamp}{modo}/{url}"
+
+
+def remover_prefixo_wayback(html: str) -> str:
+    """Desfaz a reescrita de URLs do Wayback no DOM capturado. Sem isso, toda `action` de formulário
+    apontaria para web.archive.org e a contagem forms_action_externa do componente s ficaria errada."""
+    return _PREFIXO_WAYBACK.sub("", html)
