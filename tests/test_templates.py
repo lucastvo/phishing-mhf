@@ -88,6 +88,9 @@ class TestWayback(unittest.TestCase):
             'src="/web/20200601224504js_/https://x.com/a.js"': 'src="https://x.com/a.js"',
             'href="http://web.archive.org/web/20200601224504if_/http://x.com/"': 'href="http://x.com/"',
             'href="/web/2020/relatorio"': 'href="/web/2020/relatorio"',  # caminho legítimo: intocado
+            # dentro de JavaScript/JSON da página, com barras escapadas (visto nos snapshots do PayPal)
+            "url:'https:\\/\\/web.archive.org\\/web\\/20190102025722\\/https:\\/\\/www.paypal.com\\/signin'":
+                "url:'https:\\/\\/www.paypal.com\\/signin'",
         }
         for entrada, esperado in casos.items():
             with self.subTest(entrada=entrada):
@@ -168,6 +171,189 @@ class TestRevisao(unittest.TestCase):
         self.assertEqual((plano[0]["aprovado"], plano[0]["motivo"]), (False, "banner de cookies cobre o form"))
         with self.assertRaises(KeyError):
             templates.marcar_aprovacao(plano, "nao/existe/2019-01-01", True)
+
+
+# ---------------------------------------------------------------- correções da revisão independente
+
+ARQUIVOS_CAPTURA = ["html_original.html"] + [f"{p}_{r}" for r in ("1280x960", "1366x768")
+                                             for p in ("shot", "dom")]
+
+
+def _captura_completa(raiz, id_, data_captura, url_login="https://x.com/login", timestamp="20200101000000",
+                      status="ok"):
+    meta = {"url_login": url_login, "timestamp": timestamp, "data_captura": data_captura,
+            "resolucoes": {"1280x960": {"status": status}, "1366x768": {"status": status}}}
+    _escrever_meta(raiz, id_, meta)
+
+
+def _entrada(id_, aprovado=None, aprovado_captura=None, url_login="https://x.com/login",
+             timestamp="20200101000000", buraco=None, origem="wayback"):
+    return {"id": id_, "entidade": "X", "variante": "p", "url_login": url_login, "timestamp": timestamp,
+            "origem": origem, "anos_alvo": [2020], "buraco": buraco, "aprovado": aprovado, "motivo": "",
+            "aprovado_captura": aprovado_captura}
+
+
+class TestAprovacaoAmarradaAoConteudo(unittest.TestCase):  # C1
+    def test_aprovar_recusa_buraco(self):
+        plano = [_entrada("x/p/buraco-2021", buraco="sem_snapshot", timestamp=None)]
+        for decisao in (True, False):
+            with self.assertRaises(ValueError):
+                templates.marcar_aprovacao(plano, "x/p/buraco-2021", decisao, data_captura="2026-11-20T23:00:00")
+
+    def test_aprovar_exige_captura_e_guarda_qual_foi_vista(self):
+        plano = [_entrada("x/p/2020-01-01")]
+        with self.assertRaises(ValueError):  # aprovar o que ainda não foi capturado
+            templates.marcar_aprovacao(plano, "x/p/2020-01-01", True)
+        templates.marcar_aprovacao(plano, "x/p/2020-01-01", True, data_captura="2026-11-20T23:00:00")
+        self.assertEqual((plano[0]["aprovado"], plano[0]["aprovado_captura"]), (True, "2026-11-20T23:00:00"))
+
+    def test_pendentes_pula_entradas_com_decisao(self):
+        # aprovada com status ruim (o revisor viu o screenshot bom) e rejeitada: não são recapturadas
+        plano = [_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"),
+                 _entrada("x/p/2021-01-01", aprovado=False)]
+        with tempfile.TemporaryDirectory() as raiz:
+            _captura_completa(raiz, "x/p/2020-01-01", "t1", status="sem_formulario")
+            self.assertEqual(templates.entradas_pendentes(plano, raiz), [])
+
+    def test_pendentes_captura_de_outra_url_ou_snapshot(self):
+        plano = [_entrada("x/p/2020-01-01", url_login="https://x.com/br/login"),
+                 _entrada("x/p/2021-01-01", timestamp="20210101000000")]
+        with tempfile.TemporaryDirectory() as raiz:
+            _captura_completa(raiz, "x/p/2020-01-01", "t1", url_login="https://x.com/login")
+            _captura_completa(raiz, "x/p/2021-01-01", "t1", timestamp="20210102000000")
+            pendentes = [e["id"] for e in templates.entradas_pendentes(plano, raiz)]
+        self.assertEqual(pendentes, ["x/p/2020-01-01", "x/p/2021-01-01"])
+
+    def test_mescla_so_herda_se_o_snapshot_for_o_mesmo(self):
+        antigo = [_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"),
+                  _entrada("x/p/2021-01-01", aprovado=True, aprovado_captura="t1")]
+        novo = [_entrada("x/p/2020-01-01"),                               # mesmo snapshot: herda
+                _entrada("x/p/2021-01-01", timestamp="20210101080000")]   # mesmo id, outro snapshot: não herda
+        m = {e["id"]: e for e in templates.mesclar_plano(novo, antigo)}
+        self.assertEqual((m["x/p/2020-01-01"]["aprovado"], m["x/p/2020-01-01"]["aprovado_captura"]), (True, "t1"))
+        self.assertIsNone(m["x/p/2021-01-01"]["aprovado"])
+
+    def test_entradas_aprovadas(self):
+        plano = [_entrada("x/p/2019-01-01", aprovado=True, aprovado_captura="t1"),  # vale
+                 _entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"),  # recapturada depois
+                 _entrada("x/p/2021-01-01", aprovado=True, aprovado_captura="t1"),  # arquivos sumiram
+                 _entrada("x/p/2022-01-01", aprovado=False),                         # rejeitada
+                 _entrada("x/p/2023-01-01")]                                         # não revisada
+        with tempfile.TemporaryDirectory() as raiz:
+            _captura_completa(raiz, "x/p/2019-01-01", "t1")
+            _captura_completa(raiz, "x/p/2020-01-01", "t2")
+            _escrever_meta(raiz, "x/p/2021-01-01", {"data_captura": "t1", "url_login": "https://x.com/login",
+                                                   "timestamp": "20200101000000", "resolucoes": {}},
+                           com_capturas=False)
+            for id_ in ("x/p/2022-01-01", "x/p/2023-01-01"):
+                _captura_completa(raiz, id_, "t1")
+            aprovadas = [e["id"] for e in templates.entradas_aprovadas(plano, raiz)]
+        self.assertEqual(aprovadas, ["x/p/2019-01-01"])
+
+    def test_revisao_mostra_aprovacao_vencida(self):
+        plano = [_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1")]
+        metas = {"x/p/2020-01-01": {"data_captura": "t2", "resolucoes": {"1280x960": {"status": "ok"}}}}
+        html = templates.gerar_revisao_html(plano, metas)
+        self.assertIn("aprovação vencida", html)
+        # o resumo do topo não pode contar a vencida como aprovada
+        self.assertIn("0 aprovados", html)
+        self.assertIn("1 aprovações vencidas", html)
+
+
+class TestCdxForaDoAr(unittest.TestCase):  # I1
+    def test_mescla_mantem_a_variante_quando_a_consulta_falhou(self):
+        antigo = templates.planejar_variante(PAYPAL, [("20200101192011", 200)], anos=range(2020, 2021))
+        templates.marcar_aprovacao(antigo, "paypal/padrao/2020-01-01", True, data_captura="t1")
+        novo = templates.planejar_variante(PAYPAL, None, anos=range(2020, 2021))  # CDX fora do ar
+        mesclado = templates.mesclar_plano(novo, antigo)
+        self.assertEqual(mesclado, antigo)
+
+    def test_sem_plano_antigo_os_buracos_ficam(self):
+        novo = templates.planejar_variante(PAYPAL, None, anos=range(2020, 2021))
+        self.assertEqual(templates.mesclar_plano(novo, []), novo)
+
+
+class TestInjecoesWayback(unittest.TestCase):  # I2
+    def test_limpar_injecoes(self):
+        # Trechos reais de um DOM capturado (PayPal 2019) + um script e um CSS legítimos da página.
+        html = ('<html lang="en" class=" js " style="--wm-toolbar-height: 67px;"><head>'
+                '<script src="https://web-static.archive.org/_static/js/athena.js" type="text/javascript"></script>'
+                '<script type="text/javascript" src="https://web-static.archive.org/_static/js/wombat.js?v=o9P2E1FK" '
+                'charset="utf-8"></script>'
+                '<script type="text/javascript">\n    __wm.init("https://web.archive.org/web");\n</script>'
+                '<link rel="stylesheet" type="text/css" href="https://web-static.archive.org/_static/css/banner-styles.css?v=1utQkbB3">'
+                '<script type="text/javascript">window.addEventListener(\'DOMContentLoaded\',function(){'
+                'var v=archive_analytics.values;});</script>'
+                '<!-- End Wayback Rewrite JS Include -->'
+                '<script src="https://www.paypalobjects.com/web/res/app.js"></script>'
+                '<link rel="stylesheet" href="https://www.paypalobjects.com/web/res/app.css">'
+                '</head><body><form action="https://www.paypal.com/signin"></form>'
+                '<script>__wm.rw(0);</script>'
+                '<script type="text/javascript">//<![CDATA[\n__wm.bt(775,27,25,2,"web");\n//]]></script>'
+                '</body></html>')
+        limpo = templates.limpar_injecoes_wayback(html)
+        for residuo in ("archive.org", "__wm", "archive_analytics", "--wm-toolbar-height"):
+            with self.subTest(residuo=residuo):
+                self.assertNotIn(residuo, limpo)
+        for legitimo in ('<script src="https://www.paypalobjects.com/web/res/app.js"></script>',
+                         '<link rel="stylesheet" href="https://www.paypalobjects.com/web/res/app.css">',
+                         '<form action="https://www.paypal.com/signin"></form>'):
+            with self.subTest(legitimo=legitimo):
+                self.assertIn(legitimo, limpo)
+        self.assertEqual(templates.residuos_wayback(limpo), 0)
+        self.assertGreater(templates.residuos_wayback(html), 0)
+
+
+class TestDataEfetiva(unittest.TestCase):  # I3
+    def test_timestamp_efetivo(self):
+        casos = {
+            "https://web.archive.org/web/20190102025722/https://www.paypal.com/signin": "20190102025722",
+            "https://web.archive.org/web/20200101131509/https://login.live.com/cookiesDisabled.srf?x=1": "20200101131509",
+            "about:blank": None,
+            "https://www.paypal.com/signin": None,
+        }
+        for url, esperado in casos.items():
+            with self.subTest(url=url):
+                self.assertEqual(templates.timestamp_efetivo(url), esperado)
+
+    def test_fora_da_janela(self):
+        self.assertFalse(templates.fora_da_janela("20190102025722", [2019]))
+        self.assertTrue(templates.fora_da_janela("20210615000000", [2019]))       # redirecionou 2,5 anos
+        self.assertFalse(templates.fora_da_janela("20190702000000", [2019, 2020]))  # 182 e 183 dias
+        self.assertTrue(templates.fora_da_janela("20190702000000", [2019, 2021]))
+
+    def test_revisao_alerta_data_efetiva_fora_da_janela(self):
+        plano = [_entrada("x/p/2020-01-01")]
+        metas = {"x/p/2020-01-01": {"data_captura": "t1", "resolucoes": {
+            "1280x960": {"status": "ok", "timestamp_efetivo": "20221005000000"},
+            "1366x768": {"status": "ok", "timestamp_efetivo": "20221005000000"}}}}
+        self.assertIn("fora da janela", templates.gerar_revisao_html(plano, metas))
+
+
+class TestRevisaoDuasResolucoes(unittest.TestCase):  # I4
+    def test_mostra_as_duas_miniaturas_e_destaca_falha(self):
+        plano = [_entrada("x/p/2020-01-01")]
+        metas = {"x/p/2020-01-01": {"data_captura": "t1", "resolucoes": {
+            "1280x960": {"status": "ok"}, "1366x768": {"status": "sem_formulario"}}}}
+        html = templates.gerar_revisao_html(plano, metas)
+        self.assertIn("x/p/2020-01-01/shot_1280x960.png", html)
+        self.assertIn("x/p/2020-01-01/shot_1366x768.png", html)
+        self.assertIn('class="falha"', html)
+
+
+class TestSeletorPorVariante(unittest.TestCase):  # I5
+    def test_seletor_opcional(self):
+        marcas = [{"entidade": "Itaú", "logins": [
+            {"variante": "pessoal", "url": "https://www.itau.com.br/", "locale": "pt-BR", "seletor": "#agencia"}]}]
+        with tempfile.TemporaryDirectory() as pasta:
+            caminho = os.path.join(pasta, "marcas.json")
+            with open(caminho, "w", encoding="utf-8") as f:
+                json.dump(marcas, f)
+            v = templates.ler_marcas(caminho)[0]
+        self.assertEqual(v.seletor, "#agencia")
+        self.assertIsNone(templates.ler_marcas(CAMINHO_EXEMPLO)[0].seletor)
+        plano = templates.planejar_variante(v, [("20200101000000", 200)], anos=range(2020, 2021))
+        self.assertEqual({e["seletor"] for e in plano}, {"#agencia"})
 
 
 if __name__ == "__main__":

@@ -5,8 +5,8 @@ Uso, na ordem:
     python scripts/capturar_templates.py planejar --marcas config/marcas.json --plano config/templates_snapshots.json
     python scripts/capturar_templates.py capturar --plano config/templates_snapshots.json --raiz data/templates
     python scripts/capturar_templates.py revisar  --plano config/templates_snapshots.json --raiz data/templates
-    python scripts/capturar_templates.py aprovar  --plano config/templates_snapshots.json ID [ID ...]
-    python scripts/capturar_templates.py rejeitar --plano config/templates_snapshots.json ID --motivo "..."
+    python scripts/capturar_templates.py aprovar  --plano config/templates_snapshots.json --raiz data/templates ID [ID ...]
+    python scripts/capturar_templates.py rejeitar --plano config/templates_snapshots.json --raiz data/templates ID --motivo "..."
 
 `planejar` consulta a API CDX do Wayback e grava o plano (a "receita" versionada da base);
 `capturar` renderiza cada entrada pendente com o Playwright (Chromium) nas duas resoluções dos
@@ -51,12 +51,17 @@ def gravar_json(caminho, dados):
     os.replace(temporario, caminho)
 
 
-def baixar(url, tentativas=3):
-    """Bytes da URL, ou None se as `tentativas` falharem (o Wayback às vezes derruba a conexão)."""
+def baixar(url, tentativas=3, prefixo_final=None):
+    """Bytes da URL, ou None se as `tentativas` falharem (o Wayback às vezes derruba a conexão).
+    Com `prefixo_final`, também devolve None se um redirecionamento levar para fora desse prefixo
+    (ex.: um snapshot 3xx do Wayback que mandasse para a página ao vivo, de outra época)."""
     requisicao = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     for tentativa in range(1, tentativas + 1):
         try:
             with urllib.request.urlopen(requisicao, timeout=60) as resposta:
+                if prefixo_final and not resposta.geturl().startswith(prefixo_final):
+                    print(f"  {url} redirecionou para fora do Wayback ({resposta.geturl()}); descartado")
+                    return None
                 return resposta.read()
         except Exception as erro:  # rede instável, 5xx do Wayback etc.: quem chama decide o que fazer
             print(f"  falha ao baixar {url} (tentativa {tentativa}/{tentativas}): {erro}")
@@ -88,19 +93,42 @@ def consultar_cdx(url):
 
 def cmd_planejar(a):
     variantes = templates.ler_marcas(a.marcas)
-    novo = []
+    novo, falhas = [], 0
     for i, v in enumerate(variantes):
         if i:
             time.sleep(PAUSA_WAYBACK_S)
-        entradas = templates.planejar_variante(v, consultar_cdx(v.url))
+        capturas = consultar_cdx(v.url)
+        falhas += capturas is None
+        entradas = templates.planejar_variante(v, capturas)
         snapshots = sum(1 for e in entradas if e["origem"] == "wayback" and not e["buraco"])
         buracos = [f"{e['anos_alvo'][0]} ({e['buraco']})" for e in entradas if e["buraco"]]
         print(f"{v.entidade} / {v.variante}: {snapshots} snapshots"
               + (f"; buracos: {', '.join(buracos)}" if buracos else ""))
         novo += entradas
+    if variantes and falhas == len(variantes):
+        sys.exit("Todas as consultas ao Wayback falharam (fora do ar?). Plano NÃO foi alterado; tente mais tarde.")
     antigo = ler_json(a.plano) if os.path.exists(a.plano) else []
-    gravar_json(a.plano, templates.mesclar_plano(novo, antigo))
-    print(f"Plano com {len(novo)} entradas gravado em {a.plano}")
+    plano = templates.mesclar_plano(novo, antigo)  # variantes cuja consulta falhou mantêm o plano anterior
+    gravar_json(a.plano, plano)
+    print(f"Plano com {len(plano)} entradas gravado em {a.plano}"
+          + (f" ({falhas} variante(s) com consulta falha mantiveram o plano anterior, se havia)" if falhas else ""))
+
+
+def esperar_credencial(pagina, seletor, tempo_ms):
+    """Espera um campo de credencial VISÍVEL aparecer na página ou em qualquer frame dela (o login de
+    algumas marcas fica dentro de um iframe). Devolve True se apareceu dentro do tempo."""
+    from playwright.sync_api import Error as ErroPlaywright
+
+    limite = time.monotonic() + tempo_ms / 1000
+    while time.monotonic() < limite:
+        for quadro in pagina.frames:
+            try:
+                if any(el.is_visible() for el in quadro.query_selector_all(seletor)):
+                    return True
+            except ErroPlaywright:
+                pass  # frame saindo ou navegando no meio da consulta
+        pagina.wait_for_timeout(500)
+    return False
 
 
 # ---------------------------------------------------------------- capturar
@@ -118,9 +146,12 @@ def capturar_entrada(navegador, e, raiz, versoes):
     # e redireciona para uma página não arquivada. A barra do modo comum é removida antes do screenshot.
     url = e["url_login"] if ao_vivo else templates.url_wayback(e["timestamp"], e["url_login"], "")
 
+    seletor = e.get("seletor") or templates.SELETOR_CREDENCIAL
+
     if not ao_vivo:  # HTML como foi arquivado, antes do JavaScript
         time.sleep(PAUSA_WAYBACK_S)
-        original = baixar(templates.url_wayback(e["timestamp"], e["url_login"], "id_"))
+        original = baixar(templates.url_wayback(e["timestamp"], e["url_login"], "id_"),
+                          prefixo_final="https://web.archive.org/web/")
         if original is not None:
             with open(os.path.join(pasta, "html_original.html"), "wb") as f:
                 f.write(original)
@@ -142,11 +173,7 @@ def capturar_entrada(navegador, e, raiz, versoes):
         if resposta is None or resposta.status >= 400:
             status = "bloqueado" if ao_vivo else "erro_wayback"
         else:
-            try:
-                pagina.wait_for_selector(templates.SELETOR_CREDENCIAL, timeout=30000)
-                status = "ok"
-            except TempoEsgotado:
-                status = "sem_formulario"
+            status = "ok" if esperar_credencial(pagina, seletor, 30000) else "sem_formulario"
             try:
                 pagina.wait_for_load_state("networkidle", timeout=10000)
             except TempoEsgotado:
@@ -158,17 +185,27 @@ def capturar_entrada(navegador, e, raiz, versoes):
                 except ErroPlaywright:
                     pass
         tempo = time.perf_counter() - inicio
+        residuos = None
         try:
             if not ao_vivo:
                 pagina.evaluate("s => document.querySelectorAll(s).forEach(e => e.remove())",
                                 templates.SELETOR_BARRA_WAYBACK)
             pagina.screenshot(path=os.path.join(pasta, f"shot_{nome}.png"), full_page=False)
+            dom = pagina.content()
+            if not ao_vivo:  # scripts/estilos do próprio Wayback e URLs reescritas
+                dom = templates.remover_prefixo_wayback(templates.limpar_injecoes_wayback(dom))
+                residuos = templates.residuos_wayback(dom)
             with open(os.path.join(pasta, f"dom_{nome}.html"), "w", encoding="utf-8") as f:
-                f.write(templates.remover_prefixo_wayback(pagina.content()))
+                f.write(dom)
         except ErroPlaywright as erro:  # ex.: redirecionamento tardio destruiu a página no meio da gravação
             print(f"  {e['id']} {nome}: não foi possível salvar screenshot/DOM ({erro})")
             status = "erro_captura"  # não deixa um "ok" sem arquivos; a entrada fica pendente
         resolucoes[nome] = {"status": status, "tempo_s": round(tempo, 1), "url_final": pagina.url}
+        if not ao_vivo:
+            # O snapshot de fato exibido (redirecionamentos podem levar a outra captura) — é esta data
+            # que vale na avaliação, por exemplo na checagem "só templates anteriores à amostra".
+            resolucoes[nome]["timestamp_efetivo"] = templates.timestamp_efetivo(pagina.url)
+            resolucoes[nome]["residuos_wayback"] = residuos
         if erro_navegacao:
             resolucoes[nome]["erro"] = erro_navegacao  # para diagnosticar falhas intermitentes depois
         contexto.close()
@@ -215,12 +252,21 @@ def cmd_revisar(a):
 
 
 def _marcar(a, aprovado, motivo):
+    """Registra a decisão junto com a data da captura vista (do meta.json), para a aprovação valer só
+    para aquela captura. Se algum id for inválido, nada é gravado."""
     plano = ler_json(a.plano)
+    por_id = {e["id"]: e for e in plano}
     try:
         for id_ in a.ids:
-            templates.marcar_aprovacao(plano, id_, aprovado, motivo)
-    except KeyError as erro:  # nada é gravado se algum id não existir
+            if id_ not in por_id:
+                raise KeyError(id_)
+            caminho = os.path.join(templates.pasta_entrada(a.raiz, id_), "meta.json")
+            data_captura = ler_json(caminho).get("data_captura") if os.path.exists(caminho) else None
+            templates.marcar_aprovacao(plano, id_, aprovado, motivo, data_captura=data_captura)
+    except KeyError as erro:
         sys.exit(f"id não encontrado no plano: {erro.args[0]} (nenhuma alteração gravada)")
+    except ValueError as erro:
+        sys.exit(f"{erro} (nenhuma alteração gravada)")
     gravar_json(a.plano, plano)
     print(f"{len(a.ids)} entrada(s) marcada(s) como {'aprovada' if aprovado else 'rejeitada'}")
 
@@ -257,11 +303,13 @@ def main():
 
     s = sub.add_parser("aprovar", help="aprova entradas do plano (só aprovadas entram na base)")
     s.add_argument("--plano", required=True)
+    s.add_argument("--raiz", required=True, help="pasta das capturas (para registrar qual captura foi vista)")
     s.add_argument("ids", nargs="+", metavar="ID")
     s.set_defaults(func=cmd_aprovar)
 
     s = sub.add_parser("rejeitar", help="rejeita uma entrada do plano, com o motivo")
     s.add_argument("--plano", required=True)
+    s.add_argument("--raiz", required=True, help="pasta das capturas (para registrar qual captura foi vista)")
     s.add_argument("ids", nargs=1, metavar="ID")
     s.add_argument("--motivo", required=True)
     s.set_defaults(func=cmd_rejeitar)

@@ -56,7 +56,9 @@ A tabela de marcas (`marcas.json`, versionada) traz, para cada entidade de 𝒯,
  ]}
 ```
 
-O `locale` é `pt-BR` para Itaú, Bradesco, Caixa e Santander, e `en-US` para as demais marcas. Ele só é usado na captura ao vivo.
+O `locale` é `pt-BR` para Itaú, Bradesco, Caixa e Santander, e `en-US` para as demais marcas. Ele vale para todas as capturas. Sem ele, as páginas arquivadas herdariam o idioma da máquina.
+
+Cada variante pode ter também um campo opcional `"seletor"` (CSS): o campo de credencial pelo qual a captura espera. Use quando o login dessa variante não tiver campo de e-mail, usuário, senha, CPF ou agência. Na falta dele, vale o seletor padrão. A espera procura o campo na página e em todos os iframes dela.
 
 ### 4.2 Fase 1 — planejar (`--planejar`)
 Para cada variante e cada ano de **2019 a 2026**, consulta a API CDX do Wayback e escolhe o snapshot com status 200 **mais próximo de 1º de janeiro** daquele ano.
@@ -89,8 +91,19 @@ Usa o Playwright com Chromium headless, na máquina do Lucas.
 
 **Saída** (fora do git): `data/templates/<entidade>/<variante>/<AAAA-MM>/` com `shot_1280x960.png`, `shot_1366x768.png`, `dom_1280x960.html`, `dom_1366x768.html`, `html_original.html` e `meta.json`. O `meta.json` traz entidade, variante, URL de login, origem (`wayback`/`ao_vivo`), URL e timestamp do snapshot, ano-alvo, data da captura, status e tempo de renderização por resolução, e as versões do Playwright e do Chromium.
 
+- **Limpeza e data efetiva:** além da barra, o DOM salvo de um snapshot perde os scripts, as folhas de estilo e os estilos que o próprio Wayback injeta. Com isso, templates do Wayback e ao vivo ficam comparáveis. O `meta.json` registra por resolução:
+  - `residuos_wayback`: vestígios que sobraram, esperado 0;
+  - `timestamp_efetivo`: o snapshot de fato exibido, porque redirecionamentos podem levar a outra captura. **É essa a data que vale na avaliação**, por exemplo na checagem "só templates anteriores à amostra".
+
 ### 4.4 Fase 3 — revisar (`--revisar`)
-Gera `data/templates/revisao.html`, uma grade com marcas nas linhas, anos nas colunas e miniaturas nas células, com status e link para o snapshot. **Você aprova cada template**. A aprovação (`aprovado: true/false` e o motivo) fica registrada em `config/templates_snapshots.json`. **Só templates aprovados entram na base** (etapa 4). Isso protege contra o primeiro antiobjetivo.
+Gera `data/templates/revisao.html`: uma grade com marcas nas linhas e anos nas colunas. Cada célula traz as miniaturas das **duas resoluções**, o status de cada uma, o link para o snapshot e alertas: status diferente de `ok`, vestígios do Wayback, data exibida fora da janela. **Você aprova cada template.** A aprovação (`aprovado: true/false` e o motivo) fica registrada em `config/templates_snapshots.json`. **Só templates aprovados entram na base** (etapa 4). Isso protege contra o primeiro antiobjetivo.
+
+*Ajustado depois da revisão independente do código (21/11/2026):* a aprovação passou a ficar **presa à captura que foi vista**.
+- `aprovar` grava a `data_captura` do `meta.json` e recusa buracos e entradas não capturadas.
+- Entradas com decisão (aprovadas ou rejeitadas) não são recapturadas. Para recapturar, limpa-se a decisão.
+- Replanejar só preserva a decisão se a URL e o snapshot forem os mesmos.
+- Se a consulta ao Wayback falhar, o plano anterior daquela variante é mantido.
+- A etapa 4 usa `entradas_aprovadas()`, que só devolve aprovações cuja captura no disco ainda é a que foi vista. As outras aparecem na revisão como "aprovação vencida".
 
 ### 4.5 O que a avaliação ganha (consumido na etapa 6)
 - **Base completa** × **só 2026** (ao vivo): custo da defasagem em revocação, FPR e top-1.

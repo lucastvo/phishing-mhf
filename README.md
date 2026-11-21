@@ -45,9 +45,12 @@ python scripts/capturar_templates.py planejar --marcas config/marcas.json --plan
 python scripts/capturar_templates.py capturar --plano config/templates_snapshots.json --raiz data/templates
 # 3. revisar: gera data/templates/revisao.html com a grade de miniaturas
 python scripts/capturar_templates.py revisar --plano config/templates_snapshots.json --raiz data/templates
-# 4. aprovar/rejeitar: só templates aprovados entram na base
-python scripts/capturar_templates.py aprovar  --plano config/templates_snapshots.json paypal/padrao/2020-01-01
-python scripts/capturar_templates.py rejeitar --plano config/templates_snapshots.json microsoft/pessoal/2026-01-07 --motivo "Wayback sem o JavaScript"
+# 4. aprovar/rejeitar: só templates aprovados entram na base; a aprovação vale para a captura que foi
+#    vista (se a entrada for capturada de novo, a aprovação "vence" e precisa ser refeita)
+python scripts/capturar_templates.py aprovar  --plano config/templates_snapshots.json --raiz data/templates paypal/padrao/2020-01-01
+python scripts/capturar_templates.py rejeitar --plano config/templates_snapshots.json --raiz data/templates microsoft/pessoal/2026-01-07 --motivo "Wayback sem o JavaScript"
 ```
+
+Entradas aprovadas ou rejeitadas não são recapturadas. Para recapturar uma delas, limpe a decisão no plano (`"aprovado": null`). Uma variante pode definir o campo `"seletor"` na tabela de marcas quando o login dela não usar e-mail, usuário, senha, CPF ou agência.
 
 `config/marcas.exemplo.json` traz duas marcas (PayPal e Microsoft) para testar o fluxo antes da tabela completa de marcas.
