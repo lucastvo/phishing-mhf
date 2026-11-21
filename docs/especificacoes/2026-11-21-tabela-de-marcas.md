@@ -20,7 +20,8 @@ O MHF compara cada página com os templates das 20 entidades protegidas (𝒯, m
    - **Itaucard** no Itaú;
    - Microsoft **corporativo** (`login.microsoftonline.com/common/oauth2/authorize`, imitado por cerca de 4.600 phishings) **e pessoal** (`login.live.com`).
 4. **Adobe e as iscas do OneDrive e do Google Docs continuam em 𝒯.** O resultado é reportado por marca, e as iscas temáticas, que não copiam nenhuma página real, são discutidas como limitação.
-5. **A Apple fica só com a captura ao vivo**, porque o Wayback bloqueia os domínios dela. Isso é documentado como limitação.
+5. **A Apple usa `account.apple.com`** (snapshots do Wayback de 2025 e 2026, mais a captura ao vivo). O Wayback bloqueia `appleid.apple.com` e `icloud.com`, então 2019–2023 ficam sem template, e isso é documentado como limitação.
+   - A decisão original era "só ao vivo". A implementação descobriu que o domínio novo do Apple ID não é bloqueado, e o Lucas aprovou a mudança em 21/11/2026.
 6. **Os domínios legítimos são montados à mão** a partir de fontes oficiais e revisados pelo Lucas. O `domain_map.pkl` do Phishpedia não é usado: é um *pickle* e pode executar código ao ser aberto.
 
 ## 3. Objetivos, não objetivos e antiobjetivos
