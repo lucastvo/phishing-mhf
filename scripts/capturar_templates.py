@@ -4,10 +4,14 @@ Passo 2 — templates de login com vários anos (snapshots do Wayback de 2019 a 
 Uso, na ordem:
     python scripts/capturar_templates.py planejar --marcas config/marcas.json --plano config/templates_snapshots.json
     python scripts/capturar_templates.py capturar --plano config/templates_snapshots.json --raiz data/templates
+    python scripts/capturar_templates.py revisar  --plano config/templates_snapshots.json --raiz data/templates
+    python scripts/capturar_templates.py aprovar  --plano config/templates_snapshots.json ID [ID ...]
+    python scripts/capturar_templates.py rejeitar --plano config/templates_snapshots.json ID --motivo "..."
 
 `planejar` consulta a API CDX do Wayback e grava o plano (a "receita" versionada da base);
 `capturar` renderiza cada entrada pendente com o Playwright (Chromium) nas duas resoluções dos
-datasets e pode ser interrompido e retomado. As funções puras ficam em src/mhf/templates.py.
+datasets e pode ser interrompido e retomado; `revisar` gera a grade de miniaturas e `aprovar`/
+`rejeitar` registram a decisão no plano. As funções puras ficam em src/mhf/templates.py.
 
 Desenho: docs/especificacoes/2026-11-20-base-de-templates.md
 """
@@ -193,6 +197,41 @@ def cmd_capturar(a):
         navegador.close()
 
 
+# ---------------------------------------------------------------- revisar / aprovar / rejeitar
+
+def cmd_revisar(a):
+    plano = ler_json(a.plano)
+    metas = {}
+    for e in plano:
+        caminho = os.path.join(templates.pasta_entrada(a.raiz, e["id"]), "meta.json")
+        if not e.get("buraco") and os.path.exists(caminho):
+            metas[e["id"]] = ler_json(caminho)
+    saida = os.path.join(a.raiz, "revisao.html")
+    os.makedirs(a.raiz, exist_ok=True)
+    with open(saida, "w", encoding="utf-8") as f:
+        f.write(templates.gerar_revisao_html(plano, metas))
+    print(f"Página de revisão gravada em {saida} ({len(metas)} entradas capturadas)")
+
+
+def _marcar(a, aprovado, motivo):
+    plano = ler_json(a.plano)
+    try:
+        for id_ in a.ids:
+            templates.marcar_aprovacao(plano, id_, aprovado, motivo)
+    except KeyError as erro:  # nada é gravado se algum id não existir
+        sys.exit(f"id não encontrado no plano: {erro.args[0]} (nenhuma alteração gravada)")
+    gravar_json(a.plano, plano)
+    print(f"{len(a.ids)} entrada(s) marcada(s) como {'aprovada' if aprovado else 'rejeitada'}")
+
+
+def cmd_aprovar(a):
+    _marcar(a, True, "")
+
+
+def cmd_rejeitar(a):
+    _marcar(a, False, a.motivo)
+
+
 # ---------------------------------------------------------------- linha de comando
 
 def main():
@@ -209,6 +248,22 @@ def main():
     s.add_argument("--raiz", required=True, help="pasta de saída (ex.: data/templates, fora do git)")
     s.add_argument("--so", nargs="+", metavar="ID", help="capturar só estas entradas")
     s.set_defaults(func=cmd_capturar)
+
+    s = sub.add_parser("revisar", help="gera <raiz>/revisao.html com a grade de miniaturas")
+    s.add_argument("--plano", required=True)
+    s.add_argument("--raiz", required=True)
+    s.set_defaults(func=cmd_revisar)
+
+    s = sub.add_parser("aprovar", help="aprova entradas do plano (só aprovadas entram na base)")
+    s.add_argument("--plano", required=True)
+    s.add_argument("ids", nargs="+", metavar="ID")
+    s.set_defaults(func=cmd_aprovar)
+
+    s = sub.add_parser("rejeitar", help="rejeita uma entrada do plano, com o motivo")
+    s.add_argument("--plano", required=True)
+    s.add_argument("ids", nargs=1, metavar="ID")
+    s.add_argument("--motivo", required=True)
+    s.set_defaults(func=cmd_rejeitar)
 
     a = p.parse_args()
     a.func(a)

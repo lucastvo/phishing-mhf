@@ -132,5 +132,35 @@ class TestCaptura(unittest.TestCase):
         self.assertEqual(pendentes, ["a/p/2020-01-03", "a/p/2021-01-02", "a/p/2023-01-05", "a/p/2024-01-03"])
 
 
+class TestRevisao(unittest.TestCase):
+    def test_revisao_html(self):
+        plano = [{"id": "paypal/padrao/2019-07-01", "entidade": "PayPal", "variante": "padrao", "anos_alvo": [2019],
+                  "origem": "wayback", "buraco": None, "aprovado": None, "motivo": ""},
+                 {"id": "paypal/padrao/buraco-2021", "entidade": "PayPal", "variante": "padrao", "anos_alvo": [2021],
+                  "origem": "wayback", "buraco": "sem_snapshot", "aprovado": None, "motivo": ""}]
+        metas = {"paypal/padrao/2019-07-01": {
+            "url_snapshot": "https://web.archive.org/web/20190701000000/https://www.paypal.com/signin",
+            "resolucoes": {"1280x960": {"status": "ok"}, "1366x768": {"status": "ok"}}}}
+        html = templates.gerar_revisao_html(plano, metas)
+        for trecho in ("paypal/padrao/2019-07-01/shot_1280x960.png", "sem_snapshot", ">2026<", "ao vivo",
+                       "https://web.archive.org/web/20190701000000/https://www.paypal.com/signin"):
+            with self.subTest(trecho=trecho):
+                self.assertIn(trecho, html)
+
+    def test_revisao_escapa_texto(self):
+        plano = [{"id": "a/p/2019-07-01", "entidade": "A", "variante": "p", "anos_alvo": [2019], "origem": "wayback",
+                  "buraco": None, "aprovado": False, "motivo": "<b>banner</b> cobre o form"}]
+        html = templates.gerar_revisao_html(plano, {})
+        self.assertIn("&lt;b&gt;banner&lt;/b&gt; cobre o form", html)
+        self.assertNotIn("<b>banner</b>", html)
+
+    def test_marcar_aprovacao(self):
+        plano = [{"id": "a/p/2019-07-01", "aprovado": None, "motivo": ""}]
+        templates.marcar_aprovacao(plano, "a/p/2019-07-01", False, "banner de cookies cobre o form")
+        self.assertEqual((plano[0]["aprovado"], plano[0]["motivo"]), (False, "banner de cookies cobre o form"))
+        with self.assertRaises(KeyError):
+            templates.marcar_aprovacao(plano, "nao/existe/2019-01-01", True)
+
+
 if __name__ == "__main__":
     unittest.main()
