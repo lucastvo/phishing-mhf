@@ -153,19 +153,22 @@ def pasta_entrada(raiz: str, id_: str) -> str:
 
 def entradas_pendentes(plano: list[dict], raiz: str) -> list[dict]:
     """Entradas que ainda precisam ser capturadas: não são buraco e não têm meta.json com status "ok"
-    nas duas resoluções, ou ficaram sem o html_original.html (download que falhou). Pasta sem
-    meta.json (captura interrompida) ou meta.json ilegível contam como pendentes, porque o meta.json
-    é gravado por último e marca a entrada como concluída."""
+    nas duas resoluções, ou ficaram sem algum arquivo (html_original.html de um download que falhou,
+    screenshot/DOM que não chegou a ser salvo). Pasta sem meta.json (captura interrompida) ou meta.json
+    ilegível contam como pendentes, porque o meta.json é gravado por último e marca a entrada como
+    concluída."""
     pendentes = []
     for e in plano:
         if e.get("buraco"):
             continue
         pasta = pasta_entrada(raiz, e["id"])
+        arquivos = ["html_original.html"] + [f"{p}_{r}.{ext}" for r in RESOLUCOES
+                                             for p, ext in (("shot", "png"), ("dom", "html"))]
         try:
             with open(os.path.join(pasta, "meta.json"), encoding="utf-8") as f:
                 resolucoes = json.load(f)["resolucoes"]
             concluida = (all(resolucoes[r]["status"] == "ok" for r in RESOLUCOES)
-                         and os.path.exists(os.path.join(pasta, "html_original.html")))
+                         and all(os.path.exists(os.path.join(pasta, a)) for a in arquivos))
         except (OSError, ValueError, KeyError, TypeError):
             concluida = False
         if not concluida:

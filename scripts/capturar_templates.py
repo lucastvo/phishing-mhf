@@ -165,8 +165,9 @@ def capturar_entrada(navegador, e, raiz, versoes):
             pagina.screenshot(path=os.path.join(pasta, f"shot_{nome}.png"), full_page=False)
             with open(os.path.join(pasta, f"dom_{nome}.html"), "w", encoding="utf-8") as f:
                 f.write(templates.remover_prefixo_wayback(pagina.content()))
-        except ErroPlaywright as erro:
+        except ErroPlaywright as erro:  # ex.: redirecionamento tardio destruiu a página no meio da gravação
             print(f"  {e['id']} {nome}: não foi possível salvar screenshot/DOM ({erro})")
+            status = "erro_captura"  # não deixa um "ok" sem arquivos; a entrada fica pendente
         resolucoes[nome] = {"status": status, "tempo_s": round(tempo, 1), "url_final": pagina.url}
         if erro_navegacao:
             resolucoes[nome]["erro"] = erro_navegacao  # para diagnosticar falhas intermitentes depois

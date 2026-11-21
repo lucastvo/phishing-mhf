@@ -100,16 +100,20 @@ class TestWayback(unittest.TestCase):
                          '<form action="https://a.com/post"><img src="https://a.com/logo.png"></form>')
 
 
-def _escrever_meta(raiz, id_, conteudo, com_html_original=True):
-    """Cria a pasta da entrada e grava meta.json (dict vira JSON; str é gravada como está) e,
-    por padrão, um html_original.html, como numa captura completa."""
+def _escrever_meta(raiz, id_, conteudo, com_html_original=True, com_capturas=True):
+    """Cria a pasta da entrada e grava meta.json (dict vira JSON; str é gravada como está) e, por
+    padrão, html_original.html e o screenshot/DOM de cada resolução, como numa captura completa."""
     pasta = os.path.join(raiz, *id_.split("/"))
     os.makedirs(pasta, exist_ok=True)
     with open(os.path.join(pasta, "meta.json"), "w", encoding="utf-8") as f:
         f.write(conteudo if isinstance(conteudo, str) else json.dumps(conteudo))
-    if com_html_original:
-        with open(os.path.join(pasta, "html_original.html"), "w", encoding="utf-8") as f:
-            f.write("<html></html>")
+    arquivos = ["html_original.html"] if com_html_original else []
+    if com_capturas:
+        arquivos += [f"shot_{r}.png" for r in ("1280x960", "1366x768")]
+        arquivos += [f"dom_{r}.html" for r in ("1280x960", "1366x768")]
+    for nome in arquivos:
+        with open(os.path.join(pasta, nome), "w", encoding="utf-8") as f:
+            f.write("x")
 
 
 META_OK = {"resolucoes": {"1280x960": {"status": "ok"}, "1366x768": {"status": "ok"}}}
@@ -128,8 +132,12 @@ class TestCaptura(unittest.TestCase):
             _escrever_meta(raiz, "a/p/2023-01-05", '{"resolucoes": {"1280x9')  # meta.json truncado por uma queda
             # renderizou, mas o download do HTML original falhou (conexão derrubada pelo Wayback)
             _escrever_meta(raiz, "a/p/2024-01-03", META_OK, com_html_original=False)
+            # status "ok", mas o screenshot/DOM não foi salvo (redirecionamento tardio no meio da gravação)
+            _escrever_meta(raiz, "a/p/2025-01-04", META_OK, com_capturas=False)
+            plano.insert(-1, {"id": "a/p/2025-01-04", "buraco": None})
             pendentes = [e["id"] for e in templates.entradas_pendentes(plano, raiz)]
-        self.assertEqual(pendentes, ["a/p/2020-01-03", "a/p/2021-01-02", "a/p/2023-01-05", "a/p/2024-01-03"])
+        self.assertEqual(pendentes, ["a/p/2020-01-03", "a/p/2021-01-02", "a/p/2023-01-05", "a/p/2024-01-03",
+                                     "a/p/2025-01-04"])
 
 
 class TestRevisao(unittest.TestCase):
