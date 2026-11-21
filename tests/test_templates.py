@@ -585,6 +585,19 @@ class TestResolucoesExtras(unittest.TestCase):
         self.assertEqual(m["x/p/2020-01-01"]["extras"], extras)
         self.assertNotIn("extras", m["x/p/2021-01-01"])
 
+    def test_revisao_extra_html(self):
+        plano = [{**_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"),
+                  "extras": {self.R: {"aprovado": False, "motivo": "layout <quebrado>", "aprovado_captura": "t2"}}},
+                 _entrada("x/p/2021-01-01", aprovado=False, timestamp="20210101000000")]
+        plano[1]["anos_alvo"] = [2021]
+        metas = {"x/p/2020-01-01": {"status": "sem_formulario", "data_captura": "t2"}}
+        html = templates.gerar_revisao_extra_html(plano, metas, self.R)
+        self.assertIn(f"x/p/2020-01-01/shot_{self.R}.png", html)
+        self.assertIn("sem_formulario", html)
+        self.assertIn("layout &lt;quebrado&gt;", html)           # motivo escapado
+        self.assertNotIn(f"x/p/2021-01-01/shot_{self.R}", html)  # entrada não aprovada: sem resolução extra
+        self.assertIn("rejeitar --resolucao", html)
+
     def test_marcar_extra_recusas(self):
         plano = [_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"), _entrada("x/p/2021-01-01"),
                  _entrada("x/p/buraco-2022", buraco="sem_snapshot", timestamp=None)]
@@ -598,6 +611,26 @@ class TestResolucoesExtras(unittest.TestCase):
             templates.marcar_aprovacao_extra(plano, "x/p/buraco-2022", self.R, False, "x")
         with self.assertRaises(KeyError):
             templates.marcar_aprovacao_extra(plano, "x/p/2099-01-01", self.R, False, "x")
+
+
+class TestLinhaDeComandoExtras(unittest.TestCase):
+    def test_subcomandos_da_resolucao_extra(self):
+        import importlib.util
+        caminho = os.path.join(os.path.dirname(__file__), "..", "scripts", "capturar_templates.py")
+        spec = importlib.util.spec_from_file_location("capturar_templates_cli", caminho)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        p = modulo.criar_parser()
+        base = ["--plano", "p.json", "--raiz", "r"]
+        a = p.parse_args(["capturar-extra", *base, "--resolucao", "1920x1080", "--so", "x/p/2020-01-01"])
+        self.assertEqual((a.func, a.resolucao, a.so), (modulo.cmd_capturar_extra, "1920x1080", ["x/p/2020-01-01"]))
+        self.assertEqual(p.parse_args(["revisar", *base, "--resolucao", "1920x1080"]).resolucao, "1920x1080")
+        self.assertIsNone(p.parse_args(["revisar", *base]).resolucao)  # sem a opção: revisão principal
+        self.assertEqual(p.parse_args(["aprovar", *base, "--resolucao", "1920x1080", "a", "b"]).ids, ["a", "b"])
+        a = p.parse_args(["rejeitar", *base, "--resolucao", "1920x1080", "a", "--motivo", "m"])
+        self.assertEqual((a.resolucao, a.motivo), ("1920x1080", "m"))
+        with self.assertRaises(SystemExit):  # só resoluções extras
+            p.parse_args(["capturar-extra", *base, "--resolucao", "1366x768"])
 
 
 class TestDownloadComMuitosCabecalhos(unittest.TestCase):

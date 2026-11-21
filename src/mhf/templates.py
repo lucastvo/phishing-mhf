@@ -542,16 +542,90 @@ def _celula_revisao(e: dict, meta: dict | None) -> str:
     return f'<td class="{classe}">{"".join(partes)}</td>'
 
 
-def gerar_revisao_html(plano: list[dict], metas: dict[str, dict]) -> str:
-    """Página de revisão: uma linha por entidade/variante, uma coluna por ano-alvo e uma para a captura
-    ao vivo. Cada célula traz a miniatura (caminho relativo à pasta das capturas), o status de cada
-    resolução, o link do snapshot e o estado da aprovação. `metas` é indexado pelo id da entrada."""
-    colunas = [str(a) for a in ANOS_PADRAO] + ["ao vivo"]
+_COLUNAS_REVISAO = [str(a) for a in ANOS_PADRAO] + ["ao vivo"]
+
+
+def _grade_revisao(plano: list[dict]) -> dict[tuple[str, str], dict[str, dict]]:
+    """Uma linha por entidade/variante, uma coluna por ano-alvo e uma para a captura ao vivo."""
     grade: dict[tuple[str, str], dict[str, dict]] = {}
     for e in plano:
         linha = grade.setdefault((e["entidade"], e["variante"]), {})
         for coluna in (["ao vivo"] if e["origem"] == "ao_vivo" else [str(a) for a in e["anos_alvo"]]):
             linha[coluna] = e  # um snapshot que cobre dois anos aparece nas duas colunas
+    return grade
+
+
+def _celula_extra(e: dict, meta: dict | None, resolucao: str) -> str:
+    if e.get("buraco") or e.get("aprovado") is not True:
+        return '<td class="vazio">fora da base</td>'
+    partes = []
+    if meta is None:
+        partes.append('<div class="status">não capturado</div>')
+    else:
+        shot = f'{escape(e["id"])}/shot_{resolucao}.png'
+        partes.append(f'<a href="{shot}"><img src="{shot}" width="200" alt="{resolucao}"></a>')
+        status = meta.get("status", "?")
+        partes.append(f'<div{"" if status == "ok" else " class=\"falha\""}>{escape(str(status))}</div>')
+        ts = meta.get("timestamp_efetivo")
+        if ts and e.get("origem") == "wayback" and e.get("anos_alvo") and fora_da_janela(ts, e["anos_alvo"]):
+            partes.append(f'<div class="falha">snapshot exibido fora da janela: {_data(ts)}</div>')
+    partes.append(f'<div class="id">{escape(e["id"])}</div>')
+    decisao = (e.get("extras") or {}).get(resolucao) or {}
+    if decisao.get("aprovado") is True:
+        vale = meta is not None and meta.get("data_captura") == decisao.get("aprovado_captura")
+        classe, estado = ("aprovado", "aprovado") if vale else ("vencida", "aprovação vencida: a captura mudou")
+    elif decisao.get("aprovado") is False:
+        classe, estado = "rejeitado", f"rejeitado: {decisao.get('motivo', '')}"
+    else:
+        classe, estado = "", "a revisar"
+    partes.append(f'<div class="estado">{escape(estado)}</div>')
+    return f'<td class="{classe}">{"".join(partes)}</td>'
+
+
+def gerar_revisao_extra_html(plano: list[dict], metas_extras: dict[str, dict], resolucao: str) -> str:
+    """Página de revisão de uma resolução extra: a mesma grade da revisão principal, com a miniatura só
+    dessa resolução e só para as entradas aprovadas (as outras não ganham resolução extra).
+    `metas_extras` é indexado pelo id da entrada (conteúdo do extra_<resolucao>.json)."""
+    grade = _grade_revisao(plano)
+    cabecalho = "".join(f"<th>{c}</th>" for c in _COLUNAS_REVISAO)
+    linhas = []
+    for (entidade, variante), celulas in grade.items():
+        tds = "".join(_celula_extra(celulas[c], metas_extras.get(celulas[c]["id"]), resolucao) if c in celulas
+                      else '<td class="vazio"></td>' for c in _COLUNAS_REVISAO)
+        linhas.append(f"<tr><th>{escape(entidade)}<br><small>{escape(variante)}</small></th>{tds}</tr>")
+    return f"""<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Revisão dos templates em {resolucao}</title>
+<style>{_ESTILO_REVISAO}</style></head><body>
+<h1>Revisão dos templates em {resolucao}</h1>
+<p>Só as entradas já aprovadas aparecem. Para registrar a decisão nesta resolução:
+<code>python scripts/capturar_templates.py aprovar --resolucao {resolucao} --plano &lt;plano&gt; --raiz &lt;pasta&gt; ID [ID ...]</code>
+ou <code>python scripts/capturar_templates.py rejeitar --resolucao {resolucao} --plano &lt;plano&gt; --raiz &lt;pasta&gt; ID --motivo "..."</code>.</p>
+<table><thead><tr><th>entidade</th>{cabecalho}</tr></thead>
+<tbody>{"".join(linhas)}</tbody></table>
+</body></html>
+"""
+
+
+_ESTILO_REVISAO = """
+ body { font-family: system-ui, sans-serif; margin: 16px; color: #222; background: #fafafa; }
+ table { border-collapse: collapse; }
+ th, td { border: 1px solid #ccc; padding: 6px; vertical-align: top; font-size: 12px; background: #fff; }
+ thead th { position: sticky; top: 0; background: #eee; }
+ td.aprovado { outline: 3px solid #2e7d32; } td.rejeitado { outline: 3px solid #c62828; }
+ td.vencida { outline: 3px dashed #ef6c00; }
+ td.buraco, td.vazio { background: #f0f0f0; color: #777; }
+ .id { font-family: monospace; color: #555; } .estado { font-weight: bold; }
+ .falha { color: #c62828; font-weight: bold; }
+ code { background: #eee; padding: 1px 4px; }
+"""
+
+
+def gerar_revisao_html(plano: list[dict], metas: dict[str, dict]) -> str:
+    """Página de revisão: uma linha por entidade/variante, uma coluna por ano-alvo e uma para a captura
+    ao vivo. Cada célula traz a miniatura (caminho relativo à pasta das capturas), o status de cada
+    resolução, o link do snapshot e o estado da aprovação. `metas` é indexado pelo id da entrada."""
+    colunas = _COLUNAS_REVISAO
+    grade = _grade_revisao(plano)
 
     contagem = {"a revisar": 0, "aprovados": 0, "aprovações vencidas": 0, "rejeitados": 0, "buracos": 0}
     for e in plano:
@@ -574,18 +648,7 @@ def gerar_revisao_html(plano: list[dict], metas: dict[str, dict]) -> str:
     resumo = " · ".join(f"{n} {k}" for k, n in contagem.items())
     return f"""<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><title>Revisão dos templates</title>
-<style>
- body {{ font-family: system-ui, sans-serif; margin: 16px; color: #222; background: #fafafa; }}
- table {{ border-collapse: collapse; }}
- th, td {{ border: 1px solid #ccc; padding: 6px; vertical-align: top; font-size: 12px; background: #fff; }}
- thead th {{ position: sticky; top: 0; background: #eee; }}
- td.aprovado {{ outline: 3px solid #2e7d32; }} td.rejeitado {{ outline: 3px solid #c62828; }}
- td.vencida {{ outline: 3px dashed #ef6c00; }}
- td.buraco, td.vazio {{ background: #f0f0f0; color: #777; }}
- .id {{ font-family: monospace; color: #555; }} .estado {{ font-weight: bold; }}
- .falha {{ color: #c62828; font-weight: bold; }}
- code {{ background: #eee; padding: 1px 4px; }}
-</style></head><body>
+<style>{_ESTILO_REVISAO}</style></head><body>
 <h1>Revisão dos templates</h1>
 <p>{resumo}</p>
 <p>Cada célula mostra as duas resoluções (1280x960 e 1366x768). Para registrar a decisão:
