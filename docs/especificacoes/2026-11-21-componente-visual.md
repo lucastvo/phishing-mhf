@@ -64,10 +64,18 @@ A abordagem 1 contém a 2: as imagens são redimensionadas para uma resolução 
 ### 5.1 Classe de tela
 Cada captura recebe uma das três classes, **1280×960, 1366×768 ou 1920×1080**, pela largura mais próxima. As capturas de 800×600 (4:3) vão para 1280×960. São as únicas sem template do mesmo tamanho exato, o que é registrado. A classe é gravada junto com h e e.
 
+**Classe fixa quando o tamanho de tela é conhecido (decidido com o Lucas, 21/11/2026).** O Phishpedia benign foi capturado numa tela de 1366×768, em página inteira.
+- 1.369 páginas transbordam na horizontal: a imagem fica mais larga que a tela, até 35.347 px, e todas têm pelo menos 768 px de altura.
+- Pela largura, 446 delas cairiam na classe 1920×1080 e seriam comparadas com templates do tamanho errado.
+- Por isso, a extração recebe a classe do dataset (`--classe 1366x768`).
+- Nos outros datasets, a classe vem da largura de cada imagem.
+
 ### 5.2 Normalização da imagem
 1. Abrir com `ImageFile.LOAD_TRUNCATED_IMAGES = True` e `Image.MAX_IMAGE_PIXELS = None` (armadilhas conhecidas dos datasets) e converter para RGB. **Áreas transparentes são compostas sobre branco**, que é como o navegador mostra a página. As capturas do Phishpedia são PNG RGBA, e parte delas tem regiões com alfa 0 e RGB 0 (cerca de 5% no phishing e 13% no benign, numa amostra de 200 de cada). Descartar o alfa deixaria essas regiões pretas. Os templates (Playwright) e o Phish360 são opacos.
-2. **Recortar a primeira dobra:** a faixa de cima, com a largura da imagem e a altura proporcional à classe (ex.: uma captura de 1366 de largura fica com 768 px de altura). Isso afeta sobretudo o Phishpedia benign (página inteira).
-3. Capturas menores que a dobra (ex.: altura menor que a da classe) são usadas como estão, sem preencher, e contadas.
+2. **Recortar a primeira dobra** a partir do canto superior esquerdo. Isso afeta sobretudo o Phishpedia benign (página inteira).
+   - **Imagem com largura até a da classe:** a faixa de cima, com a largura da imagem e a altura proporcional à classe. Ex.: uma captura de 1366 de largura fica com 768 px de altura.
+   - **Imagem mais larga que a classe:** a janela, com a largura e a altura da classe (decidido com o Lucas, 21/11/2026). É o caso do transbordo horizontal numa captura de página inteira, em que a tela só mostrava o canto superior esquerdo da página. É também o que a extensão do navegador recebe ao capturar a aba visível. Antes, a dobra mantinha a largura toda: uma página de 7.253 px de largura virava um recorte de 7.253 × 4.078 px espremido em 224×224.
+3. Capturas menores que a dobra (ex.: altura menor que a da classe) são usadas como estão, sem preencher, e contadas. A extração também conta as capturas mais estreitas e as mais largas que a classe.
 
 ### 5.3 h — hash perceptual
 - `imagehash.phash` sobre a dobra recortada: tons de cinza, 32×32, DCT, 8×8 coeficientes de baixa frequência → **64 bits**.

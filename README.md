@@ -98,6 +98,8 @@ Os comandos acima usam a tabela completa (`config/marcas.json`, 20 marcas e 30 v
 
 - **Classe de tela.** Cada captura recebe o tamanho de tela dos templates de largura mais próxima (1280x960, 1366x768 ou 1920x1080) e é comparada só com templates desse tamanho. A página muda de layout com a largura da tela, e redimensionar a imagem não desfaz isso.
 - **Primeira dobra.** O topo da captura é recortado com a altura da tela da classe. Isso importa nas capturas de página inteira do Phishpedia benign.
+  - Imagem mais larga que a classe (página que transbordou na horizontal): fica só a janela, com a largura e a altura da classe.
+  - Áreas transparentes são compostas sobre branco, como o navegador mostra a página.
 - **h:** pHash de 64 bits (256 como variação), comparado por `sim_hash` (1 − d_H/n).
 - **e:** MobileNetV3 Small (principal) e Large (comparação), pré-treinadas na ImageNet.
   - Entrada: a dobra em 224x224.
@@ -108,6 +110,8 @@ Os pesos são baixados uma vez, na primeira execução, de `download.pytorch.org
 ```bash
 python scripts/extrair_visual.py --plano config/templates_snapshots.json --raiz-templates data/templates --saida data/visual_templates
 python scripts/extrair_visual.py --indice data/phish360.csv --raiz data/Phish360 --saida data/visual_phish360
+# Phishpedia benign: capturado numa tela de 1366x768, em página inteira; a classe é fixada para o dataset todo
+python scripts/extrair_visual.py --indice data/phishpedia_benign.csv --raiz data/benign_sample_30k --classe 1366x768 --saida data/visual_phishpedia_benign
 ```
 
 Saídas:
