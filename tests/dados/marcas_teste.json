@@ -1,0 +1,18 @@
+[
+ {"entidade": "PayPal",
+  "nomes_phishpedia": ["PayPal Inc."],
+  "nomes_phish360": ["paypal"],
+  "dominios": ["paypal.com", "paypalobjects.com"],
+  "logins": [{"variante": "padrao", "url": "https://www.paypal.com/signin", "locale": "en-US"}]},
+ {"entidade": "Microsoft",
+  "nomes_phishpedia": ["Outlook", "Office365", "Microsoft OneDrive", "Hotmail"],
+  "nomes_phish360": ["office", "outlook", "microsoft"],
+  "dominios": ["microsoft.com", "microsoftonline.com", "live.com", "office.com", "office365.com", "outlook.com"],
+  "logins": [{"variante": "corporativo", "url": "https://login.microsoftonline.com/common/oauth2/authorize", "locale": "en-US"},
+             {"variante": "pessoal", "url": "https://login.live.com/login.srf", "locale": "en-US"}]},
+ {"entidade": "Caixa",
+  "nomes_phishpedia": ["Caixa Economica Federal"],
+  "nomes_phish360": ["caixa"],
+  "dominios": ["caixa.gov.br"],
+  "logins": [{"variante": "internet_banking", "url": "https://internetbanking.caixa.gov.br/", "locale": "pt-BR"}]}
+]
