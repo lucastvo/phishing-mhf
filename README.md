@@ -91,3 +91,39 @@ python scripts/capturar_templates.py rejeitar --resolucao 1920x1080 --plano conf
 ```
 
 Os comandos acima usam a tabela completa (`config/marcas.json`, 20 marcas e 30 variantes; o `planejar` leva cerca de 2 minutos). Para um teste rápido, use `config/marcas.exemplo.json`, que tem só PayPal e Microsoft.
+
+## Passo 3 — impressão digital visual (h, e)
+
+`src/mhf/visual.py` calcula a parte visual da impressão digital. Desenho completo e medições em `docs/especificacoes/2026-11-21-componente-visual.md`.
+
+- **Classe de tela.** Cada captura recebe o tamanho de tela dos templates de largura mais próxima (1280x960, 1366x768 ou 1920x1080) e é comparada só com templates desse tamanho. A página muda de layout com a largura da tela, e redimensionar a imagem não desfaz isso.
+- **Primeira dobra.** O topo da captura é recortado com a altura da tela da classe. Isso importa nas capturas de página inteira do Phishpedia benign.
+- **h:** pHash de 64 bits (256 como variação), comparado por `sim_hash` (1 − d_H/n).
+- **e:** MobileNetV3 Small (principal) e Large (comparação), pré-treinadas na ImageNet.
+  - Entrada: a dobra em 224x224.
+  - Saída: o vetor do *global average pooling*, com norma 1; assim o cosseno vira um produto interno.
+
+Os pesos são baixados uma vez, na primeira execução, de `download.pytorch.org`, para `data/torch` (fora do Git). Uma variável `TORCH_HOME` já definida tem prioridade.
+
+```bash
+python scripts/extrair_visual.py --plano config/templates_snapshots.json --raiz-templates data/templates --saida data/visual_templates
+python scripts/extrair_visual.py --indice data/phish360.csv --raiz data/Phish360 --saida data/visual_phish360
+```
+
+Saídas:
+- `<saida>.jsonl`: uma linha por captura, com id, classe, tamanho original, hashes, metadados e tempos;
+- `<saida>_small.npy` e `<saida>_large.npy`: os embeddings, na ordem das linhas do JSONL;
+- `<saida>.erros.tsv`: só se alguma captura não puder ser lida; a rodada segue sem ela.
+
+Os templates entram como um item por par (template aprovado, tamanho de tela), via `templates.templates_aprovados`.
+
+**Tempo por imagem**, uma de cada vez (como no uso real). Mediana em ms, CPU i7-4790 com 4 threads, sem outros programas abertos:
+
+| Origem | Imagens | Abrir e recortar | pHash (64 + 256) | Small | Large |
+|---|---|---|---|---|---|
+| Templates | 572 | 11,8 | 7,3 | 18,7 | 30,3 |
+| Phish360 | 10.748 | 6,8 | 6,8 | 16,2 | 25,4 |
+| Phishpedia phishing | 29.496 | 15,3 | 10,6 | 19,0 | 27,7 |
+| Phishpedia benign | 30.649 | 17,5 | 6,0 | 15,5 | 25,0 |
+
+"Abrir e recortar" inclui a leitura do disco e a decodificação do PNG; no navegador, a captura já vem decodificada.

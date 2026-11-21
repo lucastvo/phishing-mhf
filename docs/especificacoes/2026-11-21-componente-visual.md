@@ -80,6 +80,7 @@ Cada captura recebe uma das três classes, **1280×960, 1366×768 ou 1920×1080*
   - Large: `IMAGENET1K_V2`, 5,5 M parâmetros, 21,1 MB.
 - Os pesos são baixados uma vez de `download.pytorch.org` (fonte oficial; o torchvision confere o hash do arquivo). Ficam em `data/torch/hub/checkpoints/`, fora do git: a extração define `TORCH_HOME=data/torch`. Download feito com o ok do Lucas em 21/11/2026.
 - Tempo medido com os pesos reais, uma imagem de cada vez, CPU i7-4790 com 4 threads: **Small 29,6 ms; Large 57,3 ms** por embedding.
+  Essa primeira medição foi feita com a captura de templates rodando ao mesmo tempo. Na extração completa, com a máquina livre, as medianas ficaram em **15–19 ms (Small) e 25–30 ms (Large)** (tabela no README, passo 3).
 - Entrada: a dobra recortada, redimensionada para **224×224** e normalizada com a média e o desvio da ImageNet (as transformações dos próprios pesos). A distorção de proporção é a mesma para amostra e template da mesma classe de tela (seção 4).
 - Saída: o vetor depois do *global average pooling*, antes do classificador (**576 dimensões na Small, 960 na Large**), normalizado em L2. Assim o cosseno vira um produto interno, que é o que o `IndexFlatIP` da etapa 4 usa.
 - CPU, `torch.inference_mode()`, modelo em `eval()`. O modelo é carregado uma vez e reaproveitado.
@@ -112,7 +113,9 @@ Os tempos medem só o cálculo, sem a leitura do disco, e repetem a medição co
 ## 7. Impacto na monografia
 
 - **Seção 2.4.3 (normalização, nota `\lucas{resolução da captura}`):** a normalização deixa de ser "uma resolução fixa" e passa a ser "classe de tela + redimensionamento fixo, comparando no mesmo tamanho de tela".
-- **Seção 2.6 (nota sobre o tamanho do hash):** 64 bits, com 256 como variação.
+- **Seção 2.6.2 (nota sobre o tamanho do hash):** 64 bits, com 256 como variação.
+- **Seção 2.6.2 (comparação de e):** cosseno, com o vetor de norma 1. O texto hoje diz "distância euclidiana ou cosseno"; com norma 1 as duas ordenam os vizinhos da mesma forma.
+- **Seção 2.6.1 e Cap. 1, item 3 do Método (rede de embeddings):** MobileNetV3 Small como principal e Large como comparação, pré-treinadas na ImageNet, sem ajuste fino.
 - **Cap. 1, item 2 do Método:** ainda cita VisualPhish e IEEE (já apontado antes).
 
 ## 8. Dependências
