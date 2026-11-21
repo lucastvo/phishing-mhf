@@ -5074,14 +5074,14 @@
   "buraco": null,
   "aprovado": true,
   "motivo": "",
-  "aprovado_captura": "2026-11-21T04:58:27",
   "extras": {
    "1920x1080": {
     "aprovado": true,
     "motivo": "",
     "aprovado_captura": "2026-11-21T17:17:11"
    }
-  }
+  },
+  "aprovado_captura": "2026-11-21T20:45:32"
  },
  {
   "id": "itau/inicial/2022-01-01",
