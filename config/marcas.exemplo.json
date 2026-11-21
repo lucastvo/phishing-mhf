@@ -1,0 +1,10 @@
+[
+ {"entidade": "PayPal",
+  "logins": [
+   {"variante": "padrao", "url": "https://www.paypal.com/signin", "locale": "en-US"}
+  ]},
+ {"entidade": "Microsoft",
+  "logins": [
+   {"variante": "pessoal", "url": "https://login.live.com/login.srf", "locale": "en-US"}
+  ]}
+]
