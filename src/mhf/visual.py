@@ -48,18 +48,26 @@ def abrir_imagem(origem) -> Image.Image:
         return img.convert("RGB")
 
 
-def altura_da_dobra(largura: int, classe: str) -> int:
-    """Altura da primeira dobra: a largura da imagem vezes a proporção da classe (ex.: 1366 de largura
-    em 1366x768 → 768 px)."""
+def tamanho_da_dobra(largura: int, classe: str) -> tuple[int, int]:
+    """Largura e altura da primeira dobra de uma captura com essa largura.
+    - Até a largura da classe: a largura da imagem e a altura proporcional à classe (ex.: 1366 em 1366x768
+      → 768 px; 800 em 1280x960 → 600 px).
+    - Mais larga que a classe (transbordo horizontal numa captura de página inteira, como no Phishpedia
+      benign): a janela, com a largura e a altura da classe, porque a tela só mostrava o canto superior
+      esquerdo da página. É também o que o navegador entrega ao capturar a aba visível."""
     largura_classe, altura_classe = CLASSES_TELA[classe]
-    return int(largura * altura_classe / largura_classe + 0.5)
+    if largura > largura_classe:
+        return largura_classe, altura_classe
+    return largura, int(largura * altura_classe / largura_classe + 0.5)
 
 
 def primeira_dobra(img: Image.Image, classe: str) -> Image.Image:
-    """Recorta o topo da captura com a altura da tela (altura_da_dobra). Captura mais baixa que isso é
-    usada como está."""
-    altura = altura_da_dobra(img.width, classe)
-    return img if img.height <= altura else img.crop((0, 0, img.width, altura))
+    """Recorta a primeira dobra (tamanho_da_dobra) a partir do canto superior esquerdo. Captura mais baixa
+    que a dobra é usada com a altura que tem."""
+    largura, altura = tamanho_da_dobra(img.width, classe)
+    if img.width <= largura and img.height <= altura:
+        return img
+    return img.crop((0, 0, largura, min(altura, img.height)))
 
 
 def phash(img: Image.Image, bits: int = 64) -> str:

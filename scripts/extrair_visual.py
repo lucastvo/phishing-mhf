@@ -3,10 +3,13 @@ Passo 3 — extrai a impressão digital visual (h, e) das capturas de um dataset
 
 Uso:
     python scripts/extrair_visual.py --indice data/phish360.csv --raiz data/Phish360 --saida data/visual_phish360
+    python scripts/extrair_visual.py --indice data/phishpedia_benign.csv --raiz data/benign_sample_30k \
+        --classe 1366x768 --saida data/visual_phishpedia_benign
     python scripts/extrair_visual.py --plano config/templates_snapshots.json --raiz-templates data/templates \
         --saida data/visual_templates
 
-Para cada captura: classe de tela (o tamanho de tela dos templates mais próximo), primeira dobra, pHash
+Para cada captura: classe de tela (o tamanho de tela dos templates de largura mais próxima, ou a dada por
+--classe quando o dataset foi capturado num tamanho de tela conhecido), primeira dobra, pHash
 de 64 e 256 bits e o embedding da MobileNetV3 de cada modelo pedido (--modelos small,large). Saídas:
     <saida>.jsonl         uma linha por captura: id, classe, tamanho original, hashes, metadados e tempos;
     <saida>_<modelo>.npy  embeddings (float32, norma 1), uma linha por captura, na ordem do JSONL;
@@ -36,11 +39,17 @@ _CAMPOS_DATASET = ("particao", "rotulo", "marca", "url")
 _CAMPOS_TEMPLATE = ("entidade", "variante", "origem", "timestamp")
 
 
-def itens_de_indice(indice, raiz):
-    """Capturas legíveis de um índice CSV gerado por inspecionar_dataset.py."""
+def itens_de_indice(indice, raiz, classe=None):
+    """Capturas legíveis de um índice CSV gerado por inspecionar_dataset.py. `classe` fixa a classe de tela
+    de todas as capturas, para um dataset capturado num tamanho de tela conhecido (Phishpedia benign:
+    1366x768, página inteira, com transbordo horizontal em parte das páginas); sem ela, a classe vem da
+    largura de cada imagem."""
+    if classe is not None and classe not in visual.CLASSES_TELA:
+        raise ValueError(f"classe deve ser uma de {sorted(visual.CLASSES_TELA)}")
+    fixa = {"classe": classe} if classe else {}
     with open(indice, encoding="utf-8") as f:
         return [{"id": l["id"], "caminho": os.path.join(raiz, l["caminho_shot"]),
-                 **{c: l[c] for c in _CAMPOS_DATASET}}
+                 **{c: l[c] for c in _CAMPOS_DATASET}, **fixa}
                 for l in csv.DictReader(f) if l["shot_ok"] == "1"]
 
 
@@ -57,11 +66,11 @@ def extrair_itens(itens, embedders, out, progresso=1000):
     """Calcula h e e de cada item, uma imagem de cada vez, e grava uma linha JSON por captura em `out`.
     Devolve {"ids": [...], "emb": {modelo: [vetores]}, "erros": [(id, erro)], "tempos": {etapa: [ms]},
     "contagens": {...}}, com os embeddings na mesma ordem das linhas gravadas. As contagens são as do
-    desenho (§5.1 e §5.2): capturas mais baixas que a dobra (usadas como estão) e capturas cuja largura
-    difere da largura da classe (ex.: 800x600 na classe 1280x960, sem template do mesmo tamanho)."""
+    desenho (§5.1 e §5.2): capturas mais baixas que a dobra (usadas como estão), mais estreitas que a
+    classe (ex.: 800x600 na 1280x960, sem template do mesmo tamanho) e mais largas (recortadas na janela)."""
     r = {"ids": [], "emb": {m: [] for m in embedders}, "erros": [],
          "tempos": {etapa: [] for etapa in ("ler", "abrir", "phash64", "phash256", *embedders)},
-         "contagens": {"abaixo_da_dobra": 0, "largura_diferente_da_classe": 0}}
+         "contagens": {"abaixo_da_dobra": 0, "mais_estreita_que_a_classe": 0, "mais_larga_que_a_classe": 0}}
     for i, item in enumerate(itens, 1):
         try:
             t0 = time.perf_counter()
@@ -92,8 +101,10 @@ def extrair_itens(itens, embedders, out, progresso=1000):
                               "tempos_ms": {k: round(v, 2) for k, v in tempos.items()}},
                              ensure_ascii=False) + "\n")
         r["ids"].append(item["id"])
-        r["contagens"]["abaixo_da_dobra"] += img.height < visual.altura_da_dobra(img.width, classe)
-        r["contagens"]["largura_diferente_da_classe"] += img.width != visual.CLASSES_TELA[classe][0]
+        largura_classe = visual.CLASSES_TELA[classe][0]
+        r["contagens"]["abaixo_da_dobra"] += img.height < visual.tamanho_da_dobra(img.width, classe)[1]
+        r["contagens"]["mais_estreita_que_a_classe"] += img.width < largura_classe
+        r["contagens"]["mais_larga_que_a_classe"] += img.width > largura_classe
         for modelo, v in vetores.items():
             r["emb"][modelo].append(v)
         for etapa, ms in tempos.items():
@@ -119,6 +130,9 @@ def main():
     origem.add_argument("--indice", help="índice CSV de um dataset (inspecionar_dataset.py)")
     origem.add_argument("--plano", help="plano de templates (config/templates_snapshots.json)")
     p.add_argument("--raiz", help="pasta do dataset (com --indice)")
+    p.add_argument("--classe", choices=sorted(visual.CLASSES_TELA),
+                   help="classe de tela de todas as capturas do dataset (com --indice), quando o tamanho de tela "
+                        "da captura é conhecido; sem ela, vem da largura de cada imagem")
     p.add_argument("--raiz-templates", help="pasta das capturas dos templates (com --plano)")
     p.add_argument("--saida", required=True, help="prefixo dos arquivos de saída (ex.: data/visual_phish360)")
     p.add_argument("--modelos", default="small,large", help="modelos da MobileNetV3, separados por vírgula")
@@ -127,10 +141,12 @@ def main():
     if a.indice:
         if not a.raiz:
             p.error("--indice exige --raiz")
-        itens = itens_de_indice(a.indice, a.raiz)
+        itens = itens_de_indice(a.indice, a.raiz, a.classe)
     else:
         if not a.raiz_templates:
             p.error("--plano exige --raiz-templates")
+        if a.classe:
+            p.error("--classe vale só com --indice (a classe dos templates é a resolução da captura)")
         with open(a.plano, encoding="utf-8") as f:
             plano = json.load(f)
         itens = itens_de_pares(templates.templates_aprovados(plano, a.raiz_templates), a.raiz_templates)
@@ -154,8 +170,8 @@ def main():
 
     print(f"Extraídas: {len(r['ids'])} | erros: {len(r['erros'])} | {time.perf_counter() - inicio:.0f} s no total")
     c = r["contagens"]
-    print(f"Mais baixas que a dobra (usadas como estão): {c['abaixo_da_dobra']} | "
-          f"largura diferente da classe: {c['largura_diferente_da_classe']}")
+    print(f"Mais baixas que a dobra (usadas como estão): {c['abaixo_da_dobra']} | mais estreitas que a classe: "
+          f"{c['mais_estreita_que_a_classe']} | mais largas (recortadas na janela): {c['mais_larga_que_a_classe']}")
     print("Tempo por imagem (uma de cada vez):\n" + _resumo_tempos(r["tempos"]))
 
 

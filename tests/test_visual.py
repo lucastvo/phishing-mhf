@@ -35,9 +35,27 @@ class TestPrimeiraDobra(unittest.TestCase):
         self.assertEqual(visual.primeira_dobra(img, "1366x768").size, (1366, 768))
 
     def test_primeira_dobra_proporcional_a_largura(self):
-        # largura fora do padrão: a altura segue a proporção da classe
-        self.assertEqual(visual.primeira_dobra(Image.new("RGB", (1374, 3000)), "1366x768").size, (1374, 772))  # 772,497
+        # mais estreita que a classe: a altura segue a proporção da classe
+        self.assertEqual(visual.primeira_dobra(Image.new("RGB", (997, 3000)), "1280x960").size, (997, 748))  # 747,75
         self.assertEqual(visual.primeira_dobra(Image.new("RGB", (800, 600)), "1280x960").size, (800, 600))
+
+    def test_primeira_dobra_mais_larga_que_a_classe_recorta_a_janela(self):
+        # Página inteira com transbordo horizontal (Phishpedia benign, tela 1366x768): a janela mostrava só o
+        # canto superior esquerdo, com a largura e a altura da classe.
+        for tamanho in ((1374, 3000), (1853, 768), (7253, 1361)):
+            with self.subTest(tamanho=tamanho):
+                self.assertEqual(visual.primeira_dobra(Image.new("RGB", tamanho), "1366x768").size, (1366, 768))
+        img = Image.new("RGB", (2000, 1500), "white")
+        ImageDraw.Draw(img).rectangle([1366, 0, 1999, 1499], fill=(255, 0, 0))  # o que transbordou à direita
+        dobra = visual.primeira_dobra(img, "1366x768")
+        self.assertEqual(dobra.getextrema(), ((255, 255), (255, 255), (255, 255)))  # só o branco da janela
+
+    def test_tamanho_da_dobra(self):
+        casos = {(1366, "1366x768"): (1366, 768), (1374, "1366x768"): (1366, 768),
+                 (997, "1280x960"): (997, 748), (800, "1280x960"): (800, 600), (1920, "1920x1080"): (1920, 1080)}
+        for (largura, classe), esperado in casos.items():
+            with self.subTest(largura=largura, classe=classe):
+                self.assertEqual(visual.tamanho_da_dobra(largura, classe), esperado)
 
     def test_primeira_dobra_imagem_menor(self):
         img = Image.new("RGB", (1280, 467))  # mais baixa que a dobra: usada como está
