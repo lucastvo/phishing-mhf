@@ -25,6 +25,12 @@ ANO_AO_VIVO = 2026                 # ano da captura ao vivo (cenário "só 2026"
 # Resoluções dos datasets: 1280x960 (Phish360) e 1366x768 (Phishpedia, primeira dobra).
 RESOLUCOES = {"1280x960": (1280, 960), "1366x768": (1366, 768)}
 
+# Resoluções capturadas DEPOIS da captura principal, cada uma com metadados e aprovação próprios
+# (extra_<r>.json e o campo "extras" da entrada), sem tocar na captura e na aprovação já feitas.
+# 1920x1080 é o tamanho de tela de 74% dos phishings do Phishpedia (etapa 3: a amostra é comparada com
+# templates do mesmo tamanho de tela).
+RESOLUCOES_EXTRAS = {"1920x1080": (1920, 1080)}
+
 # Campo que indica que o formulário de login já apareceu (a captura espera por ele, não por um tempo fixo).
 # Inclui campos típicos de bancos brasileiros (CPF, agência, usuário). Uma variante pode trocar o seletor
 # pelo campo "seletor" da tabela de marcas, quando o login dela usar outro campo.
@@ -266,6 +272,8 @@ def mesclar_plano(novo: list[dict], antigo: list[dict]) -> list[dict]:
             if anterior is not None and _mesmo_snapshot(e, anterior):
                 e = {**e, "aprovado": anterior.get("aprovado"), "motivo": anterior.get("motivo", ""),
                      "aprovado_captura": anterior.get("aprovado_captura")}
+                if anterior.get("extras"):  # decisões das resoluções extras, do mesmo snapshot
+                    e["extras"] = anterior["extras"]
             mescladas.append(e)
     return mescladas
 
@@ -387,6 +395,90 @@ def entradas_aprovadas(plano: list[dict], raiz: str) -> list[dict]:
                 and meta.get("data_captura") == e.get("aprovado_captura")):
             aprovadas.append(e)
     return aprovadas
+
+
+# ---------------------------------------------------------------- resoluções extras
+
+def meta_extra_caminho(raiz: str, id_: str, resolucao: str) -> str:
+    """Metadados da captura de uma resolução extra: <pasta da entrada>/extra_<resolucao>.json."""
+    return os.path.join(pasta_entrada(raiz, id_), f"extra_{resolucao}.json")
+
+
+def arquivos_extra(resolucao: str) -> list[str]:
+    """Arquivos que a captura de uma resolução extra grava na pasta da entrada."""
+    return [f"shot_{resolucao}.png", f"dom_{resolucao}.html"]
+
+
+def _ler_meta_extra(raiz: str, e: dict, resolucao: str) -> dict | None:
+    try:
+        with open(meta_extra_caminho(raiz, e["id"], resolucao), encoding="utf-8") as f:
+            meta = json.load(f)
+        return meta if isinstance(meta, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def _extra_valido(raiz: str, e: dict, resolucao: str, meta: dict | None, exigir_ok: bool) -> bool:
+    """A captura extra no disco é desta entrada (mesmo snapshot) e está completa (e com status ok)?"""
+    if meta is None or not _mesmo_snapshot({**meta, "origem": e.get("origem")}, e):
+        return False
+    pasta = pasta_entrada(raiz, e["id"])
+    if not all(os.path.exists(os.path.join(pasta, a)) for a in arquivos_extra(resolucao)):
+        return False
+    return not exigir_ok or meta.get("status") == "ok"
+
+
+def data_captura_extra_valida(raiz: str, e: dict, resolucao: str) -> str | None:
+    """`data_captura` da captura extra no disco, só se ela for deste snapshot e estiver completa."""
+    meta = _ler_meta_extra(raiz, e, resolucao)
+    return meta.get("data_captura") if _extra_valido(raiz, e, resolucao, meta, exigir_ok=False) else None
+
+
+def extras_pendentes(plano: list[dict], raiz: str, resolucao: str) -> list[dict]:
+    """Entradas aprovadas (e válidas) que ainda precisam da captura nessa resolução extra: sem decisão
+    nela e sem uma captura extra completa, deste snapshot, com status ok. Rejeitadas, a revisar e
+    buracos ficam de fora: só um template aprovado ganha outra resolução."""
+    return [e for e in entradas_aprovadas(plano, raiz)
+            if (e.get("extras") or {}).get(resolucao, {}).get("aprovado") is None
+            and not _extra_valido(raiz, e, resolucao, _ler_meta_extra(raiz, e, resolucao), exigir_ok=True)]
+
+
+def marcar_aprovacao_extra(plano: list[dict], id_: str, resolucao: str, aprovado: bool, motivo: str = "",
+                           data_captura: str | None = None) -> None:
+    """Registra a decisão sobre uma resolução extra de uma entrada, junto com a captura vista. Id
+    desconhecido lança KeyError. Resolução que não é extra, buraco, entrada principal não aprovada ou
+    aprovar o que não foi capturado lançam ValueError."""
+    if resolucao not in RESOLUCOES_EXTRAS:
+        raise ValueError(f"{resolucao} não é uma resolução extra (use {sorted(RESOLUCOES_EXTRAS)})")
+    for e in plano:
+        if e["id"] == id_:
+            if e.get("buraco"):
+                raise ValueError(f"{id_} é um buraco (não há template para aprovar ou rejeitar)")
+            if e.get("aprovado") is not True:
+                raise ValueError(f"{id_}: a entrada precisa estar aprovada antes de decidir uma resolução extra")
+            if aprovado and data_captura is None:
+                raise ValueError(f"{id_} ainda não foi capturada em {resolucao}; não dá para aprovar o que não foi visto")
+            e.setdefault("extras", {})[resolucao] = {"aprovado": aprovado, "motivo": motivo,
+                                                    "aprovado_captura": data_captura}
+            return
+    raise KeyError(id_)
+
+
+def templates_aprovados(plano: list[dict], raiz: str) -> list[tuple[dict, str]]:
+    """Pares (entrada, resolução) que entram na base (etapas 3 e 4): as resoluções da captura principal
+    de cada entrada de `entradas_aprovadas` e cada resolução extra aprovada cuja captura no disco é deste
+    snapshot, está completa e é a mesma que o revisor viu."""
+    pares = []
+    for e in entradas_aprovadas(plano, raiz):
+        pares += [(e, r) for r in RESOLUCOES]
+        for r, decisao in (e.get("extras") or {}).items():
+            if r not in RESOLUCOES_EXTRAS or decisao.get("aprovado") is not True:
+                continue
+            meta = _ler_meta_extra(raiz, e, r)
+            if (_extra_valido(raiz, e, r, meta, exigir_ok=False)
+                    and meta.get("data_captura") == decisao.get("aprovado_captura")):
+                pares.append((e, r))
+    return pares
 
 
 # ---------------------------------------------------------------- revisão (fase "revisar")
