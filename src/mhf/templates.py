@@ -57,22 +57,70 @@ _INJECOES_WAYBACK = [
 ]
 
 
+BUSCAS = ("exata", "prefixo")
+
+# Variantes buscadas por prefixo: quantos snapshots, do mais próximo do alvo para o mais longe, o
+# `planejar` baixa e confere por ano antes de desistir e marcar o ano como buraco.
+MAX_VERIFICACOES_CONTEUDO = 8
+
+
+
 @dataclass(frozen=True)
 class VarianteLogin:
-    """Uma página de login de uma entidade de 𝒯 (ex.: Microsoft "pessoal" = login.live.com)."""
+    """Uma página de login de uma entidade de 𝒯 (ex.: Microsoft "pessoal" = login.live.com).
+
+    `busca="prefixo"` é para logins que o Wayback só guardou em URLs de sessão, cada uma arquivada uma
+    ou duas vezes (ex.: amazon.com/ap/signin/<sessão>?openid...): o `planejar` procura qualquer URL que
+    comece com `url` e, como parte desses snapshots é a tela de CAPTCHA, confere o HTML original de cada
+    candidato: nenhum dos textos de `evitar` pode aparecer e, se `exigir` não for vazio, pelo menos um
+    dos textos dele precisa aparecer (sem diferenciar maiúsculas)."""
     entidade: str
     variante: str
     url: str
     locale: str  # en-US para marcas globais, pt-BR para bancos brasileiros
     seletor: str | None = None  # campo de credencial próprio da variante; None = SELETOR_CREDENCIAL
+    busca: str = "exata"        # "exata" (a URL como está) ou "prefixo"
+    evitar: tuple[str, ...] = ()
+    exigir: tuple[str, ...] = ()
 
 
 def ler_marcas(caminho: str) -> list[VarianteLogin]:
-    """Lê a tabela de marcas (lista de entidades, cada uma com `logins`) e achata as variantes."""
+    """Lê a tabela de marcas (lista de entidades, cada uma com `logins`) e achata as variantes.
+    Um valor de `busca` desconhecido lança ValueError (um erro de digitação na tabela mudaria a busca
+    sem aviso)."""
     with open(caminho, encoding="utf-8") as f:
         marcas = json.load(f)
-    return [VarianteLogin(m["entidade"], login["variante"], login["url"], login["locale"], login.get("seletor"))
-            for m in marcas for login in m["logins"]]
+    variantes = []
+    for m in marcas:
+        for login in m["logins"]:
+            nome = f"{m['entidade']}/{login['variante']}"
+            busca = login.get("busca", "exata")
+            if busca not in BUSCAS:
+                raise ValueError(f"{nome}: busca {busca!r} desconhecida (use {BUSCAS})")
+            filtros = {}
+            for campo in ("evitar", "exigir"):
+                valor = login.get(campo, [])
+                # uma string viraria uma tupla de letras: "exigir": "ap_email" aceitaria qualquer página
+                if not isinstance(valor, list) or not all(isinstance(t, str) and t for t in valor):
+                    raise ValueError(f"{nome}: {campo!r} precisa ser uma lista de textos")
+                if valor and busca != "prefixo":
+                    raise ValueError(f"{nome}: {campo!r} só vale com \"busca\": \"prefixo\" (seria ignorado)")
+                filtros[campo] = tuple(valor)
+            variantes.append(VarianteLogin(m["entidade"], login["variante"], login["url"], login["locale"],
+                                           login.get("seletor"), busca, filtros["evitar"], filtros["exigir"]))
+    return variantes
+
+
+def html_aceitavel(html: str | None, evitar=(), exigir=()) -> bool:
+    """O HTML original de um snapshot serve de template? Nenhum texto de `evitar` pode aparecer e, se
+    houver `exigir`, pelo menos um dos textos dele precisa aparecer (sem diferenciar maiúsculas).
+    HTML ausente (download falhou) não serve: não dá para conferir."""
+    if html is None:
+        return False
+    texto = html.lower()
+    if any(t.lower() in texto for t in evitar):
+        return False
+    return not exigir or any(t.lower() in texto for t in exigir)
 
 
 def slug(texto: str) -> str:
@@ -89,55 +137,99 @@ def id_entrada(entidade: str, variante: str, rotulo: str) -> str:
 
 # ---------------------------------------------------------------- plano (fase "planejar")
 
+def candidatos_ordenados(capturas: list[tuple], alvo: datetime,
+                         tolerancia: timedelta = TOLERANCIA) -> list[tuple]:
+    """Snapshots dentro da tolerância (inclusiva), na ordem de preferência: primeiro os de status 200,
+    do mais próximo do alvo para o mais longe; depois os redirecionamentos (3xx), na mesma ordem. Cada
+    captura é (timestamp de 14 dígitos, status) ou, na busca por prefixo, (timestamp, status, URL)."""
+    def distancia(ts: str) -> timedelta:
+        return abs(datetime.strptime(ts, "%Y%m%d%H%M%S") - alvo)
+
+    ordenados = []
+    for aceitos in ((200,), range(300, 400)):
+        ordenados += sorted((c for c in capturas if c[1] in aceitos and distancia(c[0]) <= tolerancia),
+                            key=lambda c: (distancia(c[0]), c))
+    return ordenados
+
+
 def escolher_snapshot(capturas: list[tuple[str, int]], alvo: datetime,
                       tolerancia: timedelta = TOLERANCIA) -> tuple[str, int] | None:
     """Entre as linhas da CDX (timestamp de 14 dígitos, status HTTP), escolhe o snapshot mais próximo
     do alvo dentro da tolerância (inclusiva). Prefere status 200; só aceita um redirecionamento (3xx)
     se não houver nenhum 200 na janela. Devolve None se nada couber."""
-    def distancia(ts: str) -> timedelta:
-        return abs(datetime.strptime(ts, "%Y%m%d%H%M%S") - alvo)
-
-    na_janela = [(ts, st) for ts, st in capturas if distancia(ts) <= tolerancia]
-    for aceitos in ((200,), range(300, 400)):
-        candidatos = [(distancia(ts), ts, st) for ts, st in na_janela if st in aceitos]
-        if candidatos:
-            _, ts, st = min(candidatos)
-            return ts, st
-    return None
+    candidatos = candidatos_ordenados(capturas, alvo, tolerancia)
+    return candidatos[0] if candidatos else None
 
 
-def planejar_variante(v: VarianteLogin, capturas: list[tuple[str, int]] | None,
-                      anos=ANOS_PADRAO) -> list[dict]:
+def planejar_variante(v: VarianteLogin, capturas: list[tuple] | None, anos=ANOS_PADRAO,
+                      aceitar=None) -> list[dict]:
     """Entradas do plano de uma variante: um snapshot por ano-alvo (anos que caem no mesmo snapshot
     viram uma entrada só), buracos para os anos sem snapshot e, no fim, a captura ao vivo.
-    `capturas=None` significa que a consulta à CDX falhou: todos os anos viram buraco "erro_consulta"."""
+    `capturas=None` significa que a consulta à CDX falhou: todos os anos viram buraco "erro_consulta".
+
+    Na busca por prefixo, as capturas trazem a URL arquivada, que vai para o campo `url_arquivada` da
+    entrada, e `aceitar(timestamp, url)` diz se o conteúdo do snapshot serve (o script baixa e confere o
+    HTML original): True serve, False não serve e None quer dizer que o download falhou. São tentados até
+    MAX_VERIFICACOES_CONTEUDO candidatos por ano; se nenhum servir, o ano vira buraco
+    "sem_snapshot_valido". Um download que falha encerra o ano como buraco "erro_conferencia" (em vez de
+    passar em silêncio para um candidato mais distante), e o `mesclar_plano` mantém a variante antiga.
+    Variantes de busca exata seguem como antes: o snapshot mais próximo, sem conferir conteúdo e sem o
+    campo `url_arquivada`."""
+    por_prefixo = v.busca == "prefixo"
+
     def entrada(rotulo: str, **campos) -> dict:
         return {"id": id_entrada(v.entidade, v.variante, rotulo), "entidade": v.entidade,
                 "variante": v.variante, "url_login": v.url, "locale": v.locale, "seletor": v.seletor,
                 **campos, "aprovado": None, "motivo": "", "aprovado_captura": None}
 
-    entradas, por_timestamp = [], {}
+    def escolher(ano: int):
+        candidatos = candidatos_ordenados(capturas, datetime(ano, 1, 1))
+        if not por_prefixo:
+            return (candidatos[0], None) if candidatos else (None, "sem_snapshot")
+        if not candidatos:
+            return None, "sem_snapshot"
+        for c in candidatos[:MAX_VERIFICACOES_CONTEUDO]:
+            resultado = True if aceitar is None else aceitar(c[0], c[2])
+            if resultado is None:
+                return None, "erro_conferencia"
+            if resultado:
+                return c, None
+        return None, "sem_snapshot_valido"
+
+    entradas, por_snapshot, rotulos = [], {}, set()
     for ano in anos:
-        escolhido = None if capturas is None else escolher_snapshot(capturas, datetime(ano, 1, 1))
+        escolhido, motivo = (None, "erro_consulta") if capturas is None else escolher(ano)
         if escolhido is None:
             entradas.append(entrada(f"buraco-{ano}", origem="wayback", timestamp=None, status_cdx=None,
-                                    anos_alvo=[ano],
-                                    buraco="erro_consulta" if capturas is None else "sem_snapshot"))
-        elif escolhido[0] in por_timestamp:
-            por_timestamp[escolhido[0]]["anos_alvo"].append(ano)
-        else:
-            ts, status = escolhido
-            e = entrada(f"{ts[:4]}-{ts[4:6]}-{ts[6:8]}", origem="wayback", timestamp=ts, status_cdx=status,
-                        anos_alvo=[ano], buraco=None)
-            por_timestamp[ts] = e
-            entradas.append(e)
+                                    anos_alvo=[ano], buraco=motivo))
+            continue
+        chave = (escolhido[0], escolhido[2] if por_prefixo else None)
+        if chave in por_snapshot:
+            por_snapshot[chave]["anos_alvo"].append(ano)
+            continue
+        ts, status = escolhido[0], escolhido[1]
+        rotulo = f"{ts[:4]}-{ts[4:6]}-{ts[6:8]}"
+        if rotulo in rotulos:  # dois snapshots diferentes no mesmo dia (só acontece na busca por prefixo)
+            rotulo += f"-{ts[8:12]}"
+        rotulos.add(rotulo)
+        extra = {"url_arquivada": escolhido[2]} if por_prefixo else {}
+        e = entrada(rotulo, origem="wayback", timestamp=ts, status_cdx=status, anos_alvo=[ano], buraco=None,
+                    **extra)
+        por_snapshot[chave] = e
+        entradas.append(e)
     entradas.append(entrada("ao-vivo", origem="ao_vivo", timestamp=None, status_cdx=None,
                             anos_alvo=[ANO_AO_VIVO], buraco=None))
     return entradas
 
 
+def url_da_captura(e: dict) -> str:
+    """URL que a captura carrega no Wayback: a URL arquivada (busca por prefixo) ou a da variante."""
+    return e.get("url_arquivada") or e["url_login"]
+
+
 def _mesmo_snapshot(a: dict, b: dict) -> bool:
-    return all(a.get(k) == b.get(k) for k in ("url_login", "timestamp", "origem"))
+    # url_arquivada só existe na busca por prefixo; nas variantes exatas os dois lados têm None.
+    return all(a.get(k) == b.get(k) for k in ("url_login", "url_arquivada", "timestamp", "origem"))
 
 
 def mesclar_plano(novo: list[dict], antigo: list[dict]) -> list[dict]:
@@ -145,9 +237,10 @@ def mesclar_plano(novo: list[dict], antigo: list[dict]) -> list[dict]:
     - a decisão (`aprovado`, `motivo`, `aprovado_captura`) só é herdada por uma entrada de mesmo id
       que aponte para o MESMO snapshot (mesma URL de login, timestamp e origem); outra URL ou outro
       snapshot com o mesmo id volta a "a revisar";
-    - se a consulta à CDX falhou para uma variante (todos os seus anos viraram "erro_consulta") e o
-      plano anterior tem essa variante, as entradas antigas dela são mantidas como estavam, para que
-      uma queda do Internet Archive não apague o plano nem as aprovações."""
+    - se a consulta à CDX falhou para uma variante (todos os seus anos viraram "erro_consulta"), ou se
+      algum download da conferência de conteúdo falhou (algum ano virou "erro_conferencia", na busca por
+      prefixo), e o plano anterior tem essa variante, as entradas antigas dela são mantidas como estavam,
+      para que uma queda do Internet Archive não apague o plano nem as aprovações."""
     def variante(e: dict) -> tuple:
         return e.get("entidade"), e.get("variante")
 
@@ -163,7 +256,8 @@ def mesclar_plano(novo: list[dict], antigo: list[dict]) -> list[dict]:
     mescladas = []
     for chave, entradas in novas_por_variante.items():
         do_wayback = [e for e in entradas if e.get("origem") == "wayback"]
-        consulta_falhou = bool(do_wayback) and all(e.get("buraco") == "erro_consulta" for e in do_wayback)
+        consulta_falhou = bool(do_wayback) and (all(e.get("buraco") == "erro_consulta" for e in do_wayback)
+                                                or any(e.get("buraco") == "erro_conferencia" for e in do_wayback))
         if consulta_falhou and chave in antigas_por_variante:
             mescladas += antigas_por_variante[chave]
             continue
@@ -226,6 +320,17 @@ ARQUIVOS_CAPTURA = ["html_original.html"] + [f"{p}_{r}.{ext}" for r in RESOLUCOE
                                              for p, ext in (("shot", "png"), ("dom", "html"))]
 
 
+def limpar_pasta_captura(pasta: str) -> None:
+    """Apaga os arquivos de uma captura anterior (meta.json, HTML original, screenshots e DOMs) antes de
+    recapturar. Sem isso, se o download do HTML original falhasse na recaptura, o arquivo do snapshot
+    anterior ficaria na pasta e passaria como sendo do novo."""
+    for nome in ["meta.json"] + ARQUIVOS_CAPTURA:
+        try:
+            os.remove(os.path.join(pasta, nome))
+        except FileNotFoundError:
+            pass
+
+
 def _ler_meta(raiz: str, e: dict) -> dict | None:
     """meta.json de uma entrada, ou None se não existir ou estiver ilegível."""
     try:
@@ -249,6 +354,13 @@ def _captura_valida(raiz: str, e: dict, meta: dict | None, exigir_ok: bool) -> b
         except (KeyError, TypeError):
             return False
     return True
+
+
+def data_captura_valida(raiz: str, e: dict) -> str | None:
+    """`data_captura` da captura no disco, só se ela for desta entrada (mesma URL, URL arquivada e
+    snapshot do plano) e estiver completa; senão None (e aprovar essa entrada é recusado)."""
+    meta = _ler_meta(raiz, e)
+    return meta.get("data_captura") if _captura_valida(raiz, e, meta, exigir_ok=False) else None
 
 
 def entradas_pendentes(plano: list[dict], raiz: str) -> list[dict]:

@@ -30,8 +30,10 @@
   "dominios": ["amazon.com", "amazon.co.jp", "amazon.com.br", "amazon.de", "amazon.co.uk", "amazon.fr", "amazon.it",
                "amazon.es", "amazon.ca", "amazon.in", "amazon.com.mx", "amazon.com.au", "amazon.cn", "amazon.nl",
                "amazon.se", "amazon.pl", "amazon.com.tr", "amazon.ae", "amazon.sg", "amazon.sa"],
-  "logins": [{"variante": "login", "url": "https://www.amazon.com/ap/signin", "locale": "en-US"},
-             {"variante": "japao", "url": "https://www.amazon.co.jp/ap/signin", "locale": "ja-JP"}],
+  "logins": [{"variante": "login", "url": "https://www.amazon.com/ap/signin", "locale": "en-US",
+              "busca": "prefixo", "evitar": ["captcha", "continue shopping"], "exigir": ["ap_email"]},
+             {"variante": "japao", "url": "https://www.amazon.co.jp/ap/signin", "locale": "ja-JP",
+              "busca": "prefixo", "evitar": ["captcha", "continue shopping"], "exigir": ["ap_email"]}],
   "notas": "~240 phishings imitam a Amazon do Japão; a cobertura dela no Wayback é fraca. amazon.com.be (Bélgica) não entra: com.be não é sufixo público, então o domínio registrável dela seria com.be, de outro dono."},
 
  {"entidade": "Netflix",

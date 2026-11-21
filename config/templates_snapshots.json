@@ -877,9 +877,9 @@
    2022
   ],
   "buraco": null,
-  "aprovado": null,
+  "aprovado": true,
   "motivo": "",
-  "aprovado_captura": null
+  "aprovado_captura": "2026-11-21T13:23:08"
  },
  {
   "id": "facebook/inicial/2023-02-19",
@@ -972,148 +972,156 @@
   "aprovado_captura": "2026-11-21T02:50:49"
  },
  {
-  "id": "amazon/login/2019-05-02",
+  "id": "amazon/login/2019-01-01",
   "entidade": "Amazon",
   "variante": "login",
   "url_login": "https://www.amazon.com/ap/signin",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20190502234625",
-  "status_cdx": 301,
+  "timestamp": "20190101205142",
+  "status_cdx": 200,
   "anos_alvo": [
    2019
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "Wayback arquivou página inexistente (\"Looking for something?\"/\"Page not found\")",
-  "aprovado_captura": "2026-11-21T02:51:29"
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-9083491-1648865?_encoding=UTF8&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fyourstore%2Fcard%3Fie%3DUTF8%26ref_%3Dcust_rec_intestitial_signin",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:46:43"
  },
  {
-  "id": "amazon/login/2020-01-08",
+  "id": "amazon/login/2020-01-01",
   "entidade": "Amazon",
   "variante": "login",
   "url_login": "https://www.amazon.com/ap/signin",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20200108040849",
-  "status_cdx": 301,
+  "timestamp": "20200101023059",
+  "status_cdx": 200,
   "anos_alvo": [
    2020
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "Wayback arquivou página inexistente (\"Looking for something?\"/\"Page not found\")",
-  "aprovado_captura": "2026-11-21T06:29:06"
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-0071271-3260811?_encoding=UTF8&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fsubscribe-and-save%2Fmanager%2Fviewsubscriptions%2F130-0071271-3260811%3Fie%3DUTF8%26sns.fromAuth%3D1%26sns.ref_%3Dnav_youraccount_sns&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:47:08"
  },
  {
-  "id": "amazon/login/2020-08-12",
+  "id": "amazon/login/2020-12-31",
   "entidade": "Amazon",
   "variante": "login",
   "url_login": "https://www.amazon.com/ap/signin",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20200812174712",
+  "timestamp": "20201231232840",
   "status_cdx": 200,
   "anos_alvo": [
    2021
   ],
   "buraco": null,
-  "aprovado": null,
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-1652787-8209938?_encoding=UTF8&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fhelp%2Fcontact-us%2Ftwitter.html%2F130-1652787-8209938%3Fie%3DUTF8%26url%3Dhttps%253A%252F%252Ftwitter.com%252Fitsreallyrucky%252Fstatus%252F1344786646164787202&pageId=webcs-contactus&siteState=returnAddress%3D%2Fgp%2Fhelp%2Fcontact-us%2Ftwitter.html%7Cmode%3D%7CtsId%3D%7CinitialIssue%3D%7CcontactReason%3D%7CorderId%3D%7CitemIds%3D%7Clanguage%3Den_US%7CsicPlan%3D%7CnodeId%3D%7CstartView%3D%7CTSMetadata%3D&suppressSignInRadioButtons=0",
+  "aprovado": true,
   "motivo": "",
-  "aprovado_captura": null
+  "aprovado_captura": "2026-11-21T13:47:39"
  },
  {
-  "id": "amazon/login/2021-08-17",
+  "id": "amazon/login/2022-01-01",
   "entidade": "Amazon",
   "variante": "login",
   "url_login": "https://www.amazon.com/ap/signin",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20210817160306",
+  "timestamp": "20220101020522",
   "status_cdx": 200,
   "anos_alvo": [
    2022
   ],
   "buraco": null,
-  "aprovado": null,
+  "url_arquivada": "https://www.amazon.com/ap/signin/131-0697725-7192043?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fcss%2Forder-history%2F131-0697725-7192043%3Fie%3DUTF8%26ref_%3Dnav_orders_first&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
   "motivo": "",
-  "aprovado_captura": null
+  "aprovado_captura": "2026-11-21T13:48:21"
  },
  {
-  "id": "amazon/login/2023-02-13",
+  "id": "amazon/login/2023-01-01",
   "entidade": "Amazon",
   "variante": "login",
   "url_login": "https://www.amazon.com/ap/signin",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20230213201245",
+  "timestamp": "20230101023855",
   "status_cdx": 200,
   "anos_alvo": [
    2023
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "Wayback arquivou tela de CAPTCHA/\"continue shopping\" no lugar do login",
-  "aprovado_captura": "2026-11-21T02:54:48"
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-3555329-6649127?_encoding=UTF8&openid.assoc_handle=amazon_checkout_us&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fcheckoutportal%2Fenter-checkout.html%2F130-3555329-6649127%3Fie%3DUTF8%26asin%3D%26buyNow%3D1%26cartCustomerID%3D0%26fromSignIn%3D1%26offeringID%3DccNEBv0hNhqPE6ZBpdy0REknAPwXYP7%2FCK%2F17At4wfFFKeOvMM7ZmgHSq%2FbmVJqRSqEMF%2Bp9AG8MNShusT9C0Hjxy%2B5iq0g8hyhYMhsXDez04Ppo0puaNT0fdjENNaZ%2FPmfF1jHdKYGu4B10ScXVIm3AFE0yMCHDuIibst%2Bbp5dOJgd399T4Gs4RoEKUMN7V%26purchaseInputs%3DHASH%280x7fb9da44de80%29%26quantity%3D1%26sessionID%3D130-3555329-6649127%26skipCart%3D1&pageId=amazon_checkout_us&showRmrMe=0&siteState=IMBMsgs.&suppressSignInRadioButtons=0",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:48:46"
  },
  {
-  "id": "amazon/login/2023-12-22",
+  "id": "amazon/login/2024-01-01",
   "entidade": "Amazon",
   "variante": "login",
   "url_login": "https://www.amazon.com/ap/signin",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20231222025657",
+  "timestamp": "20240101005216",
   "status_cdx": 200,
   "anos_alvo": [
    2024
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "Wayback arquivou tela de CAPTCHA/\"continue shopping\" no lugar do login",
-  "aprovado_captura": "2026-11-21T02:56:04"
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-9339412-4575827?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fcss%2Forder-history%2F130-9339412-4575827%3Fie%3DUTF8%26%252AVersion%252A%3D1%26%252Aentries%252A%3D0&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:49:28"
  },
  {
-  "id": "amazon/login/2025-01-02",
+  "id": "amazon/login/2025-01-01",
   "entidade": "Amazon",
   "variante": "login",
   "url_login": "https://www.amazon.com/ap/signin",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20250102102227",
+  "timestamp": "20250101163213",
   "status_cdx": 200,
   "anos_alvo": [
    2025
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "Wayback arquivou tela de CAPTCHA/\"continue shopping\" no lugar do login",
-  "aprovado_captura": "2026-11-21T02:57:21"
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-1512118-2570254?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fcss%2Forder-history%2F130-1512118-2570254%3Fie%3DUTF8%26ref_%3Dnav_orders_first&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:50:03"
  },
  {
-  "id": "amazon/login/2026-01-16",
+  "id": "amazon/login/2025-11-10",
   "entidade": "Amazon",
   "variante": "login",
   "url_login": "https://www.amazon.com/ap/signin",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20260116020530",
+  "timestamp": "20251110222153",
   "status_cdx": 200,
   "anos_alvo": [
    2026
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "Wayback arquivou tela de CAPTCHA/\"continue shopping\" no lugar do login",
-  "aprovado_captura": "2026-11-21T02:58:35"
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-2486874-6204024?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fcss%2Forder-history%2F130-2486874-6204024%3Fie%3DUTF8%26ref_%3Dabn_yadd_ad_your_orders&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:50:33"
  },
  {
   "id": "amazon/login/ao-vivo",
@@ -1134,115 +1142,140 @@
   "aprovado_captura": "2026-11-21T02:58:36"
  },
  {
-  "id": "amazon/japao/buraco-2019",
+  "id": "amazon/japao/2019-02-01",
   "entidade": "Amazon",
   "variante": "japao",
   "url_login": "https://www.amazon.co.jp/ap/signin",
   "locale": "ja-JP",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": null,
-  "status_cdx": null,
+  "timestamp": "20190201234201",
+  "status_cdx": 200,
   "anos_alvo": [
    2019
   ],
-  "buraco": "sem_snapshot",
-  "aprovado": null,
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/356-4575938-6983256?_encoding=UTF8&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fyourstore%2Fcard%3Fie%3DUTF8%26ref_%3Dcust_rec_intestitial_signin",
+  "aprovado": true,
   "motivo": "",
-  "aprovado_captura": null
+  "aprovado_captura": "2026-11-21T13:50:59"
  },
  {
-  "id": "amazon/japao/buraco-2020",
+  "id": "amazon/japao/2020-01-02",
   "entidade": "Amazon",
   "variante": "japao",
   "url_login": "https://www.amazon.co.jp/ap/signin",
   "locale": "ja-JP",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": null,
-  "status_cdx": null,
+  "timestamp": "20200102073759",
+  "status_cdx": 200,
   "anos_alvo": [
    2020
   ],
-  "buraco": "sem_snapshot",
-  "aprovado": null,
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/356-7626442-8821641?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fcss%2Forder-history%2F356-7626442-8821641%3Fie%3DUTF8%26ref_%3Dnav_orders_first&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
   "motivo": "",
-  "aprovado_captura": null
+  "aprovado_captura": "2026-11-21T13:51:34"
  },
  {
-  "id": "amazon/japao/2021-01-05",
+  "id": "amazon/japao/2021-01-01",
   "entidade": "Amazon",
   "variante": "japao",
   "url_login": "https://www.amazon.co.jp/ap/signin",
   "locale": "ja-JP",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20210105023603",
-  "status_cdx": 301,
+  "timestamp": "20210101005456",
+  "status_cdx": 200,
   "anos_alvo": [
    2021
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "Wayback arquivou página inexistente (\"Looking for something?\"/\"Page not found\")",
-  "aprovado_captura": "2026-11-21T02:59:08"
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/357-6340920-2808914?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=900&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fmessage%2F357-6340920-2808914",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:51:54"
  },
  {
-  "id": "amazon/japao/buraco-2022",
+  "id": "amazon/japao/2021-12-30",
   "entidade": "Amazon",
   "variante": "japao",
   "url_login": "https://www.amazon.co.jp/ap/signin",
   "locale": "ja-JP",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": null,
-  "status_cdx": null,
+  "timestamp": "20211230225325",
+  "status_cdx": 200,
   "anos_alvo": [
    2022
   ],
-  "buraco": "sem_snapshot",
-  "aprovado": null,
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/355-0486323-9573666?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fcss%2Forder-history%2F355-0486323-9573666%3Fie%3DUTF8%26language%3Den%26ref_%3Dnav_AccountFlyout_orders&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
   "motivo": "",
-  "aprovado_captura": null
+  "aprovado_captura": "2026-11-21T13:52:37"
  },
  {
-  "id": "amazon/japao/2023-05-09",
+  "id": "amazon/japao/2023-01-01",
   "entidade": "Amazon",
   "variante": "japao",
   "url_login": "https://www.amazon.co.jp/ap/signin",
   "locale": "ja-JP",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20230509075427",
-  "status_cdx": 301,
+  "timestamp": "20230101022144",
+  "status_cdx": 200,
   "anos_alvo": [
    2023
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "Wayback arquivou página inexistente (\"Looking for something?\"/\"Page not found\")",
-  "aprovado_captura": "2026-11-21T02:59:39"
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/355-6390187-7530136?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fcss%2Forder-history%2F355-6390187-7530136%3Fie%3DUTF8%26language%3Den%26ref_%3Dnav_AccountFlyout_orders&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:53:15"
  },
  {
-  "id": "amazon/japao/buraco-2024",
+  "id": "amazon/japao/2023-12-31",
   "entidade": "Amazon",
   "variante": "japao",
   "url_login": "https://www.amazon.co.jp/ap/signin",
   "locale": "ja-JP",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": null,
-  "status_cdx": null,
+  "timestamp": "20231231232448",
+  "status_cdx": 200,
   "anos_alvo": [
    2024
   ],
-  "buraco": "sem_snapshot",
-  "aprovado": null,
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/355-1216189-0801226?_encoding=UTF8&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=900&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fcss%2Fsummary%2Fedit.html%2F355-1216189-0801226%3Fie%3DUTF8%26orderID%3D249-6180984-9387020%26ref_%3Ddp_iou_view_this_order&showRmrMe=1",
+  "aprovado": true,
   "motivo": "",
-  "aprovado_captura": null
+  "aprovado_captura": "2026-11-21T13:53:41"
  },
  {
-  "id": "amazon/japao/buraco-2025",
+  "id": "amazon/japao/2025-01-01",
+  "entidade": "Amazon",
+  "variante": "japao",
+  "url_login": "https://www.amazon.co.jp/ap/signin",
+  "locale": "ja-JP",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101014606",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/358-1509066-3173059?_encoding=UTF8&openid.assoc_handle=amazon_checkout_jp&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fbuy%2Fsignin%2Fhandlers%2Fcontinue.html%2F358-1509066-3173059%3Fie%3DUTF8%26brandId%3D%26cartItemIds%3D%26eGCApp%3D%26hasWorkingJavascript%3D0%26isEGCOrder%3D0%26isFresh%3D%26oldCustomerId%3D0%26oldPurchaseId%3D%26preInitiateCustomerId%3D%26purchaseInProgress%3D%26ref_%3Dcart_signin_submit%26siteDesign%3D&pageId=amazon_checkout_jp&showRmrMe=0&siteState=isRegularCheckout.1%7CIMBMsgs.%7CisRedirect.1&suppressSignInRadioButtons=0",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:54:18"
+ },
+ {
+  "id": "amazon/japao/buraco-2026",
   "entidade": "Amazon",
   "variante": "japao",
   "url_login": "https://www.amazon.co.jp/ap/signin",
@@ -1252,30 +1285,12 @@
   "timestamp": null,
   "status_cdx": null,
   "anos_alvo": [
-   2025
+   2026
   ],
-  "buraco": "sem_snapshot",
+  "buraco": "sem_snapshot_valido",
   "aprovado": null,
   "motivo": "",
   "aprovado_captura": null
- },
- {
-  "id": "amazon/japao/2025-08-16",
-  "entidade": "Amazon",
-  "variante": "japao",
-  "url_login": "https://www.amazon.co.jp/ap/signin",
-  "locale": "ja-JP",
-  "seletor": null,
-  "origem": "wayback",
-  "timestamp": "20250816225117",
-  "status_cdx": 301,
-  "anos_alvo": [
-   2026
-  ],
-  "buraco": null,
-  "aprovado": false,
-  "motivo": "Wayback arquivou página inexistente (\"Looking for something?\"/\"Page not found\")",
-  "aprovado_captura": "2026-11-21T03:00:12"
  },
  {
   "id": "amazon/japao/ao-vivo",

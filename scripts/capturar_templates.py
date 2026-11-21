@@ -17,6 +17,7 @@ Desenho: docs/especificacoes/2026-11-20-base-de-templates.md
 """
 
 import argparse
+import http.client
 import json
 import os
 import sys
@@ -31,7 +32,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from mhf import templates  # noqa: E402
 
 PAUSA_WAYBACK_S = 1.5  # gentileza com o Internet Archive entre requisições
+PAGINAS_CDX_PREFIXO = 5  # páginas do índice da CDX lidas na busca por prefixo (~15 s e ~1,5 MB cada)
 USER_AGENT = "Mozilla/5.0 (compatible; mhf-templates/1.0; pesquisa academica)"
+
+# O http.client recusa respostas com mais de 100 cabeçalhos ("got more than 100 headers"), e algumas do
+# Wayback passam disso (ex.: facebook.com/index.php de 2022, que repassa os cabeçalhos arquivados). Sem
+# isso, o HTML original dessas páginas nunca era salvo. Não há API pública para o limite.
+http.client._MAXHEADERS = max(http.client._MAXHEADERS, 1000)
 
 
 # ---------------------------------------------------------------- utilidades
@@ -51,17 +58,18 @@ def gravar_json(caminho, dados):
     os.replace(temporario, caminho)
 
 
-def baixar(url, tentativas=3, prefixo_final=None):
+def baixar(url, tentativas=3, prefixo_final=None, se_sair=None):
     """Bytes da URL, ou None se as `tentativas` falharem (o Wayback às vezes derruba a conexão).
-    Com `prefixo_final`, também devolve None se um redirecionamento levar para fora desse prefixo
-    (ex.: um snapshot 3xx do Wayback que mandasse para a página ao vivo, de outra época)."""
+    Com `prefixo_final`, devolve `se_sair` (por padrão None) se um redirecionamento levar para fora
+    desse prefixo (ex.: um snapshot 3xx do Wayback que mandasse para a página ao vivo, de outra época);
+    quem precisa distinguir esse caso de uma falha de rede passa outro valor."""
     requisicao = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     for tentativa in range(1, tentativas + 1):
         try:
             with urllib.request.urlopen(requisicao, timeout=60) as resposta:
                 if prefixo_final and not resposta.geturl().startswith(prefixo_final):
                     print(f"  {url} redirecionou para fora do Wayback ({resposta.geturl()}); descartado")
-                    return None
+                    return se_sair
                 return resposta.read()
         except Exception as erro:  # rede instável, 5xx do Wayback etc.: quem chama decide o que fazer
             print(f"  falha ao baixar {url} (tentativa {tentativa}/{tentativas}): {erro}")
@@ -91,15 +99,75 @@ def consultar_cdx(url):
     return [(ts, int(st)) for ts, st in linhas[1:] if st.isdigit()]  # linhas[0] é o cabeçalho
 
 
+def consultar_cdx_prefixo(url):
+    """Snapshots (timestamp, status, URL arquivada) de URLs que começam com `url`, só status 200, de
+    jun/2018 a dez/2026, tirados das primeiras PAGINAS_CDX_PREFIXO páginas do índice da CDX.
+
+    Por que uma amostra: o prefixo da Amazon ocupa mais de 1.300 páginas do índice (milhares de URLs de
+    sessão por ano). Varrer tudo levaria horas, e uma consulta com filtro de data estoura o limite de 60 s
+    do próprio Wayback (504), porque ele percorre o prefixo inteiro. O índice é ordenado pela URL, e o
+    número de sessão não tem relação com a data, então as primeiras páginas são uma amostra sem viés das
+    datas: em 21/11/2026, uma só página já tinha candidatos de todos os anos de 2019 a 2026. A escolha
+    (mais próximo de 1º de janeiro, conferindo o conteúdo) é feita dentro dessa amostra, e o plano
+    registra a URL e o timestamp exatos, que são a receita reproduzível. Devolve None se alguma página
+    falhar: um ano faltando viraria buraco sem que o problema aparecesse."""
+    capturas = set()
+    for pagina in range(PAGINAS_CDX_PREFIXO):
+        consulta = urllib.parse.urlencode({
+            "url": url, "matchType": "prefix", "page": str(pagina), "output": "json",
+            "from": "201806", "to": "202612",
+            "fl": "timestamp,statuscode,original", "filter": "statuscode:200",
+        })
+        time.sleep(PAUSA_WAYBACK_S)
+        dados = baixar(f"https://web.archive.org/cdx/search/cdx?{consulta}")
+        if dados is None:
+            return None
+        try:
+            linhas = json.loads(dados or b"[]")
+            capturas.update((ts, int(st), original) for ts, st, original in linhas[1:]
+                            if st.isdigit() and original)
+        except (ValueError, TypeError):  # JSON quebrado ou fora do formato (ex.: {"error": ...})
+            print(f"  resposta da CDX ilegível para {url} (página {pagina})")
+            return None
+    return sorted(capturas)
+
+
+def conferidor_de_conteudo(v):
+    """Função aceitar(timestamp, url) da busca por prefixo: baixa o HTML original do snapshot (modo id_)
+    e confere os textos `evitar`/`exigir` da variante. Devolve True (serve), False (não serve) ou None
+    (o download falhou: o planejar não troca de candidato em silêncio). Guarda o resultado, porque o
+    mesmo snapshot pode ser candidato de dois anos vizinhos."""
+    vistos = {}
+
+    def aceitar(ts, url):
+        if (ts, url) not in vistos:
+            time.sleep(PAUSA_WAYBACK_S)
+            # um redirecionamento para fora do Wayback não é falha de rede: o snapshot só não serve
+            dados = baixar(templates.url_wayback(ts, url, "id_"), prefixo_final="https://web.archive.org/web/",
+                           se_sair=b"")
+            if dados is None:
+                print(f"    {ts} ERRO no download (o ano fica como erro_conferencia): {url[:90]}")
+                return None  # não guarda: uma nova tentativa pode funcionar
+            vistos[(ts, url)] = templates.html_aceitavel(dados.decode("utf-8", "replace"), v.evitar, v.exigir)
+            print(f"    {ts} {'serve' if vistos[(ts, url)] else 'descartado'}: {url[:90]}")
+        return vistos[(ts, url)]
+
+    return aceitar
+
+
 def cmd_planejar(a):
     variantes = templates.ler_marcas(a.marcas)
     novo, falhas = [], 0
     for i, v in enumerate(variantes):
         if i:
             time.sleep(PAUSA_WAYBACK_S)
-        capturas = consultar_cdx(v.url)
+        if v.busca == "prefixo":
+            capturas = consultar_cdx_prefixo(v.url)
+            entradas = templates.planejar_variante(v, capturas, aceitar=conferidor_de_conteudo(v))
+        else:
+            capturas = consultar_cdx(v.url)
+            entradas = templates.planejar_variante(v, capturas)
         falhas += capturas is None
-        entradas = templates.planejar_variante(v, capturas)
         snapshots = sum(1 for e in entradas if e["origem"] == "wayback" and not e["buraco"])
         buracos = [f"{e['anos_alvo'][0]} ({e['buraco']})" for e in entradas if e["buraco"]]
         print(f"{v.entidade} / {v.variante}: {snapshots} snapshots"
@@ -141,16 +209,17 @@ def capturar_entrada(navegador, e, raiz, versoes):
 
     pasta = templates.pasta_entrada(raiz, e["id"])
     os.makedirs(pasta, exist_ok=True)
+    templates.limpar_pasta_captura(pasta)  # nada de uma captura anterior pode passar como desta
     ao_vivo = e["origem"] == "ao_vivo"
     # Modo comum do Wayback (não if_): no if_ o login da Microsoft acha que os cookies estão desligados
     # e redireciona para uma página não arquivada. A barra do modo comum é removida antes do screenshot.
-    url = e["url_login"] if ao_vivo else templates.url_wayback(e["timestamp"], e["url_login"], "")
+    url = e["url_login"] if ao_vivo else templates.url_wayback(e["timestamp"], templates.url_da_captura(e), "")
 
     seletor = e.get("seletor") or templates.SELETOR_CREDENCIAL
 
     if not ao_vivo:  # HTML como foi arquivado, antes do JavaScript
         time.sleep(PAUSA_WAYBACK_S)
-        original = baixar(templates.url_wayback(e["timestamp"], e["url_login"], "id_"),
+        original = baixar(templates.url_wayback(e["timestamp"], templates.url_da_captura(e), "id_"),
                           prefixo_final="https://web.archive.org/web/")
         if original is not None:
             with open(os.path.join(pasta, "html_original.html"), "wb") as f:
@@ -214,6 +283,8 @@ def capturar_entrada(navegador, e, raiz, versoes):
             "origem": e["origem"], "url_snapshot": None if ao_vivo else url, "timestamp": e["timestamp"],
             "anos_alvo": e["anos_alvo"], "data_captura": datetime.now().isoformat(timespec="seconds"),
             "resolucoes": resolucoes, "versoes": versoes}
+    if e.get("url_arquivada"):  # busca por prefixo: identifica o snapshot junto com o timestamp
+        meta["url_arquivada"] = e["url_arquivada"]
     gravar_json(os.path.join(pasta, "meta.json"), meta)  # por último: marca a entrada como concluída
     return meta
 
@@ -260,8 +331,9 @@ def _marcar(a, aprovado, motivo):
         for id_ in a.ids:
             if id_ not in por_id:
                 raise KeyError(id_)
-            caminho = os.path.join(templates.pasta_entrada(a.raiz, id_), "meta.json")
-            data_captura = ler_json(caminho).get("data_captura") if os.path.exists(caminho) else None
+            # Só a captura deste snapshot (mesma URL e timestamp do plano) e completa conta como vista;
+            # sem ela, aprovar é recusado (rejeitar continua possível).
+            data_captura = templates.data_captura_valida(a.raiz, por_id[id_])
             templates.marcar_aprovacao(plano, id_, aprovado, motivo, data_captura=data_captura)
     except KeyError as erro:
         sys.exit(f"id não encontrado no plano: {erro.args[0]} (nenhuma alteração gravada)")
