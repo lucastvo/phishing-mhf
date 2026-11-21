@@ -15,10 +15,12 @@ descrevem o PAPEL do elemento (ex.: type do <input>), em ordem fixa.
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import asdict, dataclass, field
-from urllib.parse import urlparse
 
 from lxml import etree, html
+
+from mhf.marcas import dominio_registravel
 
 # Elementos que não fazem parte do layout e só adicionam ruído.
 TAGS_DESCARTADAS = {
@@ -98,6 +100,24 @@ def _serializacao_canonica(el) -> str:
     return "(" + _rotulo(el) + "".join(_serializacao_canonica(f) for f in _filhos(el)) + ")"
 
 
+_ACTION_ABSOLUTA = re.compile(r"^\s*(?:https?:)?[/\\]{2}", re.I)
+
+
+def _action_externa(action: str, dominio_pagina: str) -> bool:
+    """O formulário envia os dados para outro dono? Compara os domínios registráveis (Public Suffix
+    List, via mhf.marcas): www.itau.com.br e secure.itau.com.br são o mesmo dono; golpe.com.br e
+    evilpaypal.com não. Só conta action absoluta (http://, https:// ou //host); relativa ("/entrar",
+    "post.php") fica na própria página, e outros esquemas (mailto:, javascript:) não são contados.
+    Sem a URL da página não dá para saber, e não conta."""
+    if not dominio_pagina or not _ACTION_ABSOLUTA.match(action):
+        return False
+    action = action.strip()
+    if action[:1] in "/\\":  # //host/... herda o esquema da página; o domínio não depende dele
+        action = "http:" + action
+    destino = dominio_registravel(action)
+    return bool(destino) and destino != dominio_pagina
+
+
 def _caminhar(el, prefixo, caminhos, criticos, contagens, dominio_pagina):
     caminho = f"{prefixo}/{_rotulo(el)}"
     caminhos.add(caminho)
@@ -107,8 +127,7 @@ def _caminhar(el, prefixo, caminhos, criticos, contagens, dominio_pagina):
     if tag == "form":
         contagens["formularios"] += 1
         criticos.add(caminho)
-        destino = urlparse(el.get("action") or "").netloc.lower()
-        if destino and dominio_pagina and not destino.endswith(dominio_pagina):
+        if _action_externa(el.get("action") or "", dominio_pagina):
             contagens["forms_action_externa"] += 1
     elif tag == "input":
         tipo = (el.get("type") or "text").lower()
@@ -138,8 +157,7 @@ def extrair(conteudo: bytes | str, url: str = "") -> ImpressaoEstrutural | None:
     raiz = parsear(conteudo)
     if raiz is None:
         return None
-    dominio = urlparse(url).netloc.lower().split(":")[0]
-    dominio = ".".join(dominio.split(".")[-2:]) if dominio else ""
+    dominio = dominio_registravel(url) if url else ""
 
     caminhos: set[str] = set()
     criticos: set[str] = set()

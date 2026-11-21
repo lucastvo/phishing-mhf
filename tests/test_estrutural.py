@@ -75,6 +75,27 @@ class TestEstrutural(unittest.TestCase):
         self.assertLess(longe["jaccard_caminhos"], 0.2)
         self.assertGreater(perto["sim_contagens"], longe["sim_contagens"])
 
+    def test_forms_action_externa_pelo_dominio_registravel(self):
+        def externas(action, url):
+            pagina = f'<html><body><form action="{action}"><input type="password"></form></body></html>'
+            return estrutural.extrair(pagina.encode(), url).contagens["forms_action_externa"]
+
+        casos = [
+            # (action, URL da página, esperado)
+            ("https://golpe.com.br/post.php", "https://www.itau.com.br/", 1),     # antes: "com.br" == "com.br" → interno
+            ("https://evilpaypal.com/x", "https://www.paypal.com/signin", 1),     # antes: endswith("paypal.com") → interno
+            ("https://secure.itau.com.br/login", "https://www.itau.com.br/", 0),  # subdomínio do mesmo dono
+            ("//coletor.evil.net/p", "https://www.paypal.com/", 1),               # sem esquema, mas com host
+            ("/entrar", "https://www.paypal.com/", 0),                            # relativo: mesma página
+            ("", "https://www.paypal.com/", 0),
+            ("https://ojoro2.blob.core.windows.net/a", "https://outro.blob.core.windows.net/", 1),  # clientes diferentes
+            ("https://WWW.PAYPAL.COM:443/x", "https://paypal.com/", 0),          # maiúsculas e porta
+            ("https://evil.net/x", "", 0),                                        # sem URL da página: não dá para saber
+        ]
+        for action, url, esperado in casos:
+            with self.subTest(action=action, url=url):
+                self.assertEqual(externas(action, url), esperado)
+
     def test_html_vazio(self):
         self.assertIsNone(estrutural.extrair(b"   "))
 
