@@ -42,7 +42,7 @@
  {"entidade": "Apple",
   "nomes_phishpedia": ["Apple Inc."], "nomes_phish360": ["apple"],
   "dominios": ["apple.com", "icloud.com"],
-  "logins": [{"variante": "conta", "url": "https://account.apple.com/", "locale": "en-US"}],
+  "logins": [{"variante": "conta", "url": "https://account.apple.com/sign-in", "locale": "en-US"}],
   "notas": "O Wayback bloqueia appleid.apple.com e icloud.com; account.apple.com (novo nome do Apple ID) tem snapshots em 2025-2026."},
 
  {"entidade": "LinkedIn",
@@ -53,7 +53,7 @@
  {"entidade": "Adobe",
   "nomes_phishpedia": ["Adobe Inc."], "nomes_phish360": ["adobe"],
   "dominios": ["adobe.com"],
-  "logins": [{"variante": "conta", "url": "https://account.adobe.com/", "locale": "en-US"}],
+  "logins": [{"variante": "conta", "url": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force", "locale": "en-US"}],
   "notas": "A maioria dos phishings são iscas temáticas ('Adobe PDF', 'Document Cloud') que não copiam esta página."},
 
  {"entidade": "Yahoo",

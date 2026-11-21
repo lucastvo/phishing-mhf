@@ -876,7 +876,10 @@
   "anos_alvo": [
    2022
   ],
-  "buraco": null
+  "buraco": null,
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
  },
  {
   "id": "facebook/inicial/2023-02-19",
@@ -1458,7 +1461,7 @@
   "id": "apple/conta/buraco-2019",
   "entidade": "Apple",
   "variante": "conta",
-  "url_login": "https://account.apple.com/",
+  "url_login": "https://account.apple.com/sign-in",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
@@ -1476,7 +1479,7 @@
   "id": "apple/conta/buraco-2020",
   "entidade": "Apple",
   "variante": "conta",
-  "url_login": "https://account.apple.com/",
+  "url_login": "https://account.apple.com/sign-in",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
@@ -1494,7 +1497,7 @@
   "id": "apple/conta/buraco-2021",
   "entidade": "Apple",
   "variante": "conta",
-  "url_login": "https://account.apple.com/",
+  "url_login": "https://account.apple.com/sign-in",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
@@ -1512,7 +1515,7 @@
   "id": "apple/conta/buraco-2022",
   "entidade": "Apple",
   "variante": "conta",
-  "url_login": "https://account.apple.com/",
+  "url_login": "https://account.apple.com/sign-in",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
@@ -1530,7 +1533,7 @@
   "id": "apple/conta/buraco-2023",
   "entidade": "Apple",
   "variante": "conta",
-  "url_login": "https://account.apple.com/",
+  "url_login": "https://account.apple.com/sign-in",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
@@ -1545,32 +1548,32 @@
   "aprovado_captura": null
  },
  {
-  "id": "apple/conta/2024-06-10",
+  "id": "apple/conta/buraco-2024",
   "entidade": "Apple",
   "variante": "conta",
-  "url_login": "https://account.apple.com/",
+  "url_login": "https://account.apple.com/sign-in",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20240610235622",
-  "status_cdx": 302,
+  "timestamp": null,
+  "status_cdx": null,
   "anos_alvo": [
    2024
   ],
-  "buraco": null,
-  "aprovado": false,
-  "motivo": "redireciona para appleid.apple.com, excluído do Wayback",
-  "aprovado_captura": "2026-11-21T03:05:22"
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
  },
  {
-  "id": "apple/conta/2025-01-01",
+  "id": "apple/conta/2024-12-31",
   "entidade": "Apple",
   "variante": "conta",
-  "url_login": "https://account.apple.com/",
+  "url_login": "https://account.apple.com/sign-in",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20250101021226",
+  "timestamp": "20241231095306",
   "status_cdx": 200,
   "anos_alvo": [
    2025
@@ -1578,17 +1581,17 @@
   "buraco": null,
   "aprovado": false,
   "motivo": "redireciona para appleid.apple.com, excluído do Wayback",
-  "aprovado_captura": "2026-11-21T03:06:45"
+  "aprovado_captura": "2026-11-21T12:25:51"
  },
  {
   "id": "apple/conta/2026-01-01",
   "entidade": "Apple",
   "variante": "conta",
-  "url_login": "https://account.apple.com/",
+  "url_login": "https://account.apple.com/sign-in",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20260101010407",
+  "timestamp": "20260101051241",
   "status_cdx": 200,
   "anos_alvo": [
    2026
@@ -1596,13 +1599,13 @@
   "buraco": null,
   "aprovado": false,
   "motivo": "redireciona para appleid.apple.com, excluído do Wayback",
-  "aprovado_captura": "2026-11-21T03:08:09"
+  "aprovado_captura": "2026-11-21T12:27:17"
  },
  {
   "id": "apple/conta/ao-vivo",
   "entidade": "Apple",
   "variante": "conta",
-  "url_login": "https://account.apple.com/",
+  "url_login": "https://account.apple.com/sign-in",
   "locale": "en-US",
   "seletor": null,
   "origem": "ao_vivo",
@@ -1612,9 +1615,9 @@
    2026
   ],
   "buraco": null,
-  "aprovado": null,
+  "aprovado": true,
   "motivo": "",
-  "aprovado_captura": null
+  "aprovado_captura": "2026-11-21T12:27:50"
  },
  {
   "id": "linkedin/login/2019-01-09",
@@ -1779,154 +1782,154 @@
   "aprovado_captura": "2026-11-21T03:13:13"
  },
  {
-  "id": "adobe/conta/2019-01-02",
+  "id": "adobe/conta/buraco-2019",
   "entidade": "Adobe",
   "variante": "conta",
-  "url_login": "https://account.adobe.com/",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20190102092647",
-  "status_cdx": 200,
+  "timestamp": null,
+  "status_cdx": null,
   "anos_alvo": [
    2019
   ],
-  "buraco": null,
-  "aprovado": false,
-  "motivo": "redireciona para adobelogin.com, não arquivado (ou página em branco)",
-  "aprovado_captura": "2026-11-21T03:14:43"
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
  },
  {
-  "id": "adobe/conta/2019-12-15",
+  "id": "adobe/conta/2019-12-12",
   "entidade": "Adobe",
   "variante": "conta",
-  "url_login": "https://account.adobe.com/",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20191215002534",
+  "timestamp": "20191212144700",
   "status_cdx": 200,
   "anos_alvo": [
    2020
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "redireciona para adobelogin.com, não arquivado (ou página em branco)",
-  "aprovado_captura": "2026-11-21T03:16:04"
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T12:28:17"
  },
  {
-  "id": "adobe/conta/2021-01-06",
+  "id": "adobe/conta/2020-11-05",
   "entidade": "Adobe",
   "variante": "conta",
-  "url_login": "https://account.adobe.com/",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20210106000350",
+  "timestamp": "20201105233043",
   "status_cdx": 200,
   "anos_alvo": [
    2021
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "redireciona para adobelogin.com, não arquivado (ou página em branco)",
-  "aprovado_captura": "2026-11-21T03:17:29"
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T12:28:40"
  },
  {
-  "id": "adobe/conta/2021-12-27",
+  "id": "adobe/conta/buraco-2022",
   "entidade": "Adobe",
   "variante": "conta",
-  "url_login": "https://account.adobe.com/",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20211227202024",
-  "status_cdx": 200,
+  "timestamp": null,
+  "status_cdx": null,
   "anos_alvo": [
    2022
   ],
-  "buraco": null,
-  "aprovado": false,
-  "motivo": "redireciona para adobelogin.com, não arquivado (ou página em branco)",
-  "aprovado_captura": "2026-11-21T03:18:56"
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
  },
  {
-  "id": "adobe/conta/2023-01-01",
+  "id": "adobe/conta/2023-05-08",
   "entidade": "Adobe",
   "variante": "conta",
-  "url_login": "https://account.adobe.com/",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20230101102617",
+  "timestamp": "20230508094309",
   "status_cdx": 200,
   "anos_alvo": [
    2023
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "redireciona para adobelogin.com, não arquivado (ou página em branco)",
-  "aprovado_captura": "2026-11-21T03:20:32"
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T12:29:12"
  },
  {
-  "id": "adobe/conta/2024-01-01",
+  "id": "adobe/conta/buraco-2024",
   "entidade": "Adobe",
   "variante": "conta",
-  "url_login": "https://account.adobe.com/",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20240101075026",
-  "status_cdx": 200,
+  "timestamp": null,
+  "status_cdx": null,
   "anos_alvo": [
    2024
   ],
-  "buraco": null,
-  "aprovado": false,
-  "motivo": "redireciona para adobelogin.com, não arquivado (ou página em branco)",
-  "aprovado_captura": "2026-11-21T03:22:02"
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
  },
  {
-  "id": "adobe/conta/2025-01-01",
+  "id": "adobe/conta/buraco-2025",
   "entidade": "Adobe",
   "variante": "conta",
-  "url_login": "https://account.adobe.com/",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20250101015625",
-  "status_cdx": 200,
+  "timestamp": null,
+  "status_cdx": null,
   "anos_alvo": [
    2025
   ],
-  "buraco": null,
-  "aprovado": false,
-  "motivo": "redireciona para adobelogin.com, não arquivado (ou página em branco)",
-  "aprovado_captura": "2026-11-21T03:23:18"
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
  },
  {
-  "id": "adobe/conta/2025-12-30",
+  "id": "adobe/conta/buraco-2026",
   "entidade": "Adobe",
   "variante": "conta",
-  "url_login": "https://account.adobe.com/",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
   "locale": "en-US",
   "seletor": null,
   "origem": "wayback",
-  "timestamp": "20251230195259",
-  "status_cdx": 200,
+  "timestamp": null,
+  "status_cdx": null,
   "anos_alvo": [
    2026
   ],
-  "buraco": null,
-  "aprovado": false,
-  "motivo": "redireciona para adobelogin.com, não arquivado (ou página em branco)",
-  "aprovado_captura": "2026-11-21T03:24:39"
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
  },
  {
   "id": "adobe/conta/ao-vivo",
   "entidade": "Adobe",
   "variante": "conta",
-  "url_login": "https://account.adobe.com/",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
   "locale": "en-US",
   "seletor": null,
   "origem": "ao_vivo",
@@ -1936,9 +1939,9 @@
    2026
   ],
   "buraco": null,
-  "aprovado": false,
-  "motivo": "login não carregou (só o ícone de carregamento)",
-  "aprovado_captura": "2026-11-21T03:25:40"
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T12:29:22"
  },
  {
   "id": "yahoo/login/2019-01-01",
