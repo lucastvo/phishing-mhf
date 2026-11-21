@@ -8,7 +8,7 @@
   "nomes_phishpedia": ["Outlook", "Office365", "Microsoft OneDrive", "Hotmail"], "nomes_phish360": ["office", "outlook", "microsoft"],
   "dominios": ["microsoft.com", "microsoftonline.com", "live.com", "office.com", "office365.com", "outlook.com",
                "hotmail.com", "onedrive.com", "msn.com", "microsoft365.com", "cloud.microsoft"],
-  "logins": [{"variante": "corporativo", "url": "https://login.microsoftonline.com/common/oauth2/authorize", "locale": "en-US"},
+  "logins": [{"variante": "corporativo", "url": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000", "locale": "en-US"},
              {"variante": "pessoal", "url": "https://login.live.com/login.srf", "locale": "en-US"}],
   "notas": "O login corporativo (Microsoft 365, 'Sign in to your account') é o mais imitado: ~4.600 phishings. windows.net, sharepoint.com e 1drv.ms ficam FORA de propósito: hospedam páginas de clientes (Azure, SharePoint, links do OneDrive) e liberariam phishing hospedado neles."},
 

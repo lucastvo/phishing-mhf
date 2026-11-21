@@ -18,7 +18,7 @@ O MHF compara cada página com os templates das 20 entidades protegidas (𝒯, m
    - login **mais a página inicial** em Chase, Bank of America, Wells Fargo e Facebook;
    - **página de rastreamento** no DHL;
    - **Itaucard** no Itaú;
-   - Microsoft **corporativo** (`login.microsoftonline.com/common/oauth2/authorize`, imitado por cerca de 4.600 phishings) **e pessoal** (`login.live.com`).
+   - Microsoft **corporativo** (`login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000`, imitado por cerca de 4.600 phishings; sem o `client_id` do Outlook a Microsoft devolve a página de erro AADSTS900144 em vez do formulário, o que só apareceu na captura de 21/11/2026) **e pessoal** (`login.live.com`).
 4. **Adobe e as iscas do OneDrive e do Google Docs continuam em 𝒯.** O resultado é reportado por marca, e as iscas temáticas, que não copiam nenhuma página real, são discutidas como limitação.
 5. **A Apple usa `account.apple.com`** (snapshots do Wayback de 2025 e 2026, mais a captura ao vivo). O Wayback bloqueia `appleid.apple.com` e `icloud.com`, então 2019–2023 ficam sem template, e isso é documentado como limitação.
    - A decisão original era "só ao vivo". A implementação descobriu que o domínio novo do Apple ID não é bloqueado, e o Lucas aprovou a mudança em 21/11/2026.
@@ -49,7 +49,7 @@ O MHF compara cada página com os templates das 20 entidades protegidas (𝒯, m
  "nomes_phish360": ["office", "outlook", "microsoft"],
  "dominios": ["microsoft.com", "microsoftonline.com", "live.com", "office.com", "office365.com", "outlook.com", "..."],
  "logins": [
-   {"variante": "corporativo", "url": "https://login.microsoftonline.com/common/oauth2/authorize", "locale": "en-US"},
+   {"variante": "corporativo", "url": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000", "locale": "en-US"},
    {"variante": "pessoal", "url": "https://login.live.com/login.srf", "locale": "en-US"}
  ]}
 ```
