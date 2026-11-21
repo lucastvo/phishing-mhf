@@ -99,6 +99,37 @@ class TestAbrirImagem(unittest.TestCase):
             img = visual.abrir_imagem(caminho)
             self.assertEqual((img.mode, img.size), ("RGB", (400, 300)))
 
+    def test_transparencia_composta_sobre_branco(self):
+        # Capturas RGBA do Phishpedia têm áreas transparentes com RGB = 0. Descartar o alfa deixaria essas
+        # áreas pretas; o navegador mostra a página sobre fundo branco.
+        rgba = Image.new("RGBA", (100, 50), (0, 0, 0, 0))
+        ImageDraw.Draw(rgba).rectangle([0, 0, 49, 49], fill=(255, 0, 0, 255))
+        ImageDraw.Draw(rgba).rectangle([50, 0, 74, 49], fill=(0, 0, 0, 128))  # meio transparente
+        paleta = Image.new("P", (20, 20), 0)
+        paleta.putpalette([0, 0, 0, 0, 0, 255] + [0] * 762)
+        ImageDraw.Draw(paleta).rectangle([0, 0, 9, 19], fill=1)
+        with tempfile.TemporaryDirectory() as pasta:
+            rgba.save(os.path.join(pasta, "rgba.png"))
+            paleta.save(os.path.join(pasta, "p.png"), transparency=0)  # índice 0 transparente
+            img = visual.abrir_imagem(os.path.join(pasta, "rgba.png"))
+            self.assertEqual(img.mode, "RGB")
+            self.assertEqual(img.getpixel((10, 10)), (255, 0, 0))       # opaco: intacto
+            self.assertEqual(img.getpixel((90, 10)), (255, 255, 255))   # transparente: branco, não preto
+            self.assertTrue(all(120 <= c <= 135 for c in img.getpixel((60, 10))))  # meio a meio
+            img_p = visual.abrir_imagem(os.path.join(pasta, "p.png"))
+            self.assertEqual((img_p.getpixel((5, 5)), img_p.getpixel((15, 5))), ((0, 0, 255), (255, 255, 255)))
+
+
+class TestComparar(unittest.TestCase):
+    def test_comparar_devolve_componentes_separados(self):
+        import numpy as np
+        v1 = {"h": "0" * 16, "e": np.array([1.0, 0.0], np.float32)}
+        v2 = {"h": "0" * 15 + "f", "e": np.array([0.0, 1.0], np.float32)}
+        self.assertEqual(visual.comparar(v1, v1), {"sim_h": 1.0, "cos_e": 1.0})
+        r = visual.comparar(v1, v2)
+        self.assertEqual(r["sim_h"], 1 - 4 / 64)   # 4 bits diferentes em 64
+        self.assertAlmostEqual(r["cos_e"], 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()

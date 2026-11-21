@@ -37,17 +37,28 @@ def classe_de_tela(largura: int) -> str:
     return min(CLASSES_TELA, key=lambda c: abs(CLASSES_TELA[c][0] - largura))
 
 
-def abrir_imagem(caminho: str) -> Image.Image:
-    """Abre a captura em RGB, tolerando PNG truncado e imagens muito altas."""
-    with Image.open(caminho) as img:
+def abrir_imagem(origem) -> Image.Image:
+    """Abre a captura (caminho ou arquivo em memória) em RGB, tolerando PNG truncado e imagens muito
+    altas. Áreas transparentes são compostas sobre branco, como o navegador mostra a página: as capturas
+    RGBA do Phishpedia têm regiões com alfa 0 e RGB 0, que ficariam pretas se o alfa fosse descartado."""
+    with Image.open(origem) as img:
+        if img.mode in ("RGBA", "LA", "PA") or "transparency" in img.info:
+            rgba = img.convert("RGBA")
+            return Image.alpha_composite(Image.new("RGBA", rgba.size, (255, 255, 255, 255)), rgba).convert("RGB")
         return img.convert("RGB")
 
 
-def primeira_dobra(img: Image.Image, classe: str) -> Image.Image:
-    """Recorta o topo da captura com a altura da tela: a largura da imagem vezes a proporção da classe
-    (ex.: 1366 de largura em 1366x768 → 768 px). Captura mais baixa que isso é usada como está."""
+def altura_da_dobra(largura: int, classe: str) -> int:
+    """Altura da primeira dobra: a largura da imagem vezes a proporção da classe (ex.: 1366 de largura
+    em 1366x768 → 768 px)."""
     largura_classe, altura_classe = CLASSES_TELA[classe]
-    altura = int(img.width * altura_classe / largura_classe + 0.5)
+    return int(largura * altura_classe / largura_classe + 0.5)
+
+
+def primeira_dobra(img: Image.Image, classe: str) -> Image.Image:
+    """Recorta o topo da captura com a altura da tela (altura_da_dobra). Captura mais baixa que isso é
+    usada como está."""
+    altura = altura_da_dobra(img.width, classe)
     return img if img.height <= altura else img.crop((0, 0, img.width, altura))
 
 
@@ -118,3 +129,10 @@ class Embedder:
 def cosseno(a: np.ndarray, b: np.ndarray) -> float:
     """Similaridade do cosseno entre dois embeddings."""
     return float(np.dot(a, b) / max(float(np.linalg.norm(a) * np.linalg.norm(b)), 1e-12))
+
+
+def comparar(v1: dict, v2: dict) -> dict:
+    """Compara duas impressões visuais {"h": hash em hexadecimal, "e": embedding}. Devolve os componentes
+    separados, como estrutural.comparar: sim_h = 1 − d_H/n e cos_e = cosseno. A combinação dos escores é
+    da regra de decisão (etapa 5)."""
+    return {"sim_h": sim_hash(v1["h"], v2["h"]), "cos_e": cosseno(v1["e"], v2["e"])}

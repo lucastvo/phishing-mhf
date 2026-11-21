@@ -11,14 +11,15 @@ de 64 e 256 bits e o embedding da MobileNetV3 de cada modelo pedido (--modelos s
     <saida>.jsonl         uma linha por captura: id, classe, tamanho original, hashes, metadados e tempos;
     <saida>_<modelo>.npy  embeddings (float32, norma 1), uma linha por captura, na ordem do JSONL;
     <saida>.erros.tsv     capturas que não puderam ser lidas (a rodada segue sem elas).
-As imagens são processadas uma de cada vez, como no uso real, e o tempo de cada etapa é medido sem a
-leitura do disco à parte (abrir = ler + decodificar + recortar a dobra).
+As imagens são processadas uma de cada vez, como no uso real, e o tempo de cada etapa é medido à parte:
+ler (disco), abrir (decodificar, compor a transparência e recortar a dobra), phash64, phash256 e cada modelo.
 
 Desenho: docs/especificacoes/2026-11-21-componente-visual.md
 """
 
 import argparse
 import csv
+import io
 import json
 import os
 import statistics
@@ -54,20 +55,29 @@ def itens_de_pares(pares, raiz_templates):
 
 def extrair_itens(itens, embedders, out, progresso=1000):
     """Calcula h e e de cada item, uma imagem de cada vez, e grava uma linha JSON por captura em `out`.
-    Devolve {"ids": [...], "emb": {modelo: [vetores]}, "erros": [(id, erro)], "tempos": {etapa: [ms]}},
-    com os embeddings na mesma ordem das linhas gravadas."""
+    Devolve {"ids": [...], "emb": {modelo: [vetores]}, "erros": [(id, erro)], "tempos": {etapa: [ms]},
+    "contagens": {...}}, com os embeddings na mesma ordem das linhas gravadas. As contagens são as do
+    desenho (§5.1 e §5.2): capturas mais baixas que a dobra (usadas como estão) e capturas cuja largura
+    difere da largura da classe (ex.: 800x600 na classe 1280x960, sem template do mesmo tamanho)."""
     r = {"ids": [], "emb": {m: [] for m in embedders}, "erros": [],
-         "tempos": {etapa: [] for etapa in ("abrir", "phash", *embedders)}}
+         "tempos": {etapa: [] for etapa in ("ler", "abrir", "phash64", "phash256", *embedders)},
+         "contagens": {"abaixo_da_dobra": 0, "largura_diferente_da_classe": 0}}
     for i, item in enumerate(itens, 1):
         try:
             t0 = time.perf_counter()
-            img = visual.abrir_imagem(item["caminho"])
+            with open(item["caminho"], "rb") as f:
+                dados = f.read()
+            t1 = time.perf_counter()
+            img = visual.abrir_imagem(io.BytesIO(dados))
             classe = item.get("classe") or visual.classe_de_tela(img.width)
             dobra = visual.primeira_dobra(img, classe)
-            t1 = time.perf_counter()
-            h64, h256 = visual.phash(dobra), visual.phash(dobra, bits=256)
             t2 = time.perf_counter()
-            tempos = {"abrir": (t1 - t0) * 1000, "phash": (t2 - t1) * 1000}
+            h64 = visual.phash(dobra)
+            t3 = time.perf_counter()
+            h256 = visual.phash(dobra, bits=256)
+            t4 = time.perf_counter()
+            tempos = {"ler": (t1 - t0) * 1000, "abrir": (t2 - t1) * 1000,
+                      "phash64": (t3 - t2) * 1000, "phash256": (t4 - t3) * 1000}
             vetores = {}
             for modelo, emb in embedders.items():
                 t = time.perf_counter()
@@ -82,6 +92,8 @@ def extrair_itens(itens, embedders, out, progresso=1000):
                               "tempos_ms": {k: round(v, 2) for k, v in tempos.items()}},
                              ensure_ascii=False) + "\n")
         r["ids"].append(item["id"])
+        r["contagens"]["abaixo_da_dobra"] += img.height < visual.altura_da_dobra(img.width, classe)
+        r["contagens"]["largura_diferente_da_classe"] += img.width != visual.CLASSES_TELA[classe][0]
         for modelo, v in vetores.items():
             r["emb"][modelo].append(v)
         for etapa, ms in tempos.items():
@@ -97,7 +109,7 @@ def _resumo_tempos(tempos):
         if ms:
             ordenados = sorted(ms)
             p95 = ordenados[min(len(ordenados) - 1, int(0.95 * len(ordenados)))]
-            linhas.append(f"  {etapa:6s} mediana {statistics.median(ordenados):7.1f} ms | p95 {p95:7.1f} ms")
+            linhas.append(f"  {etapa:8s} mediana {statistics.median(ordenados):7.1f} ms | p95 {p95:7.1f} ms")
     return "\n".join(linhas)
 
 
@@ -141,6 +153,9 @@ def main():
         os.remove(caminho_erros)  # de uma rodada anterior: não vale para esta
 
     print(f"Extraídas: {len(r['ids'])} | erros: {len(r['erros'])} | {time.perf_counter() - inicio:.0f} s no total")
+    c = r["contagens"]
+    print(f"Mais baixas que a dobra (usadas como estão): {c['abaixo_da_dobra']} | "
+          f"largura diferente da classe: {c['largura_diferente_da_classe']}")
     print("Tempo por imagem (uma de cada vez):\n" + _resumo_tempos(r["tempos"]))
 
 
