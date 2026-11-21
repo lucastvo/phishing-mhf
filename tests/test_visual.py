@@ -1,0 +1,81 @@
+import os
+import sys
+import tempfile
+import unittest
+
+from PIL import Image, ImageDraw
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+from mhf import visual  # noqa: E402
+
+
+def _pagina(largura, altura, cor=(255, 255, 255), caixa=(0, 90, 200)):
+    """Imagem sintética: fundo, um cabeçalho e uma "caixa de login" centralizada."""
+    img = Image.new("RGB", (largura, altura), cor)
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, 0, largura, altura // 10], fill=(30, 30, 30))
+    d.rectangle([largura // 3, altura // 4, 2 * largura // 3, altura // 2], fill=caixa)
+    return img
+
+
+class TestClasseDeTela(unittest.TestCase):
+    def test_classe_de_tela(self):
+        casos = {1280: "1280x960", 1366: "1366x768", 1920: "1920x1080",
+                 800: "1280x960",    # 800x600 do Phishpedia: 4:3, sem template desse tamanho
+                 997: "1280x960", 1374: "1366x768", 1381: "1366x768", 1600: "1366x768", 1700: "1920x1080"}
+        for largura, esperado in casos.items():
+            with self.subTest(largura=largura):
+                self.assertEqual(visual.classe_de_tela(largura), esperado)
+
+
+class TestPrimeiraDobra(unittest.TestCase):
+    def test_primeira_dobra_pagina_inteira(self):
+        img = Image.new("RGB", (1366, 85000), "white")  # captura de página inteira do Phishpedia benign
+        self.assertEqual(visual.primeira_dobra(img, "1366x768").size, (1366, 768))
+
+    def test_primeira_dobra_proporcional_a_largura(self):
+        # largura fora do padrão: a altura segue a proporção da classe
+        self.assertEqual(visual.primeira_dobra(Image.new("RGB", (1374, 3000)), "1366x768").size, (1374, 772))  # 772,497
+        self.assertEqual(visual.primeira_dobra(Image.new("RGB", (800, 600)), "1280x960").size, (800, 600))
+
+    def test_primeira_dobra_imagem_menor(self):
+        img = Image.new("RGB", (1280, 467))  # mais baixa que a dobra: usada como está
+        self.assertEqual(visual.primeira_dobra(img, "1280x960").size, (1280, 467))
+
+
+class TestHashPerceptual(unittest.TestCase):
+    def test_phash_tamanhos_e_identidade(self):
+        img = _pagina(1366, 768)
+        h64, h256 = visual.phash(img), visual.phash(img, bits=256)
+        self.assertEqual((len(h64), len(h256)), (16, 64))  # hexadecimal
+        self.assertEqual(visual.sim_hash(h64, visual.phash(img.copy())), 1.0)
+        with self.assertRaises(ValueError):
+            visual.phash(img, bits=100)
+
+    def test_sim_hash_ordena_por_semelhanca(self):
+        base = _pagina(1366, 768)
+        parecida = _pagina(1366, 768, caixa=(0, 100, 210))    # mesma página, cor um pouco diferente
+        diferente = Image.new("RGB", (1366, 768), (20, 20, 20))
+        ImageDraw.Draw(diferente).ellipse([100, 300, 600, 700], fill=(250, 250, 0))
+        h = visual.phash(base)
+        self.assertGreater(visual.sim_hash(h, visual.phash(parecida)), visual.sim_hash(h, visual.phash(diferente)))
+        with self.assertRaises(ValueError):  # hashes de tamanhos diferentes não se comparam
+            visual.sim_hash(h, visual.phash(base, bits=256))
+
+
+class TestAbrirImagem(unittest.TestCase):
+    def test_png_truncado_abre(self):
+        with tempfile.TemporaryDirectory() as pasta:
+            caminho = os.path.join(pasta, "shot.png")
+            _pagina(400, 300).save(caminho)
+            with open(caminho, "rb") as f:
+                dados = f.read()
+            with open(caminho, "wb") as f:  # bloco final corrompido, como em alguns PNGs do Phish360
+                f.write(dados[: len(dados) - 40])
+            img = visual.abrir_imagem(caminho)
+            self.assertEqual((img.mode, img.size), ("RGB", (400, 300)))
+
+
+if __name__ == "__main__":
+    unittest.main()
