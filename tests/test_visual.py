@@ -64,6 +64,29 @@ class TestHashPerceptual(unittest.TestCase):
             visual.sim_hash(h, visual.phash(base, bits=256))
 
 
+class TestEmbedder(unittest.TestCase):
+    # pesos=False: rede com pesos aleatórios (semente fixa), para testar sem rede e sem baixar pesos
+    def test_embedding_dimensao_e_norma(self):
+        import numpy as np
+        for modelo, dim in (("small", 576), ("large", 960)):
+            with self.subTest(modelo=modelo):
+                emb = visual.Embedder(modelo, pesos=False)
+                v = emb.embed(_pagina(1366, 768))
+                self.assertEqual((emb.dim, v.shape, v.dtype), (dim, (dim,), np.float32))
+                self.assertAlmostEqual(float(np.linalg.norm(v)), 1.0, places=5)
+
+    def test_embedding_deterministico(self):
+        img = _pagina(1280, 960)
+        a = visual.Embedder("small", pesos=False).embed(img)
+        b = visual.Embedder("small", pesos=False).embed(img)  # outra instância, mesma semente
+        self.assertAlmostEqual(visual.cosseno(a, b), 1.0, places=5)
+        self.assertAlmostEqual(visual.cosseno(a, a), 1.0, places=5)
+
+    def test_modelo_desconhecido(self):
+        with self.assertRaises(ValueError):
+            visual.Embedder("medium", pesos=False)
+
+
 class TestAbrirImagem(unittest.TestCase):
     def test_png_truncado_abre(self):
         with tempfile.TemporaryDirectory() as pasta:

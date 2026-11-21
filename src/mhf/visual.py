@@ -14,7 +14,10 @@ Desenho: docs/especificacoes/2026-11-21-componente-visual.md
 
 from __future__ import annotations
 
+import os
+
 import imagehash
+import numpy as np
 from PIL import Image, ImageFile
 
 # Armadilhas conhecidas dos datasets: PNGs do Phish360 com bloco final corrompido e capturas de página
@@ -61,3 +64,57 @@ def sim_hash(a: str, b: str) -> float:
         raise ValueError("hashes de tamanhos diferentes")
     n = 4 * len(a)
     return 1 - bin(int(a, 16) ^ int(b, 16)).count("1") / n
+
+
+# Pesos pré-treinados ficam em data/torch (fora do git): a pasta padrão do PyTorch (~/.cache) não é
+# gravável na máquina do Lucas. Uma TORCH_HOME já definida tem prioridade.
+_PASTA_PESOS = os.path.join(os.path.dirname(__file__), "..", "..", "data", "torch")
+
+_MEDIA_IMAGENET, _DESVIO_IMAGENET = (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
+
+
+class Embedder:
+    """Embedding e da MobileNetV3 pré-treinada na ImageNet: "small" (principal, 576 dimensões) ou
+    "large" (comparação, 960). A entrada é a dobra redimensionada para 224x224 (sem recorte central:
+    a borda da página faz parte do layout) e normalizada como na ImageNet; a saída é o vetor depois do
+    global average pooling, antes do classificador, com norma 1 — assim o cosseno é um produto interno.
+    `pesos=False` cria a rede com pesos aleatórios e semente fixa, para testes sem rede."""
+
+    _MODELOS = {"small": ("mobilenet_v3_small", "MobileNet_V3_Small_Weights", "IMAGENET1K_V1"),
+                "large": ("mobilenet_v3_large", "MobileNet_V3_Large_Weights", "IMAGENET1K_V2")}
+
+    def __init__(self, modelo: str = "small", pesos: bool = True):
+        if modelo not in self._MODELOS:
+            raise ValueError(f"modelo deve ser um de {sorted(self._MODELOS)}")
+        import torch
+        import torchvision.models as modelos
+        from torchvision import transforms
+
+        construtor, classe_pesos, versao = self._MODELOS[modelo]
+        if pesos:
+            os.environ.setdefault("TORCH_HOME", os.path.abspath(_PASTA_PESOS))
+            w = getattr(getattr(modelos, classe_pesos), versao)
+        else:
+            torch.manual_seed(0)
+            w = None
+        self.modelo = modelo
+        self._torch = torch
+        self._rede = getattr(modelos, construtor)(weights=w).eval()
+        self.dim = self._rede.classifier[0].in_features
+        self._preparar = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(_MEDIA_IMAGENET, _DESVIO_IMAGENET),
+        ])
+
+    def embed(self, img: Image.Image) -> np.ndarray:
+        """Vetor float32 de norma 1 para uma imagem (já recortada na primeira dobra)."""
+        with self._torch.inference_mode():
+            x = self._preparar(img.convert("RGB")).unsqueeze(0)
+            v = self._rede.avgpool(self._rede.features(x)).flatten(1)[0].numpy().astype(np.float32)
+        return v / max(float(np.linalg.norm(v)), 1e-12)
+
+
+def cosseno(a: np.ndarray, b: np.ndarray) -> float:
+    """Similaridade do cosseno entre dois embeddings."""
+    return float(np.dot(a, b) / max(float(np.linalg.norm(a) * np.linalg.norm(b)), 1e-12))
