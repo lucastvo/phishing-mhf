@@ -12,13 +12,20 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import re
 from urllib.parse import urlsplit
 
 import tldextract
 
-# Public Suffix List embutida no pacote (sem rede, sem cache em disco): o resultado não muda entre
-# rodadas nem depende de quando o script roda, o que mantém a avaliação reproduzível.
-_EXTRATOR = tldextract.TLDExtract(suffix_list_urls=(), cache_dir=None)
+# Public Suffix List embutida no pacote (sem rede, sem cache em disco; versão do tldextract fixada no
+# requirements.txt): o resultado não muda entre rodadas, o que mantém a avaliação reproduzível.
+# Inclui a seção PRIVADA da lista (hospedagem compartilhada: blob.core.windows.net, github.io,
+# appspot.com…), para que cada cliente desses serviços conte como um dono diferente.
+_EXTRATOR = tldextract.TLDExtract(suffix_list_urls=(), cache_dir=None, include_psl_private_domains=True)
+
+# Esquemas em que o navegador trata "\" como "/" (padrão WHATWG). Sem esquema também tratamos assim.
+_ESQUEMA = re.compile(r"^([a-zA-Z][a-zA-Z0-9+.\-]*):")
+_ESQUEMAS_ESPECIAIS = {"http", "https", "ws", "wss", "ftp"}
 
 # Campo da tabela com os rótulos de cada dataset.
 _CAMPO_ROTULOS = {"phishpedia": "nomes_phishpedia", "phish360": "nomes_phish360"}
@@ -63,6 +70,10 @@ def _host(url_ou_host: str) -> str:
     texto = url_ou_host.strip()
     if not texto:
         return ""
+    esquema = _ESQUEMA.match(texto)
+    if esquema is None or esquema.group(1).lower() in _ESQUEMAS_ESPECIAIS:
+        # Como no navegador: em http://evil.net\@paypal.com/ o host é evil.net, não paypal.com.
+        texto = texto.replace("\\", "/")
     if "://" not in texto:
         texto = "//" + texto  # sem esquema: o urlsplit só reconhece o host depois de "//"
     try:

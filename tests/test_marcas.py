@@ -20,6 +20,15 @@ class TestDominioRegistravel(unittest.TestCase):
             "http://paypal.com@evil.net/login": "evil.net",             # usuário antes do @: o host real é evil.net
             "http://192.168.0.10/login": "192.168.0.10",                # IP é devolvido como está
             "": "",
+            # barra invertida: o navegador a trata como "/", então o host real é evil.net
+            "http://evil.net\\@paypal.com/": "evil.net",
+            "https://evil.net\\@www.paypal.com/signin": "evil.net",
+            "http:\\\\evil.net\\@paypal.com": "evil.net",
+            "evil.net\\@paypal.com": "evil.net",
+            # hospedagem compartilhada (seção privada da Public Suffix List): cada cliente é um dono diferente
+            "https://ojoro2.blob.core.windows.net/doo/o77v.html": "ojoro2.blob.core.windows.net",
+            "https://fulano.github.io/login": "fulano.github.io",
+            "https://golpe-123.appspot.com/": "golpe-123.appspot.com",
         }
         for url, esperado in casos.items():
             with self.subTest(url=url):
@@ -96,6 +105,32 @@ class TestTabelaReal(unittest.TestCase):
                     with self.subTest(campo=campo, valor=n):
                         self.assertNotIn(chave, vistos, f"também em {vistos.get(chave)}")
                     vistos[chave] = e["entidade"]
+
+    def test_sem_dominio_de_hospedagem_compartilhada(self):
+        # Domínios onde qualquer pessoa publica páginas: na lista de uma marca, liberariam phishing hospedado neles.
+        compartilhados = {"windows.net", "sharepoint.com", "1drv.ms", "amazonaws.com", "appspot.com", "googleapis.com",
+                          "googleusercontent.com", "firebaseapp.com", "web.app", "azurewebsites.net", "blogspot.com",
+                          "github.io", "000webhostapp.com", "weebly.com", "wixsite.com", "netlify.app",
+                          "dropboxusercontent.com", "fbsbx.com", "myportfolio.com"}
+        for e in self.t:
+            with self.subTest(entidade=e["entidade"]):
+                self.assertFalse(compartilhados & set(e["dominios"]))
+
+    def test_phishing_em_hospedagem_da_microsoft_nao_e_legitimo(self):
+        # URLs de phishing reais dos datasets, hospedadas em serviços de clientes da Microsoft
+        for url in ("https://ojoro2.blob.core.windows.net/doo/o77v.html", "https://yxip.z6.web.core.windows.net/",
+                    "https://lu9-my.sharepoint.com/personal/anne46523_5tb_in/acceptinvite.aspx", "https://1drv.ms/u/s!x"):
+            with self.subTest(url=url):
+                self.assertFalse(marcas.dominio_legitimo(self.t, "Microsoft", url))
+
+    def test_dominios_oficiais_de_pais(self):
+        # páginas legítimas que aparecem entre os benignos dos datasets (evitar falso positivo nelas)
+        for entidade, url in (("Google", "https://www.google.co.in/"), ("Google", "https://www.google.de/"),
+                              ("Santander", "https://www.santander.co.uk/"), ("Santander", "https://www.bancosantander.es/"),
+                              ("eBay", "https://www.ebay.nl/"), ("Amazon", "https://www.amazon.cn/"),
+                              ("Microsoft", "https://www.microsoft365.com/"), ("DHL", "https://www.dhl.ru/")):
+            with self.subTest(entidade=entidade, url=url):
+                self.assertTrue(marcas.dominio_legitimo(self.t, entidade, url))
 
     def test_lida_pela_captura_com_ids_unicos(self):
         from mhf import templates

@@ -9,4 +9,4 @@ faiss-cpu
 torch
 torchvision
 playwright
-tldextract
+tldextract==5.4.0
