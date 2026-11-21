@@ -356,5 +356,160 @@ class TestSeletorPorVariante(unittest.TestCase):  # I5
         self.assertEqual({e["seletor"] for e in plano}, {"#agencia"})
 
 
+# Variante buscada por prefixo (ex.: Amazon): o Wayback não tem uma URL única com vários anos, só milhares
+# de URLs de sessão (/ap/signin/<sessão>?openid...), e parte dos snapshots é a tela de CAPTCHA.
+AMAZON = templates.VarianteLogin("Amazon", "login", "https://www.amazon.com/ap/signin", "en-US",
+                                 busca="prefixo", evitar=("captcha",), exigir=("ap_email",))
+U1 = "https://www.amazon.com/ap/signin/111?openid.return_to=a"
+U2 = "https://www.amazon.com/ap/signin/222?openid.return_to=b"
+
+
+class TestBuscaPorPrefixo(unittest.TestCase):
+    def test_ler_marcas_campos_de_busca(self):
+        marcas = [{"entidade": "Amazon", "logins": [
+            {"variante": "login", "url": "https://www.amazon.com/ap/signin", "locale": "en-US",
+             "busca": "prefixo", "evitar": ["captcha"], "exigir": ["ap_email", "name=\"email\""]}]}]
+        with tempfile.TemporaryDirectory() as pasta:
+            caminho = os.path.join(pasta, "marcas.json")
+            with open(caminho, "w", encoding="utf-8") as f:
+                json.dump(marcas, f)
+            v = templates.ler_marcas(caminho)[0]
+        self.assertEqual((v.busca, v.evitar, v.exigir), ("prefixo", ("captcha",), ("ap_email", 'name="email"')))
+        padrao = templates.ler_marcas(CAMINHO_EXEMPLO)[0]  # sem os campos: busca exata, sem filtro de conteúdo
+        self.assertEqual((padrao.busca, padrao.evitar, padrao.exigir), ("exata", (), ()))
+
+    def test_ler_marcas_recusa_busca_desconhecida(self):
+        marcas = [{"entidade": "X", "logins": [{"variante": "p", "url": "https://x.com/", "locale": "en-US",
+                                                "busca": "prefix"}]}]  # erro de digitação na tabela
+        with tempfile.TemporaryDirectory() as pasta:
+            caminho = os.path.join(pasta, "marcas.json")
+            with open(caminho, "w", encoding="utf-8") as f:
+                json.dump(marcas, f)
+            with self.assertRaises(ValueError):
+                templates.ler_marcas(caminho)
+
+    def test_html_aceitavel(self):
+        ok = templates.html_aceitavel
+        self.assertTrue(ok("<input id=ap_email>", evitar=("captcha",), exigir=("ap_email",)))
+        self.assertFalse(ok("<input id=ap_email><img id=auth-CAPTCHA-image>", ("captcha",), ("ap_email",)))  # sem caixa
+        self.assertFalse(ok("<p>Looking for something?</p>", ("captcha",), ("ap_email",)))  # falta o exigido
+        self.assertTrue(ok("<input name=\"email\">", (), ("ap_email", 'name="email"')))  # basta um dos exigidos
+        self.assertTrue(ok("qualquer coisa", (), ()))
+        self.assertFalse(ok(None, (), ()))  # download falhou: não dá para conferir
+
+    def test_escolhe_o_mais_proximo_que_passa_no_conteudo(self):
+        caps = [("20200102000000", 200, U1), ("20200110000000", 200, U2), ("20191201000000", 200, U2)]
+        vistos = []
+
+        def aceitar(ts, url):
+            vistos.append((ts, url))
+            return ts != "20200102000000"  # o mais próximo é a tela de CAPTCHA
+
+        plano = templates.planejar_variante(AMAZON, caps, anos=range(2020, 2021), aceitar=aceitar)
+        e = plano[0]
+        self.assertEqual((e["id"], e["timestamp"], e["url_arquivada"]), ("amazon/login/2020-01-10", "20200110000000", U2))
+        self.assertEqual(e["url_login"], "https://www.amazon.com/ap/signin")  # a variante continua identificada
+        self.assertEqual(vistos, [("20200102000000", U1), ("20200110000000", U2)])  # do mais próximo para o mais longe
+        self.assertNotIn("url_arquivada", plano[-1])  # ao vivo usa a URL da variante
+
+    def test_limite_de_verificacoes_vira_buraco(self):
+        caps = [(f"202001{d:02d}000000", 200, U1) for d in range(1, 21)]
+        chamadas = []
+        plano = templates.planejar_variante(AMAZON, caps, anos=range(2020, 2021),
+                                            aceitar=lambda ts, url: chamadas.append(ts) or False)
+        self.assertEqual(plano[0]["buraco"], "sem_snapshot_valido")
+        self.assertEqual(len(chamadas), templates.MAX_VERIFICACOES_CONTEUDO)
+
+    def test_variante_exata_nao_muda(self):
+        # o plano já revisado não pode mudar: sem url_arquivada e sem filtro de conteúdo nas variantes exatas
+        plano = templates.planejar_variante(PAYPAL, [("20200101000000", 200)], anos=range(2020, 2021),
+                                            aceitar=lambda ts, url: False)
+        self.assertEqual(plano[0]["id"], "paypal/padrao/2020-01-01")
+        self.assertNotIn("url_arquivada", plano[0])
+
+    def test_rotulo_unico_quando_dois_snapshots_caem_no_mesmo_dia(self):
+        # 2/jul/2021 fica a ~182,5 dias dos dois alvos: o das 10h é o mais próximo de 2021, o das 11h, de 2022
+        caps = [("20210702100000", 200, U1), ("20210702110000", 200, U2)]
+        plano = templates.planejar_variante(AMAZON, caps, anos=range(2021, 2023),
+                                            aceitar=lambda ts, url: True)
+        ids = [e["id"] for e in plano if e["origem"] == "wayback"]
+        self.assertEqual(ids, ["amazon/login/2021-07-02", "amazon/login/2021-07-02-1100"])
+
+    def test_mescla_e_pendentes_comparam_a_url_arquivada(self):
+        antiga = {**_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"), "url_arquivada": U1}
+        nova = {**_entrada("x/p/2020-01-01"), "url_arquivada": U2}  # mesmo dia e timestamp, outra URL de sessão
+        self.assertIsNone(templates.mesclar_plano([nova], [antiga])[0]["aprovado"])
+        with tempfile.TemporaryDirectory() as raiz:
+            _escrever_meta(raiz, "x/p/2020-01-01", {**META_OK, "url_login": "https://x.com/login",
+                                                    "timestamp": "20200101000000", "url_arquivada": U1})
+            self.assertEqual([e["id"] for e in templates.entradas_pendentes([nova], raiz)], ["x/p/2020-01-01"])
+            self.assertEqual(templates.entradas_pendentes([{**nova, "url_arquivada": U1}], raiz), [])
+
+    def test_url_da_captura(self):
+        self.assertEqual(templates.url_da_captura({"url_login": "https://a.com/x", "url_arquivada": U1}), U1)
+        self.assertEqual(templates.url_da_captura({"url_login": "https://a.com/x"}), "https://a.com/x")
+
+
+class TestAchadosDaRevisaoPrefixo(unittest.TestCase):
+    def test_erro_de_download_nao_e_conteudo_ruim(self):
+        # aceitar devolve None quando o download falhou: o ano não pode trocar em silêncio de snapshot
+        caps = [("20200102000000", 200, U1), ("20200110000000", 200, U2)]
+        plano = templates.planejar_variante(AMAZON, caps, anos=range(2020, 2021), aceitar=lambda ts, url: None)
+        self.assertEqual(plano[0]["buraco"], "erro_conferencia")
+
+    def test_mescla_mantem_a_variante_quando_a_conferencia_falhou(self):
+        antigo = [{**_entrada("amazon/login/2020-01-02", aprovado=True, aprovado_captura="t1"),
+                   "entidade": "Amazon", "variante": "login", "url_arquivada": U1}]
+        novo = templates.planejar_variante(AMAZON, [("20200102000000", 200, U1), ("20210105000000", 200, U2)],
+                                           anos=range(2020, 2022),
+                                           aceitar=lambda ts, url: None if ts.startswith("2020") else True)
+        self.assertEqual(templates.mesclar_plano(novo, antigo), antigo)
+
+    def test_limpar_pasta_da_captura(self):
+        with tempfile.TemporaryDirectory() as raiz:
+            _escrever_meta(raiz, "x/p/2020-01-01", META_OK)
+            pasta = templates.pasta_entrada(raiz, "x/p/2020-01-01")
+            with open(os.path.join(pasta, "outro.txt"), "w") as f:
+                f.write("x")
+            templates.limpar_pasta_captura(pasta)
+            self.assertEqual(os.listdir(pasta), ["outro.txt"])  # só os arquivos da captura saem
+            templates.limpar_pasta_captura(os.path.join(raiz, "nao", "existe"))  # pasta nova: nada a fazer
+
+    def test_ler_marcas_valida_evitar_e_exigir(self):
+        casos = [{"busca": "prefixo", "exigir": "ap_email"},        # string em vez de lista: aceitaria tudo
+                 {"busca": "prefixo", "evitar": [1]},               # não é texto
+                 {"evitar": ["captcha"]}]                           # filtro numa busca exata seria ignorado
+        for extra in casos:
+            marcas = [{"entidade": "X", "logins": [{"variante": "p", "url": "https://x.com/", "locale": "en-US",
+                                                    **extra}]}]
+            with self.subTest(extra=extra), tempfile.TemporaryDirectory() as pasta:
+                caminho = os.path.join(pasta, "marcas.json")
+                with open(caminho, "w", encoding="utf-8") as f:
+                    json.dump(marcas, f)
+                with self.assertRaises(ValueError):
+                    templates.ler_marcas(caminho)
+
+    def test_data_da_captura_so_se_for_deste_snapshot(self):
+        e = {**_entrada("x/p/2020-01-01"), "url_arquivada": U2}
+        with tempfile.TemporaryDirectory() as raiz:
+            _escrever_meta(raiz, "x/p/2020-01-01", {**META_OK, "url_login": "https://x.com/login",
+                                                    "timestamp": "20200101000000", "url_arquivada": U1,
+                                                    "data_captura": "t1"})
+            self.assertIsNone(templates.data_captura_valida(raiz, e))  # meta de outra URL de sessão
+            self.assertEqual(templates.data_captura_valida(raiz, {**e, "url_arquivada": U1}), "t1")
+
+
+class TestDownloadComMuitosCabecalhos(unittest.TestCase):
+    def test_limite_de_cabecalhos_aumentado(self):
+        # Algumas respostas do Wayback (ex.: facebook.com/index.php de 2022) trazem mais de 100 cabeçalhos;
+        # o http.client recusa acima de 100 ("got more than 100 headers") e o HTML original não era salvo.
+        import http.client
+        import importlib.util
+        caminho = os.path.join(os.path.dirname(__file__), "..", "scripts", "capturar_templates.py")
+        spec = importlib.util.spec_from_file_location("capturar_templates", caminho)
+        spec.loader.exec_module(importlib.util.module_from_spec(spec))
+        self.assertGreaterEqual(http.client._MAXHEADERS, 1000)
+
+
 if __name__ == "__main__":
     unittest.main()

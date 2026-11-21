@@ -1,0 +1,4877 @@
+[
+ {
+  "id": "paypal/login/2019-01-02",
+  "entidade": "PayPal",
+  "variante": "login",
+  "url_login": "https://www.paypal.com/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190102025722",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:05:18"
+ },
+ {
+  "id": "paypal/login/2020-01-01",
+  "entidade": "PayPal",
+  "variante": "login",
+  "url_login": "https://www.paypal.com/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200101192011",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:06:01"
+ },
+ {
+  "id": "paypal/login/2021-01-01",
+  "entidade": "PayPal",
+  "variante": "login",
+  "url_login": "https://www.paypal.com/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210101025324",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:06:47"
+ },
+ {
+  "id": "paypal/login/2022-01-01",
+  "entidade": "PayPal",
+  "variante": "login",
+  "url_login": "https://www.paypal.com/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101032711",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:07:10"
+ },
+ {
+  "id": "paypal/login/2023-01-01",
+  "entidade": "PayPal",
+  "variante": "login",
+  "url_login": "https://www.paypal.com/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101003300",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:07:38"
+ },
+ {
+  "id": "paypal/login/2024-01-01",
+  "entidade": "PayPal",
+  "variante": "login",
+  "url_login": "https://www.paypal.com/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101022419",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:08:07"
+ },
+ {
+  "id": "paypal/login/2025-01-01",
+  "entidade": "PayPal",
+  "variante": "login",
+  "url_login": "https://www.paypal.com/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101054732",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:08:38"
+ },
+ {
+  "id": "paypal/login/2026-01-01",
+  "entidade": "PayPal",
+  "variante": "login",
+  "url_login": "https://www.paypal.com/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101045030",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:09:05"
+ },
+ {
+  "id": "paypal/login/ao-vivo",
+  "entidade": "PayPal",
+  "variante": "login",
+  "url_login": "https://www.paypal.com/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T02:09:07"
+ },
+ {
+  "id": "microsoft/corporativo/2019-04-21",
+  "entidade": "Microsoft",
+  "variante": "corporativo",
+  "url_login": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190421162941",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T11:23:47"
+ },
+ {
+  "id": "microsoft/corporativo/buraco-2020",
+  "entidade": "Microsoft",
+  "variante": "corporativo",
+  "url_login": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "microsoft/corporativo/2021-01-15",
+  "entidade": "Microsoft",
+  "variante": "corporativo",
+  "url_login": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210115214546",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T11:24:34"
+ },
+ {
+  "id": "microsoft/corporativo/2022-01-04",
+  "entidade": "Microsoft",
+  "variante": "corporativo",
+  "url_login": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220104022318",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "snapshot redireciona para URL que o Wayback não arquivou",
+  "aprovado_captura": "2026-11-21T11:25:46"
+ },
+ {
+  "id": "microsoft/corporativo/2023-02-04",
+  "entidade": "Microsoft",
+  "variante": "corporativo",
+  "url_login": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230204222804",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T11:26:17"
+ },
+ {
+  "id": "microsoft/corporativo/2024-04-14",
+  "entidade": "Microsoft",
+  "variante": "corporativo",
+  "url_login": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240414090734",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T11:26:45"
+ },
+ {
+  "id": "microsoft/corporativo/2025-01-16",
+  "entidade": "Microsoft",
+  "variante": "corporativo",
+  "url_login": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250116045529",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T11:27:07"
+ },
+ {
+  "id": "microsoft/corporativo/2025-12-31",
+  "entidade": "Microsoft",
+  "variante": "corporativo",
+  "url_login": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20251231174825",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T11:27:36"
+ },
+ {
+  "id": "microsoft/corporativo/ao-vivo",
+  "entidade": "Microsoft",
+  "variante": "corporativo",
+  "url_login": "https://login.microsoftonline.com/common/oauth2/authorize?client_id=00000002-0000-0ff1-ce00-000000000000",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T11:27:40"
+ },
+ {
+  "id": "microsoft/pessoal/2018-12-31",
+  "entidade": "Microsoft",
+  "variante": "pessoal",
+  "url_login": "https://login.live.com/login.srf",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20181231000126",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:33:03"
+ },
+ {
+  "id": "microsoft/pessoal/2020-01-01",
+  "entidade": "Microsoft",
+  "variante": "pessoal",
+  "url_login": "https://login.live.com/login.srf",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200101131509",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:33:20"
+ },
+ {
+  "id": "microsoft/pessoal/2021-01-01",
+  "entidade": "Microsoft",
+  "variante": "pessoal",
+  "url_login": "https://login.live.com/login.srf",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210101224608",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:33:50"
+ },
+ {
+  "id": "microsoft/pessoal/2022-01-04",
+  "entidade": "Microsoft",
+  "variante": "pessoal",
+  "url_login": "https://login.live.com/login.srf",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220104000952",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:34:14"
+ },
+ {
+  "id": "microsoft/pessoal/2022-12-30",
+  "entidade": "Microsoft",
+  "variante": "pessoal",
+  "url_login": "https://login.live.com/login.srf",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20221230174815",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:34:35"
+ },
+ {
+  "id": "microsoft/pessoal/2024-01-01",
+  "entidade": "Microsoft",
+  "variante": "pessoal",
+  "url_login": "https://login.live.com/login.srf",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101003942",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:34:56"
+ },
+ {
+  "id": "microsoft/pessoal/2025-01-13",
+  "entidade": "Microsoft",
+  "variante": "pessoal",
+  "url_login": "https://login.live.com/login.srf",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250113205904",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:35:24"
+ },
+ {
+  "id": "microsoft/pessoal/2026-01-07",
+  "entidade": "Microsoft",
+  "variante": "pessoal",
+  "url_login": "https://login.live.com/login.srf",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260107222127",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "página em branco (JS não arquivado)",
+  "aprovado_captura": "2026-11-21T06:28:32"
+ },
+ {
+  "id": "microsoft/pessoal/ao-vivo",
+  "entidade": "Microsoft",
+  "variante": "pessoal",
+  "url_login": "https://login.live.com/login.srf",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:37:00"
+ },
+ {
+  "id": "google/login/2019-01-01",
+  "entidade": "Google",
+  "variante": "login",
+  "url_login": "https://accounts.google.com/ServiceLogin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190101055050",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:37:23"
+ },
+ {
+  "id": "google/login/2020-01-01",
+  "entidade": "Google",
+  "variante": "login",
+  "url_login": "https://accounts.google.com/ServiceLogin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200101002803",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:37:40"
+ },
+ {
+  "id": "google/login/2021-01-01",
+  "entidade": "Google",
+  "variante": "login",
+  "url_login": "https://accounts.google.com/ServiceLogin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210101011317",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:37:56"
+ },
+ {
+  "id": "google/login/2022-01-01",
+  "entidade": "Google",
+  "variante": "login",
+  "url_login": "https://accounts.google.com/ServiceLogin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101020049",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:38:23"
+ },
+ {
+  "id": "google/login/2023-01-01",
+  "entidade": "Google",
+  "variante": "login",
+  "url_login": "https://accounts.google.com/ServiceLogin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101000600",
+  "status_cdx": 302,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:38:57"
+ },
+ {
+  "id": "google/login/2024-01-01",
+  "entidade": "Google",
+  "variante": "login",
+  "url_login": "https://accounts.google.com/ServiceLogin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101025325",
+  "status_cdx": 302,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T11:46:14"
+ },
+ {
+  "id": "google/login/2025-01-01",
+  "entidade": "Google",
+  "variante": "login",
+  "url_login": "https://accounts.google.com/ServiceLogin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101023239",
+  "status_cdx": 302,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:40:57"
+ },
+ {
+  "id": "google/login/2026-01-01",
+  "entidade": "Google",
+  "variante": "login",
+  "url_login": "https://accounts.google.com/ServiceLogin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101044031",
+  "status_cdx": 302,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:41:42"
+ },
+ {
+  "id": "google/login/ao-vivo",
+  "entidade": "Google",
+  "variante": "login",
+  "url_login": "https://accounts.google.com/ServiceLogin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:42:45"
+ },
+ {
+  "id": "facebook/login/2019-01-01",
+  "entidade": "Facebook",
+  "variante": "login",
+  "url_login": "https://www.facebook.com/login.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190101040959",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:43:14"
+ },
+ {
+  "id": "facebook/login/2020-01-01",
+  "entidade": "Facebook",
+  "variante": "login",
+  "url_login": "https://www.facebook.com/login.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200101005309",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:43:45"
+ },
+ {
+  "id": "facebook/login/2021-01-01",
+  "entidade": "Facebook",
+  "variante": "login",
+  "url_login": "https://www.facebook.com/login.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210101014451",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:44:13"
+ },
+ {
+  "id": "facebook/login/2022-01-01",
+  "entidade": "Facebook",
+  "variante": "login",
+  "url_login": "https://www.facebook.com/login.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101000351",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou \"You're Temporarily Blocked\" (bloqueio do Facebook ao robô)",
+  "aprovado_captura": "2026-11-21T02:44:38"
+ },
+ {
+  "id": "facebook/login/2023-01-01",
+  "entidade": "Facebook",
+  "variante": "login",
+  "url_login": "https://www.facebook.com/login.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101022045",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou \"You're Temporarily Blocked\" (bloqueio do Facebook ao robô)",
+  "aprovado_captura": "2026-11-21T02:45:02"
+ },
+ {
+  "id": "facebook/login/2024-01-01",
+  "entidade": "Facebook",
+  "variante": "login",
+  "url_login": "https://www.facebook.com/login.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101014638",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:45:25"
+ },
+ {
+  "id": "facebook/login/2025-01-01",
+  "entidade": "Facebook",
+  "variante": "login",
+  "url_login": "https://www.facebook.com/login.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101041815",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou \"You're Temporarily Blocked\" (bloqueio do Facebook ao robô)",
+  "aprovado_captura": "2026-11-21T02:46:09"
+ },
+ {
+  "id": "facebook/login/2025-12-31",
+  "entidade": "Facebook",
+  "variante": "login",
+  "url_login": "https://www.facebook.com/login.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20251231192428",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:46:31"
+ },
+ {
+  "id": "facebook/login/ao-vivo",
+  "entidade": "Facebook",
+  "variante": "login",
+  "url_login": "https://www.facebook.com/login.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:46:35"
+ },
+ {
+  "id": "facebook/inicial/2019-01-14",
+  "entidade": "Facebook",
+  "variante": "inicial",
+  "url_login": "https://www.facebook.com/index.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190114225025",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:47:19"
+ },
+ {
+  "id": "facebook/inicial/2020-01-19",
+  "entidade": "Facebook",
+  "variante": "inicial",
+  "url_login": "https://www.facebook.com/index.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200119212113",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:47:56"
+ },
+ {
+  "id": "facebook/inicial/2021-01-06",
+  "entidade": "Facebook",
+  "variante": "inicial",
+  "url_login": "https://www.facebook.com/index.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210106094750",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:48:21"
+ },
+ {
+  "id": "facebook/inicial/2022-05-26",
+  "entidade": "Facebook",
+  "variante": "inicial",
+  "url_login": "https://www.facebook.com/index.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220526104752",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:23:08"
+ },
+ {
+  "id": "facebook/inicial/2023-02-19",
+  "entidade": "Facebook",
+  "variante": "inicial",
+  "url_login": "https://www.facebook.com/index.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230219200532",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:49:27"
+ },
+ {
+  "id": "facebook/inicial/2023-12-17",
+  "entidade": "Facebook",
+  "variante": "inicial",
+  "url_login": "https://www.facebook.com/index.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20231217132933",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:49:50"
+ },
+ {
+  "id": "facebook/inicial/2024-12-07",
+  "entidade": "Facebook",
+  "variante": "inicial",
+  "url_login": "https://www.facebook.com/index.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20241207144755",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:50:12"
+ },
+ {
+  "id": "facebook/inicial/2026-01-11",
+  "entidade": "Facebook",
+  "variante": "inicial",
+  "url_login": "https://www.facebook.com/index.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260111070813",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:50:45"
+ },
+ {
+  "id": "facebook/inicial/ao-vivo",
+  "entidade": "Facebook",
+  "variante": "inicial",
+  "url_login": "https://www.facebook.com/index.php",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T02:50:49"
+ },
+ {
+  "id": "amazon/login/2019-01-01",
+  "entidade": "Amazon",
+  "variante": "login",
+  "url_login": "https://www.amazon.com/ap/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190101205142",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-9083491-1648865?_encoding=UTF8&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fyourstore%2Fcard%3Fie%3DUTF8%26ref_%3Dcust_rec_intestitial_signin",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:46:43"
+ },
+ {
+  "id": "amazon/login/2020-01-01",
+  "entidade": "Amazon",
+  "variante": "login",
+  "url_login": "https://www.amazon.com/ap/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200101023059",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-0071271-3260811?_encoding=UTF8&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fsubscribe-and-save%2Fmanager%2Fviewsubscriptions%2F130-0071271-3260811%3Fie%3DUTF8%26sns.fromAuth%3D1%26sns.ref_%3Dnav_youraccount_sns&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:47:08"
+ },
+ {
+  "id": "amazon/login/2020-12-31",
+  "entidade": "Amazon",
+  "variante": "login",
+  "url_login": "https://www.amazon.com/ap/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201231232840",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-1652787-8209938?_encoding=UTF8&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fhelp%2Fcontact-us%2Ftwitter.html%2F130-1652787-8209938%3Fie%3DUTF8%26url%3Dhttps%253A%252F%252Ftwitter.com%252Fitsreallyrucky%252Fstatus%252F1344786646164787202&pageId=webcs-contactus&siteState=returnAddress%3D%2Fgp%2Fhelp%2Fcontact-us%2Ftwitter.html%7Cmode%3D%7CtsId%3D%7CinitialIssue%3D%7CcontactReason%3D%7CorderId%3D%7CitemIds%3D%7Clanguage%3Den_US%7CsicPlan%3D%7CnodeId%3D%7CstartView%3D%7CTSMetadata%3D&suppressSignInRadioButtons=0",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:47:39"
+ },
+ {
+  "id": "amazon/login/2022-01-01",
+  "entidade": "Amazon",
+  "variante": "login",
+  "url_login": "https://www.amazon.com/ap/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101020522",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.com/ap/signin/131-0697725-7192043?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fcss%2Forder-history%2F131-0697725-7192043%3Fie%3DUTF8%26ref_%3Dnav_orders_first&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:48:21"
+ },
+ {
+  "id": "amazon/login/2023-01-01",
+  "entidade": "Amazon",
+  "variante": "login",
+  "url_login": "https://www.amazon.com/ap/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101023855",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-3555329-6649127?_encoding=UTF8&openid.assoc_handle=amazon_checkout_us&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fcheckoutportal%2Fenter-checkout.html%2F130-3555329-6649127%3Fie%3DUTF8%26asin%3D%26buyNow%3D1%26cartCustomerID%3D0%26fromSignIn%3D1%26offeringID%3DccNEBv0hNhqPE6ZBpdy0REknAPwXYP7%2FCK%2F17At4wfFFKeOvMM7ZmgHSq%2FbmVJqRSqEMF%2Bp9AG8MNShusT9C0Hjxy%2B5iq0g8hyhYMhsXDez04Ppo0puaNT0fdjENNaZ%2FPmfF1jHdKYGu4B10ScXVIm3AFE0yMCHDuIibst%2Bbp5dOJgd399T4Gs4RoEKUMN7V%26purchaseInputs%3DHASH%280x7fb9da44de80%29%26quantity%3D1%26sessionID%3D130-3555329-6649127%26skipCart%3D1&pageId=amazon_checkout_us&showRmrMe=0&siteState=IMBMsgs.&suppressSignInRadioButtons=0",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:48:46"
+ },
+ {
+  "id": "amazon/login/2024-01-01",
+  "entidade": "Amazon",
+  "variante": "login",
+  "url_login": "https://www.amazon.com/ap/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101005216",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-9339412-4575827?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fcss%2Forder-history%2F130-9339412-4575827%3Fie%3DUTF8%26%252AVersion%252A%3D1%26%252Aentries%252A%3D0&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:49:28"
+ },
+ {
+  "id": "amazon/login/2025-01-01",
+  "entidade": "Amazon",
+  "variante": "login",
+  "url_login": "https://www.amazon.com/ap/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101163213",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-1512118-2570254?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fcss%2Forder-history%2F130-1512118-2570254%3Fie%3DUTF8%26ref_%3Dnav_orders_first&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:50:03"
+ },
+ {
+  "id": "amazon/login/2025-11-10",
+  "entidade": "Amazon",
+  "variante": "login",
+  "url_login": "https://www.amazon.com/ap/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20251110222153",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.com/ap/signin/130-2486874-6204024?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fgp%2Fcss%2Forder-history%2F130-2486874-6204024%3Fie%3DUTF8%26ref_%3Dabn_yadd_ad_your_orders&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:50:33"
+ },
+ {
+  "id": "amazon/login/ao-vivo",
+  "entidade": "Amazon",
+  "variante": "login",
+  "url_login": "https://www.amazon.com/ap/signin",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T02:58:36"
+ },
+ {
+  "id": "amazon/japao/2019-02-01",
+  "entidade": "Amazon",
+  "variante": "japao",
+  "url_login": "https://www.amazon.co.jp/ap/signin",
+  "locale": "ja-JP",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190201234201",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/356-4575938-6983256?_encoding=UTF8&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fyourstore%2Fcard%3Fie%3DUTF8%26ref_%3Dcust_rec_intestitial_signin",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:50:59"
+ },
+ {
+  "id": "amazon/japao/2020-01-02",
+  "entidade": "Amazon",
+  "variante": "japao",
+  "url_login": "https://www.amazon.co.jp/ap/signin",
+  "locale": "ja-JP",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200102073759",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/356-7626442-8821641?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fcss%2Forder-history%2F356-7626442-8821641%3Fie%3DUTF8%26ref_%3Dnav_orders_first&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:51:34"
+ },
+ {
+  "id": "amazon/japao/2021-01-01",
+  "entidade": "Amazon",
+  "variante": "japao",
+  "url_login": "https://www.amazon.co.jp/ap/signin",
+  "locale": "ja-JP",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210101005456",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/357-6340920-2808914?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=900&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fmessage%2F357-6340920-2808914",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:51:54"
+ },
+ {
+  "id": "amazon/japao/2021-12-30",
+  "entidade": "Amazon",
+  "variante": "japao",
+  "url_login": "https://www.amazon.co.jp/ap/signin",
+  "locale": "ja-JP",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20211230225325",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/355-0486323-9573666?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fcss%2Forder-history%2F355-0486323-9573666%3Fie%3DUTF8%26language%3Den%26ref_%3Dnav_AccountFlyout_orders&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:52:37"
+ },
+ {
+  "id": "amazon/japao/2023-01-01",
+  "entidade": "Amazon",
+  "variante": "japao",
+  "url_login": "https://www.amazon.co.jp/ap/signin",
+  "locale": "ja-JP",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101022144",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/355-6390187-7530136?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fcss%2Forder-history%2F355-6390187-7530136%3Fie%3DUTF8%26language%3Den%26ref_%3Dnav_AccountFlyout_orders&pageId=webcs-yourorder&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:53:15"
+ },
+ {
+  "id": "amazon/japao/2023-12-31",
+  "entidade": "Amazon",
+  "variante": "japao",
+  "url_login": "https://www.amazon.co.jp/ap/signin",
+  "locale": "ja-JP",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20231231232448",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/355-1216189-0801226?_encoding=UTF8&openid.assoc_handle=jpflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=900&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fcss%2Fsummary%2Fedit.html%2F355-1216189-0801226%3Fie%3DUTF8%26orderID%3D249-6180984-9387020%26ref_%3Ddp_iou_view_this_order&showRmrMe=1",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:53:41"
+ },
+ {
+  "id": "amazon/japao/2025-01-01",
+  "entidade": "Amazon",
+  "variante": "japao",
+  "url_login": "https://www.amazon.co.jp/ap/signin",
+  "locale": "ja-JP",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101014606",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "url_arquivada": "https://www.amazon.co.jp/ap/signin/358-1509066-3173059?_encoding=UTF8&openid.assoc_handle=amazon_checkout_jp&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fbuy%2Fsignin%2Fhandlers%2Fcontinue.html%2F358-1509066-3173059%3Fie%3DUTF8%26brandId%3D%26cartItemIds%3D%26eGCApp%3D%26hasWorkingJavascript%3D0%26isEGCOrder%3D0%26isFresh%3D%26oldCustomerId%3D0%26oldPurchaseId%3D%26preInitiateCustomerId%3D%26purchaseInProgress%3D%26ref_%3Dcart_signin_submit%26siteDesign%3D&pageId=amazon_checkout_jp&showRmrMe=0&siteState=isRegularCheckout.1%7CIMBMsgs.%7CisRedirect.1&suppressSignInRadioButtons=0",
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T13:54:18"
+ },
+ {
+  "id": "amazon/japao/buraco-2026",
+  "entidade": "Amazon",
+  "variante": "japao",
+  "url_login": "https://www.amazon.co.jp/ap/signin",
+  "locale": "ja-JP",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": "sem_snapshot_valido",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "amazon/japao/ao-vivo",
+  "entidade": "Amazon",
+  "variante": "japao",
+  "url_login": "https://www.amazon.co.jp/ap/signin",
+  "locale": "ja-JP",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T03:00:13"
+ },
+ {
+  "id": "netflix/login/2018-11-28",
+  "entidade": "Netflix",
+  "variante": "login",
+  "url_login": "https://www.netflix.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20181128161944",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:00:31"
+ },
+ {
+  "id": "netflix/login/2020-01-01",
+  "entidade": "Netflix",
+  "variante": "login",
+  "url_login": "https://www.netflix.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200101151924",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:00:52"
+ },
+ {
+  "id": "netflix/login/2021-01-02",
+  "entidade": "Netflix",
+  "variante": "login",
+  "url_login": "https://www.netflix.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210102151842",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:01:14"
+ },
+ {
+  "id": "netflix/login/2021-12-31",
+  "entidade": "Netflix",
+  "variante": "login",
+  "url_login": "https://www.netflix.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20211231002659",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:01:46"
+ },
+ {
+  "id": "netflix/login/2022-12-31",
+  "entidade": "Netflix",
+  "variante": "login",
+  "url_login": "https://www.netflix.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20221231100206",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:02:11"
+ },
+ {
+  "id": "netflix/login/2023-12-31",
+  "entidade": "Netflix",
+  "variante": "login",
+  "url_login": "https://www.netflix.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20231231190305",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T06:29:30"
+ },
+ {
+  "id": "netflix/login/2025-01-01",
+  "entidade": "Netflix",
+  "variante": "login",
+  "url_login": "https://www.netflix.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101034120",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:03:00"
+ },
+ {
+  "id": "netflix/login/2025-12-31",
+  "entidade": "Netflix",
+  "variante": "login",
+  "url_login": "https://www.netflix.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20251231153048",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T06:29:51"
+ },
+ {
+  "id": "netflix/login/ao-vivo",
+  "entidade": "Netflix",
+  "variante": "login",
+  "url_login": "https://www.netflix.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:03:40"
+ },
+ {
+  "id": "apple/conta/buraco-2019",
+  "entidade": "Apple",
+  "variante": "conta",
+  "url_login": "https://account.apple.com/sign-in",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "apple/conta/buraco-2020",
+  "entidade": "Apple",
+  "variante": "conta",
+  "url_login": "https://account.apple.com/sign-in",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "apple/conta/buraco-2021",
+  "entidade": "Apple",
+  "variante": "conta",
+  "url_login": "https://account.apple.com/sign-in",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "apple/conta/buraco-2022",
+  "entidade": "Apple",
+  "variante": "conta",
+  "url_login": "https://account.apple.com/sign-in",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "apple/conta/buraco-2023",
+  "entidade": "Apple",
+  "variante": "conta",
+  "url_login": "https://account.apple.com/sign-in",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "apple/conta/buraco-2024",
+  "entidade": "Apple",
+  "variante": "conta",
+  "url_login": "https://account.apple.com/sign-in",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "apple/conta/2024-12-31",
+  "entidade": "Apple",
+  "variante": "conta",
+  "url_login": "https://account.apple.com/sign-in",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20241231095306",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "redireciona para appleid.apple.com, excluído do Wayback",
+  "aprovado_captura": "2026-11-21T12:25:51"
+ },
+ {
+  "id": "apple/conta/2026-01-01",
+  "entidade": "Apple",
+  "variante": "conta",
+  "url_login": "https://account.apple.com/sign-in",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101051241",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "redireciona para appleid.apple.com, excluído do Wayback",
+  "aprovado_captura": "2026-11-21T12:27:17"
+ },
+ {
+  "id": "apple/conta/ao-vivo",
+  "entidade": "Apple",
+  "variante": "conta",
+  "url_login": "https://account.apple.com/sign-in",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T12:27:50"
+ },
+ {
+  "id": "linkedin/login/2019-01-09",
+  "entidade": "LinkedIn",
+  "variante": "login",
+  "url_login": "https://www.linkedin.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190109194218",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou página inexistente (\"Looking for something?\"/\"Page not found\")",
+  "aprovado_captura": "2026-11-21T03:10:18"
+ },
+ {
+  "id": "linkedin/login/2019-12-31",
+  "entidade": "LinkedIn",
+  "variante": "login",
+  "url_login": "https://www.linkedin.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20191231201839",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:10:36"
+ },
+ {
+  "id": "linkedin/login/2021-01-01",
+  "entidade": "LinkedIn",
+  "variante": "login",
+  "url_login": "https://www.linkedin.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210101104657",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:10:54"
+ },
+ {
+  "id": "linkedin/login/2021-12-31",
+  "entidade": "LinkedIn",
+  "variante": "login",
+  "url_login": "https://www.linkedin.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20211231210026",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:11:12"
+ },
+ {
+  "id": "linkedin/login/2023-01-01",
+  "entidade": "LinkedIn",
+  "variante": "login",
+  "url_login": "https://www.linkedin.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101061954",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:11:31"
+ },
+ {
+  "id": "linkedin/login/2024-01-01",
+  "entidade": "LinkedIn",
+  "variante": "login",
+  "url_login": "https://www.linkedin.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101001313",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:12:03"
+ },
+ {
+  "id": "linkedin/login/2025-01-01",
+  "entidade": "LinkedIn",
+  "variante": "login",
+  "url_login": "https://www.linkedin.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101052037",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:12:39"
+ },
+ {
+  "id": "linkedin/login/2026-01-01",
+  "entidade": "LinkedIn",
+  "variante": "login",
+  "url_login": "https://www.linkedin.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101035656",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:13:10"
+ },
+ {
+  "id": "linkedin/login/ao-vivo",
+  "entidade": "LinkedIn",
+  "variante": "login",
+  "url_login": "https://www.linkedin.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T03:13:13"
+ },
+ {
+  "id": "adobe/conta/buraco-2019",
+  "entidade": "Adobe",
+  "variante": "conta",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "adobe/conta/2019-12-12",
+  "entidade": "Adobe",
+  "variante": "conta",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20191212144700",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T12:28:17"
+ },
+ {
+  "id": "adobe/conta/2020-11-05",
+  "entidade": "Adobe",
+  "variante": "conta",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201105233043",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T12:28:40"
+ },
+ {
+  "id": "adobe/conta/buraco-2022",
+  "entidade": "Adobe",
+  "variante": "conta",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "adobe/conta/2023-05-08",
+  "entidade": "Adobe",
+  "variante": "conta",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230508094309",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T12:29:12"
+ },
+ {
+  "id": "adobe/conta/buraco-2024",
+  "entidade": "Adobe",
+  "variante": "conta",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "adobe/conta/buraco-2025",
+  "entidade": "Adobe",
+  "variante": "conta",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "adobe/conta/buraco-2026",
+  "entidade": "Adobe",
+  "variante": "conta",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "adobe/conta/ao-vivo",
+  "entidade": "Adobe",
+  "variante": "conta",
+  "url_login": "https://adobeid-na1.services.adobe.com/renga-idprovider/pages/login?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadobeid%2FSunbreakWebUI1%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue&client_id=SunbreakWebUI1&scope=AdobeID%2Copenid%2Csunbreak%2Cacct_mgmt_webui%2Csao.cce_private%2Csao.digital_editions%2Ccreative_cloud%2Cread_countries_regions%2Csocial.link%2Cunlink_social_account%2Cadditional_info.address.mail_to%2Cadditional_info.account_type%2Cadditional_info.roles%2Cadditional_info.social%2Cadditional_info.screen_name%2Cadditional_info.optionalAgreements%2Cadditional_info.secondary_email%2Cadditional_info.phonetic_name%2Cupdate_profile.optionalAgreements%2Cupdate_profile.change_password%2Cupdate_profile.phonetic_name%2Cupdate_profile.address.mail_to%2Csecurity_profile.read%2Csecurity_profile.update%2Cadmin_manage_user_consent%2Cadmin_slo%2Creauthenticated&denied_callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fdenied%2FSunbreakWebUI1%3Fredirect_uri%3Dhttps%253A%252F%252Faccount.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%2526api%253Dauthorize%2526reauth%253Dtrue%26response_type%3Dtoken&display=web_v2&relay=898c9f1e-7e62-4b3d-9c60-44797c001f65&locale=en_US&flow_type=token&ctx_id=accmgmt&idp_flow_type=login&reauthenticate=force",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T12:29:22"
+ },
+ {
+  "id": "yahoo/login/2019-01-01",
+  "entidade": "Yahoo",
+  "variante": "login",
+  "url_login": "https://login.yahoo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190101002454",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:26:11"
+ },
+ {
+  "id": "yahoo/login/2019-12-31",
+  "entidade": "Yahoo",
+  "variante": "login",
+  "url_login": "https://login.yahoo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20191231025323",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:26:28"
+ },
+ {
+  "id": "yahoo/login/2021-01-02",
+  "entidade": "Yahoo",
+  "variante": "login",
+  "url_login": "https://login.yahoo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210102035650",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:26:45"
+ },
+ {
+  "id": "yahoo/login/2022-01-01",
+  "entidade": "Yahoo",
+  "variante": "login",
+  "url_login": "https://login.yahoo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101051216",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:27:01"
+ },
+ {
+  "id": "yahoo/login/2023-01-01",
+  "entidade": "Yahoo",
+  "variante": "login",
+  "url_login": "https://login.yahoo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101012158",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:27:24"
+ },
+ {
+  "id": "yahoo/login/2024-01-01",
+  "entidade": "Yahoo",
+  "variante": "login",
+  "url_login": "https://login.yahoo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101003149",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:27:42"
+ },
+ {
+  "id": "yahoo/login/2025-01-01",
+  "entidade": "Yahoo",
+  "variante": "login",
+  "url_login": "https://login.yahoo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101012456",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:27:59"
+ },
+ {
+  "id": "yahoo/login/2026-01-01",
+  "entidade": "Yahoo",
+  "variante": "login",
+  "url_login": "https://login.yahoo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101005028",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:28:49"
+ },
+ {
+  "id": "yahoo/login/ao-vivo",
+  "entidade": "Yahoo",
+  "variante": "login",
+  "url_login": "https://login.yahoo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:29:14"
+ },
+ {
+  "id": "dropbox/login/2019-01-01",
+  "entidade": "Dropbox",
+  "variante": "login",
+  "url_login": "https://www.dropbox.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190101021920",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:29:41"
+ },
+ {
+  "id": "dropbox/login/2020-01-01",
+  "entidade": "Dropbox",
+  "variante": "login",
+  "url_login": "https://www.dropbox.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200101220449",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T06:30:31"
+ },
+ {
+  "id": "dropbox/login/2020-12-29",
+  "entidade": "Dropbox",
+  "variante": "login",
+  "url_login": "https://www.dropbox.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201229153922",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:30:28"
+ },
+ {
+  "id": "dropbox/login/2022-01-01",
+  "entidade": "Dropbox",
+  "variante": "login",
+  "url_login": "https://www.dropbox.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101045319",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:31:19"
+ },
+ {
+  "id": "dropbox/login/2023-01-01",
+  "entidade": "Dropbox",
+  "variante": "login",
+  "url_login": "https://www.dropbox.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101082852",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:32:17"
+ },
+ {
+  "id": "dropbox/login/2024-01-01",
+  "entidade": "Dropbox",
+  "variante": "login",
+  "url_login": "https://www.dropbox.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101091158",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:33:24"
+ },
+ {
+  "id": "dropbox/login/2025-01-01",
+  "entidade": "Dropbox",
+  "variante": "login",
+  "url_login": "https://www.dropbox.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101003702",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:34:04"
+ },
+ {
+  "id": "dropbox/login/2025-12-31",
+  "entidade": "Dropbox",
+  "variante": "login",
+  "url_login": "https://www.dropbox.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20251231143014",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T06:31:07"
+ },
+ {
+  "id": "dropbox/login/ao-vivo",
+  "entidade": "Dropbox",
+  "variante": "login",
+  "url_login": "https://www.dropbox.com/login",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:35:57"
+ },
+ {
+  "id": "ebay/login/2018-12-13",
+  "entidade": "eBay",
+  "variante": "login",
+  "url_login": "https://signin.ebay.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20181213045341",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:36:39"
+ },
+ {
+  "id": "ebay/login/2019-12-29",
+  "entidade": "eBay",
+  "variante": "login",
+  "url_login": "https://signin.ebay.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20191229142220",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou a tela \"Please verify yourself\" (CAPTCHA do eBay)",
+  "aprovado_captura": "2026-11-21T03:38:04"
+ },
+ {
+  "id": "ebay/login/2021-03-14",
+  "entidade": "eBay",
+  "variante": "login",
+  "url_login": "https://signin.ebay.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210314190503",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou a tela \"Please verify yourself\" (CAPTCHA do eBay)",
+  "aprovado_captura": "2026-11-21T03:39:26"
+ },
+ {
+  "id": "ebay/login/2022-01-18",
+  "entidade": "eBay",
+  "variante": "login",
+  "url_login": "https://signin.ebay.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220118185915",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou a tela \"Please verify yourself\" (CAPTCHA do eBay)",
+  "aprovado_captura": "2026-11-21T03:41:03"
+ },
+ {
+  "id": "ebay/login/2023-01-01",
+  "entidade": "eBay",
+  "variante": "login",
+  "url_login": "https://signin.ebay.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101005323",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:41:52"
+ },
+ {
+  "id": "ebay/login/2024-01-01",
+  "entidade": "eBay",
+  "variante": "login",
+  "url_login": "https://signin.ebay.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101003624",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou a tela \"Please verify yourself\" (CAPTCHA do eBay)",
+  "aprovado_captura": "2026-11-21T03:43:20"
+ },
+ {
+  "id": "ebay/login/2025-01-03",
+  "entidade": "eBay",
+  "variante": "login",
+  "url_login": "https://signin.ebay.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250103201338",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "redireciona para URL não arquivada",
+  "aprovado_captura": "2026-11-21T03:45:08"
+ },
+ {
+  "id": "ebay/login/2026-01-01",
+  "entidade": "eBay",
+  "variante": "login",
+  "url_login": "https://signin.ebay.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101100927",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:46:03"
+ },
+ {
+  "id": "ebay/login/ao-vivo",
+  "entidade": "eBay",
+  "variante": "login",
+  "url_login": "https://signin.ebay.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T03:46:03"
+ },
+ {
+  "id": "ebay/alemanha/2019-04-02",
+  "entidade": "eBay",
+  "variante": "alemanha",
+  "url_login": "https://signin.ebay.de/",
+  "locale": "de-DE",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190402173100",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:46:35"
+ },
+ {
+  "id": "ebay/alemanha/2020-03-17",
+  "entidade": "eBay",
+  "variante": "alemanha",
+  "url_login": "https://signin.ebay.de/",
+  "locale": "de-DE",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200317184644",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou a tela \"Please verify yourself\" (CAPTCHA do eBay)",
+  "aprovado_captura": "2026-11-21T03:47:49"
+ },
+ {
+  "id": "ebay/alemanha/2021-03-16",
+  "entidade": "eBay",
+  "variante": "alemanha",
+  "url_login": "https://signin.ebay.de/",
+  "locale": "de-DE",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210316081720",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou a tela \"Please verify yourself\" (CAPTCHA do eBay)",
+  "aprovado_captura": "2026-11-21T03:49:07"
+ },
+ {
+  "id": "ebay/alemanha/2022-01-23",
+  "entidade": "eBay",
+  "variante": "alemanha",
+  "url_login": "https://signin.ebay.de/",
+  "locale": "de-DE",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220123084259",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou a tela \"Please verify yourself\" (CAPTCHA do eBay)",
+  "aprovado_captura": "2026-11-21T03:50:23"
+ },
+ {
+  "id": "ebay/alemanha/2023-01-01",
+  "entidade": "eBay",
+  "variante": "alemanha",
+  "url_login": "https://signin.ebay.de/",
+  "locale": "de-DE",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101101025",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:51:07"
+ },
+ {
+  "id": "ebay/alemanha/2024-01-01",
+  "entidade": "eBay",
+  "variante": "alemanha",
+  "url_login": "https://signin.ebay.de/",
+  "locale": "de-DE",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101004135",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:51:55"
+ },
+ {
+  "id": "ebay/alemanha/2025-01-11",
+  "entidade": "eBay",
+  "variante": "alemanha",
+  "url_login": "https://signin.ebay.de/",
+  "locale": "de-DE",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250111000352",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:52:44"
+ },
+ {
+  "id": "ebay/alemanha/2026-01-14",
+  "entidade": "eBay",
+  "variante": "alemanha",
+  "url_login": "https://signin.ebay.de/",
+  "locale": "de-DE",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260114184805",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou a tela \"Please verify yourself\" (CAPTCHA do eBay)",
+  "aprovado_captura": "2026-11-21T03:54:03"
+ },
+ {
+  "id": "ebay/alemanha/ao-vivo",
+  "entidade": "eBay",
+  "variante": "alemanha",
+  "url_login": "https://signin.ebay.de/",
+  "locale": "de-DE",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T03:54:04"
+ },
+ {
+  "id": "dhl/rastreamento/2019-01-01",
+  "entidade": "DHL",
+  "variante": "rastreamento",
+  "url_login": "https://www.dhl.com/en/express/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190101083713",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:55:34"
+ },
+ {
+  "id": "dhl/rastreamento/2020-01-06",
+  "entidade": "DHL",
+  "variante": "rastreamento",
+  "url_login": "https://www.dhl.com/en/express/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200106203053",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:57:07"
+ },
+ {
+  "id": "dhl/rastreamento/2020-12-30",
+  "entidade": "DHL",
+  "variante": "rastreamento",
+  "url_login": "https://www.dhl.com/en/express/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201230190659",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T03:58:35"
+ },
+ {
+  "id": "dhl/rastreamento/2022-01-01",
+  "entidade": "DHL",
+  "variante": "rastreamento",
+  "url_login": "https://www.dhl.com/en/express/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101055841",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou \"Your request is being processed\" (página de espera)",
+  "aprovado_captura": "2026-11-21T03:59:52"
+ },
+ {
+  "id": "dhl/rastreamento/2023-01-01",
+  "entidade": "DHL",
+  "variante": "rastreamento",
+  "url_login": "https://www.dhl.com/en/express/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101163722",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:01:30"
+ },
+ {
+  "id": "dhl/rastreamento/2024-01-01",
+  "entidade": "DHL",
+  "variante": "rastreamento",
+  "url_login": "https://www.dhl.com/en/express/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101080955",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:02:48"
+ },
+ {
+  "id": "dhl/rastreamento/2024-12-27",
+  "entidade": "DHL",
+  "variante": "rastreamento",
+  "url_login": "https://www.dhl.com/en/express/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20241227044739",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:04:06"
+ },
+ {
+  "id": "dhl/rastreamento/2026-01-05",
+  "entidade": "DHL",
+  "variante": "rastreamento",
+  "url_login": "https://www.dhl.com/en/express/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260105015358",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:05:42"
+ },
+ {
+  "id": "dhl/rastreamento/ao-vivo",
+  "entidade": "DHL",
+  "variante": "rastreamento",
+  "url_login": "https://www.dhl.com/en/express/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T04:05:43"
+ },
+ {
+  "id": "dhl/rastreamento_global/buraco-2019",
+  "entidade": "DHL",
+  "variante": "rastreamento_global",
+  "url_login": "https://www.dhl.com/global-en/home/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "dhl/rastreamento_global/2020-04-04",
+  "entidade": "DHL",
+  "variante": "rastreamento_global",
+  "url_login": "https://www.dhl.com/global-en/home/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200404123845",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:07:04"
+ },
+ {
+  "id": "dhl/rastreamento_global/2021-01-08",
+  "entidade": "DHL",
+  "variante": "rastreamento_global",
+  "url_login": "https://www.dhl.com/global-en/home/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210108035105",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou \"Your request is being processed\" (página de espera)",
+  "aprovado_captura": "2026-11-21T04:08:20"
+ },
+ {
+  "id": "dhl/rastreamento_global/2022-01-17",
+  "entidade": "DHL",
+  "variante": "rastreamento_global",
+  "url_login": "https://www.dhl.com/global-en/home/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220117025412",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou \"Your request is being processed\" (página de espera)",
+  "aprovado_captura": "2026-11-21T04:09:36"
+ },
+ {
+  "id": "dhl/rastreamento_global/2022-09-05",
+  "entidade": "DHL",
+  "variante": "rastreamento_global",
+  "url_login": "https://www.dhl.com/global-en/home/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220905111034",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou \"Your request is being processed\" (página de espera)",
+  "aprovado_captura": "2026-11-21T04:10:57"
+ },
+ {
+  "id": "dhl/rastreamento_global/2024-03-02",
+  "entidade": "DHL",
+  "variante": "rastreamento_global",
+  "url_login": "https://www.dhl.com/global-en/home/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240302174539",
+  "status_cdx": 302,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:12:11"
+ },
+ {
+  "id": "dhl/rastreamento_global/2024-12-27",
+  "entidade": "DHL",
+  "variante": "rastreamento_global",
+  "url_login": "https://www.dhl.com/global-en/home/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20241227165418",
+  "status_cdx": 302,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:13:27"
+ },
+ {
+  "id": "dhl/rastreamento_global/2026-01-15",
+  "entidade": "DHL",
+  "variante": "rastreamento_global",
+  "url_login": "https://www.dhl.com/global-en/home/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260115051252",
+  "status_cdx": 302,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:14:43"
+ },
+ {
+  "id": "dhl/rastreamento_global/ao-vivo",
+  "entidade": "DHL",
+  "variante": "rastreamento_global",
+  "url_login": "https://www.dhl.com/global-en/home/tracking.html",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T04:14:44"
+ },
+ {
+  "id": "chase/inicial/2019-01-02",
+  "entidade": "Chase",
+  "variante": "inicial",
+  "url_login": "https://www.chase.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190102005924",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:16:01"
+ },
+ {
+  "id": "chase/inicial/2020-01-02",
+  "entidade": "Chase",
+  "variante": "inicial",
+  "url_login": "https://www.chase.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200102005218",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:17:16"
+ },
+ {
+  "id": "chase/inicial/2021-01-01",
+  "entidade": "Chase",
+  "variante": "inicial",
+  "url_login": "https://www.chase.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210101154733",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:18:34"
+ },
+ {
+  "id": "chase/inicial/2022-01-01",
+  "entidade": "Chase",
+  "variante": "inicial",
+  "url_login": "https://www.chase.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101142702",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:19:59"
+ },
+ {
+  "id": "chase/inicial/2023-01-02",
+  "entidade": "Chase",
+  "variante": "inicial",
+  "url_login": "https://www.chase.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230102051240",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:21:17"
+ },
+ {
+  "id": "chase/inicial/2024-01-01",
+  "entidade": "Chase",
+  "variante": "inicial",
+  "url_login": "https://www.chase.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101000644",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:22:39"
+ },
+ {
+  "id": "chase/inicial/2024-12-31",
+  "entidade": "Chase",
+  "variante": "inicial",
+  "url_login": "https://www.chase.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20241231002019",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "só o rodapé renderizou",
+  "aprovado_captura": "2026-11-21T04:23:58"
+ },
+ {
+  "id": "chase/inicial/2026-01-07",
+  "entidade": "Chase",
+  "variante": "inicial",
+  "url_login": "https://www.chase.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260107000046",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:24:33"
+ },
+ {
+  "id": "chase/inicial/ao-vivo",
+  "entidade": "Chase",
+  "variante": "inicial",
+  "url_login": "https://www.chase.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:24:56"
+ },
+ {
+  "id": "chase/login/2018-12-18",
+  "entidade": "Chase",
+  "variante": "login",
+  "url_login": "https://secure07c.chase.com/web/auth/dashboard",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20181218082344",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Chase mostra \"System requirements\"/\"atualize seu navegador\" no lugar do login",
+  "aprovado_captura": "2026-11-21T04:26:17"
+ },
+ {
+  "id": "chase/login/2019-12-31",
+  "entidade": "Chase",
+  "variante": "login",
+  "url_login": "https://secure07c.chase.com/web/auth/dashboard",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20191231200057",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Chase mostra \"System requirements\"/\"atualize seu navegador\" no lugar do login",
+  "aprovado_captura": "2026-11-21T04:27:43"
+ },
+ {
+  "id": "chase/login/2020-12-31",
+  "entidade": "Chase",
+  "variante": "login",
+  "url_login": "https://secure07c.chase.com/web/auth/dashboard",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201231002044",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Chase mostra \"System requirements\"/\"atualize seu navegador\" no lugar do login",
+  "aprovado_captura": "2026-11-21T04:29:09"
+ },
+ {
+  "id": "chase/login/2021-12-30",
+  "entidade": "Chase",
+  "variante": "login",
+  "url_login": "https://secure07c.chase.com/web/auth/dashboard",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20211230112027",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Chase mostra \"System requirements\"/\"atualize seu navegador\" no lugar do login",
+  "aprovado_captura": "2026-11-21T04:30:24"
+ },
+ {
+  "id": "chase/login/2022-12-07",
+  "entidade": "Chase",
+  "variante": "login",
+  "url_login": "https://secure07c.chase.com/web/auth/dashboard",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20221207040023",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Chase mostra \"System requirements\"/\"atualize seu navegador\" no lugar do login",
+  "aprovado_captura": "2026-11-21T04:31:58"
+ },
+ {
+  "id": "chase/login/2023-12-31",
+  "entidade": "Chase",
+  "variante": "login",
+  "url_login": "https://secure07c.chase.com/web/auth/dashboard",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20231231120050",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Chase mostra \"System requirements\"/\"atualize seu navegador\" no lugar do login",
+  "aprovado_captura": "2026-11-21T04:33:22"
+ },
+ {
+  "id": "chase/login/2025-01-29",
+  "entidade": "Chase",
+  "variante": "login",
+  "url_login": "https://secure07c.chase.com/web/auth/dashboard",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250129231351",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Chase mostra \"System requirements\"/\"atualize seu navegador\" no lugar do login",
+  "aprovado_captura": "2026-11-21T04:34:36"
+ },
+ {
+  "id": "chase/login/buraco-2026",
+  "entidade": "Chase",
+  "variante": "login",
+  "url_login": "https://secure07c.chase.com/web/auth/dashboard",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": "sem_snapshot",
+  "aprovado": null,
+  "motivo": "",
+  "aprovado_captura": null
+ },
+ {
+  "id": "chase/login/ao-vivo",
+  "entidade": "Chase",
+  "variante": "login",
+  "url_login": "https://secure07c.chase.com/web/auth/dashboard",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Chase mostra \"System requirements\"/\"atualize seu navegador\" no lugar do login",
+  "aprovado_captura": "2026-11-21T04:35:41"
+ },
+ {
+  "id": "bank_of_america/inicial/2018-12-31",
+  "entidade": "Bank of America",
+  "variante": "inicial",
+  "url_login": "https://www.bankofamerica.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20181231044534",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:36:09"
+ },
+ {
+  "id": "bank_of_america/inicial/2020-01-03",
+  "entidade": "Bank of America",
+  "variante": "inicial",
+  "url_login": "https://www.bankofamerica.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200103013542",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:36:39"
+ },
+ {
+  "id": "bank_of_america/inicial/2021-01-01",
+  "entidade": "Bank of America",
+  "variante": "inicial",
+  "url_login": "https://www.bankofamerica.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210101090726",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:36:57"
+ },
+ {
+  "id": "bank_of_america/inicial/2022-01-01",
+  "entidade": "Bank of America",
+  "variante": "inicial",
+  "url_login": "https://www.bankofamerica.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101022622",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:37:25"
+ },
+ {
+  "id": "bank_of_america/inicial/2022-12-28",
+  "entidade": "Bank of America",
+  "variante": "inicial",
+  "url_login": "https://www.bankofamerica.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20221228044916",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:38:03"
+ },
+ {
+  "id": "bank_of_america/inicial/2024-01-01",
+  "entidade": "Bank of America",
+  "variante": "inicial",
+  "url_login": "https://www.bankofamerica.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101005132",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:38:22"
+ },
+ {
+  "id": "bank_of_america/inicial/2025-01-01",
+  "entidade": "Bank of America",
+  "variante": "inicial",
+  "url_login": "https://www.bankofamerica.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250101033522",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "página quase em branco",
+  "aprovado_captura": "2026-11-21T04:39:49"
+ },
+ {
+  "id": "bank_of_america/inicial/2026-01-01",
+  "entidade": "Bank of America",
+  "variante": "inicial",
+  "url_login": "https://www.bankofamerica.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101013120",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:41:00"
+ },
+ {
+  "id": "bank_of_america/inicial/ao-vivo",
+  "entidade": "Bank of America",
+  "variante": "inicial",
+  "url_login": "https://www.bankofamerica.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T04:41:01"
+ },
+ {
+  "id": "bank_of_america/login/2019-01-01",
+  "entidade": "Bank of America",
+  "variante": "login",
+  "url_login": "https://secure.bankofamerica.com/login/sign-in/signOnV2Screen.go",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190101202739",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:41:29"
+ },
+ {
+  "id": "bank_of_america/login/2019-12-31",
+  "entidade": "Bank of America",
+  "variante": "login",
+  "url_login": "https://secure.bankofamerica.com/login/sign-in/signOnV2Screen.go",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20191231173819",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:41:51"
+ },
+ {
+  "id": "bank_of_america/login/2020-12-31",
+  "entidade": "Bank of America",
+  "variante": "login",
+  "url_login": "https://secure.bankofamerica.com/login/sign-in/signOnV2Screen.go",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201231100722",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:42:13"
+ },
+ {
+  "id": "bank_of_america/login/2021-12-31",
+  "entidade": "Bank of America",
+  "variante": "login",
+  "url_login": "https://secure.bankofamerica.com/login/sign-in/signOnV2Screen.go",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20211231094504",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:42:35"
+ },
+ {
+  "id": "bank_of_america/login/2022-12-30",
+  "entidade": "Bank of America",
+  "variante": "login",
+  "url_login": "https://secure.bankofamerica.com/login/sign-in/signOnV2Screen.go",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20221230174550",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:43:20"
+ },
+ {
+  "id": "bank_of_america/login/2024-01-01",
+  "entidade": "Bank of America",
+  "variante": "login",
+  "url_login": "https://secure.bankofamerica.com/login/sign-in/signOnV2Screen.go",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101055855",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:43:50"
+ },
+ {
+  "id": "bank_of_america/login/2025-01-02",
+  "entidade": "Bank of America",
+  "variante": "login",
+  "url_login": "https://secure.bankofamerica.com/login/sign-in/signOnV2Screen.go",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250102123727",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:44:54"
+ },
+ {
+  "id": "bank_of_america/login/2026-01-01",
+  "entidade": "Bank of America",
+  "variante": "login",
+  "url_login": "https://secure.bankofamerica.com/login/sign-in/signOnV2Screen.go",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101044951",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:45:57"
+ },
+ {
+  "id": "bank_of_america/login/ao-vivo",
+  "entidade": "Bank of America",
+  "variante": "login",
+  "url_login": "https://secure.bankofamerica.com/login/sign-in/signOnV2Screen.go",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T04:45:58"
+ },
+ {
+  "id": "wells_fargo/inicial/2019-01-01",
+  "entidade": "Wells Fargo",
+  "variante": "inicial",
+  "url_login": "https://www.wellsfargo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190101081604",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:46:34"
+ },
+ {
+  "id": "wells_fargo/inicial/2020-01-10",
+  "entidade": "Wells Fargo",
+  "variante": "inicial",
+  "url_login": "https://www.wellsfargo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200110015629",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:47:11"
+ },
+ {
+  "id": "wells_fargo/inicial/2021-01-01",
+  "entidade": "Wells Fargo",
+  "variante": "inicial",
+  "url_login": "https://www.wellsfargo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210101023501",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:47:47"
+ },
+ {
+  "id": "wells_fargo/inicial/2022-01-01",
+  "entidade": "Wells Fargo",
+  "variante": "inicial",
+  "url_login": "https://www.wellsfargo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101011309",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:48:26"
+ },
+ {
+  "id": "wells_fargo/inicial/2023-01-01",
+  "entidade": "Wells Fargo",
+  "variante": "inicial",
+  "url_login": "https://www.wellsfargo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230101000357",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:49:23"
+ },
+ {
+  "id": "wells_fargo/inicial/2024-01-01",
+  "entidade": "Wells Fargo",
+  "variante": "inicial",
+  "url_login": "https://www.wellsfargo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101002746",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:50:12"
+ },
+ {
+  "id": "wells_fargo/inicial/2024-12-31",
+  "entidade": "Wells Fargo",
+  "variante": "inicial",
+  "url_login": "https://www.wellsfargo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20241231150126",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:50:51"
+ },
+ {
+  "id": "wells_fargo/inicial/2026-01-03",
+  "entidade": "Wells Fargo",
+  "variante": "inicial",
+  "url_login": "https://www.wellsfargo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260103043024",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:51:30"
+ },
+ {
+  "id": "wells_fargo/inicial/ao-vivo",
+  "entidade": "Wells Fargo",
+  "variante": "inicial",
+  "url_login": "https://www.wellsfargo.com/",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:51:57"
+ },
+ {
+  "id": "wells_fargo/login/2019-01-04",
+  "entidade": "Wells Fargo",
+  "variante": "login",
+  "url_login": "https://connect.secure.wellsfargo.com/auth/login/present",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190104004332",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:52:16"
+ },
+ {
+  "id": "wells_fargo/login/2019-12-30",
+  "entidade": "Wells Fargo",
+  "variante": "login",
+  "url_login": "https://connect.secure.wellsfargo.com/auth/login/present",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20191230225139",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:52:40"
+ },
+ {
+  "id": "wells_fargo/login/2020-12-31",
+  "entidade": "Wells Fargo",
+  "variante": "login",
+  "url_login": "https://connect.secure.wellsfargo.com/auth/login/present",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201231090821",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:53:05"
+ },
+ {
+  "id": "wells_fargo/login/2022-01-04",
+  "entidade": "Wells Fargo",
+  "variante": "login",
+  "url_login": "https://connect.secure.wellsfargo.com/auth/login/present",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220104104651",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:53:37"
+ },
+ {
+  "id": "wells_fargo/login/2022-12-31",
+  "entidade": "Wells Fargo",
+  "variante": "login",
+  "url_login": "https://connect.secure.wellsfargo.com/auth/login/present",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20221231000440",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:54:09"
+ },
+ {
+  "id": "wells_fargo/login/2023-12-30",
+  "entidade": "Wells Fargo",
+  "variante": "login",
+  "url_login": "https://connect.secure.wellsfargo.com/auth/login/present",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20231230141159",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:54:58"
+ },
+ {
+  "id": "wells_fargo/login/2024-12-16",
+  "entidade": "Wells Fargo",
+  "variante": "login",
+  "url_login": "https://connect.secure.wellsfargo.com/auth/login/present",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20241216012944",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:55:33"
+ },
+ {
+  "id": "wells_fargo/login/2026-01-02",
+  "entidade": "Wells Fargo",
+  "variante": "login",
+  "url_login": "https://connect.secure.wellsfargo.com/auth/login/present",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260102040523",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "pop-up de propaganda do app cobre o formulário de login",
+  "aprovado_captura": "2026-11-21T04:56:09"
+ },
+ {
+  "id": "wells_fargo/login/ao-vivo",
+  "entidade": "Wells Fargo",
+  "variante": "login",
+  "url_login": "https://connect.secure.wellsfargo.com/auth/login/present",
+  "locale": "en-US",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:56:35"
+ },
+ {
+  "id": "itau/inicial/2018-12-28",
+  "entidade": "Itaú",
+  "variante": "inicial",
+  "url_login": "https://www.itau.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20181228042249",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "pop-up \"o site do Itaú está mudando\" cobre a página",
+  "aprovado_captura": "2026-11-21T04:57:39"
+ },
+ {
+  "id": "itau/inicial/2020-01-03",
+  "entidade": "Itaú",
+  "variante": "inicial",
+  "url_login": "https://www.itau.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200103042559",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:58:05"
+ },
+ {
+  "id": "itau/inicial/2020-12-24",
+  "entidade": "Itaú",
+  "variante": "inicial",
+  "url_login": "https://www.itau.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201224161527",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:58:27"
+ },
+ {
+  "id": "itau/inicial/2022-01-01",
+  "entidade": "Itaú",
+  "variante": "inicial",
+  "url_login": "https://www.itau.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101123433",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:58:50"
+ },
+ {
+  "id": "itau/inicial/2023-01-03",
+  "entidade": "Itaú",
+  "variante": "inicial",
+  "url_login": "https://www.itau.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230103142707",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T04:59:30"
+ },
+ {
+  "id": "itau/inicial/2024-01-03",
+  "entidade": "Itaú",
+  "variante": "inicial",
+  "url_login": "https://www.itau.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240103140304",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:00:18"
+ },
+ {
+  "id": "itau/inicial/2024-12-31",
+  "entidade": "Itaú",
+  "variante": "inicial",
+  "url_login": "https://www.itau.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20241231104411",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:01:47"
+ },
+ {
+  "id": "itau/inicial/2026-01-01",
+  "entidade": "Itaú",
+  "variante": "inicial",
+  "url_login": "https://www.itau.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101121823",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:03:14"
+ },
+ {
+  "id": "itau/inicial/ao-vivo",
+  "entidade": "Itaú",
+  "variante": "inicial",
+  "url_login": "https://www.itau.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T05:03:15"
+ },
+ {
+  "id": "itau/itaucard/2019-01-08",
+  "entidade": "Itaú",
+  "variante": "itaucard",
+  "url_login": "https://www.itau.com.br/cartoes/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190108235917",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "pop-up \"o site do Itaú está mudando\" cobre a página",
+  "aprovado_captura": "2026-11-21T05:04:44"
+ },
+ {
+  "id": "itau/itaucard/2019-12-26",
+  "entidade": "Itaú",
+  "variante": "itaucard",
+  "url_login": "https://www.itau.com.br/cartoes/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20191226040232",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:06:02"
+ },
+ {
+  "id": "itau/itaucard/2020-12-31",
+  "entidade": "Itaú",
+  "variante": "itaucard",
+  "url_login": "https://www.itau.com.br/cartoes/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201231031238",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:07:28"
+ },
+ {
+  "id": "itau/itaucard/2021-12-18",
+  "entidade": "Itaú",
+  "variante": "itaucard",
+  "url_login": "https://www.itau.com.br/cartoes/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20211218115235",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:08:57"
+ },
+ {
+  "id": "itau/itaucard/2023-01-16",
+  "entidade": "Itaú",
+  "variante": "itaucard",
+  "url_login": "https://www.itau.com.br/cartoes/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230116132236",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:09:39"
+ },
+ {
+  "id": "itau/itaucard/2023-12-21",
+  "entidade": "Itaú",
+  "variante": "itaucard",
+  "url_login": "https://www.itau.com.br/cartoes/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20231221153203",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:10:07"
+ },
+ {
+  "id": "itau/itaucard/2025-01-18",
+  "entidade": "Itaú",
+  "variante": "itaucard",
+  "url_login": "https://www.itau.com.br/cartoes/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250118110710",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:11:35"
+ },
+ {
+  "id": "itau/itaucard/2025-12-30",
+  "entidade": "Itaú",
+  "variante": "itaucard",
+  "url_login": "https://www.itau.com.br/cartoes/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20251230011450",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:13:01"
+ },
+ {
+  "id": "itau/itaucard/ao-vivo",
+  "entidade": "Itaú",
+  "variante": "itaucard",
+  "url_login": "https://www.itau.com.br/cartoes/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T05:13:02"
+ },
+ {
+  "id": "bradesco/inicial/2019-01-08",
+  "entidade": "Bradesco",
+  "variante": "inicial",
+  "url_login": "https://banco.bradesco/html/classic/index.shtm",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190108043610",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:14:49"
+ },
+ {
+  "id": "bradesco/inicial/2020-01-06",
+  "entidade": "Bradesco",
+  "variante": "inicial",
+  "url_login": "https://banco.bradesco/html/classic/index.shtm",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200106202304",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:16:37"
+ },
+ {
+  "id": "bradesco/inicial/2021-01-01",
+  "entidade": "Bradesco",
+  "variante": "inicial",
+  "url_login": "https://banco.bradesco/html/classic/index.shtm",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210101091235",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:18:09"
+ },
+ {
+  "id": "bradesco/inicial/2022-01-01",
+  "entidade": "Bradesco",
+  "variante": "inicial",
+  "url_login": "https://banco.bradesco/html/classic/index.shtm",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220101133722",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:19:52"
+ },
+ {
+  "id": "bradesco/inicial/2022-12-30",
+  "entidade": "Bradesco",
+  "variante": "inicial",
+  "url_login": "https://banco.bradesco/html/classic/index.shtm",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20221230214530",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:22:15"
+ },
+ {
+  "id": "bradesco/inicial/2024-01-01",
+  "entidade": "Bradesco",
+  "variante": "inicial",
+  "url_login": "https://banco.bradesco/html/classic/index.shtm",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101175550",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:24:01"
+ },
+ {
+  "id": "bradesco/inicial/2024-12-31",
+  "entidade": "Bradesco",
+  "variante": "inicial",
+  "url_login": "https://banco.bradesco/html/classic/index.shtm",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20241231150210",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:25:33"
+ },
+ {
+  "id": "bradesco/inicial/2025-12-30",
+  "entidade": "Bradesco",
+  "variante": "inicial",
+  "url_login": "https://banco.bradesco/html/classic/index.shtm",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20251230231301",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:27:10"
+ },
+ {
+  "id": "bradesco/inicial/ao-vivo",
+  "entidade": "Bradesco",
+  "variante": "inicial",
+  "url_login": "https://banco.bradesco/html/classic/index.shtm",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:28:16"
+ },
+ {
+  "id": "caixa/internet_banking/2018-12-28",
+  "entidade": "Caixa",
+  "variante": "internet_banking",
+  "url_login": "https://internetbanking.caixa.gov.br/sinbc/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20181228010733",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "só o ícone de carregamento (JS não arquivado)",
+  "aprovado_captura": "2026-11-21T05:30:04"
+ },
+ {
+  "id": "caixa/internet_banking/2019-12-15",
+  "entidade": "Caixa",
+  "variante": "internet_banking",
+  "url_login": "https://internetbanking.caixa.gov.br/sinbc/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20191215070012",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "só o ícone de carregamento (JS não arquivado)",
+  "aprovado_captura": "2026-11-21T05:31:45"
+ },
+ {
+  "id": "caixa/internet_banking/2021-01-09",
+  "entidade": "Caixa",
+  "variante": "internet_banking",
+  "url_login": "https://internetbanking.caixa.gov.br/sinbc/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20210109190806",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "só o ícone de carregamento (JS não arquivado)",
+  "aprovado_captura": "2026-11-21T05:33:26"
+ },
+ {
+  "id": "caixa/internet_banking/2021-12-30",
+  "entidade": "Caixa",
+  "variante": "internet_banking",
+  "url_login": "https://internetbanking.caixa.gov.br/sinbc/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20211230013949",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "só o ícone de carregamento (JS não arquivado)",
+  "aprovado_captura": "2026-11-21T05:35:09"
+ },
+ {
+  "id": "caixa/internet_banking/2022-12-31",
+  "entidade": "Caixa",
+  "variante": "internet_banking",
+  "url_login": "https://internetbanking.caixa.gov.br/sinbc/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20221231170647",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "só o ícone de carregamento (JS não arquivado)",
+  "aprovado_captura": "2026-11-21T05:36:50"
+ },
+ {
+  "id": "caixa/internet_banking/2023-12-31",
+  "entidade": "Caixa",
+  "variante": "internet_banking",
+  "url_login": "https://internetbanking.caixa.gov.br/sinbc/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20231231094208",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "só o ícone de carregamento (JS não arquivado)",
+  "aprovado_captura": "2026-11-21T05:38:37"
+ },
+ {
+  "id": "caixa/internet_banking/2024-12-31",
+  "entidade": "Caixa",
+  "variante": "internet_banking",
+  "url_login": "https://internetbanking.caixa.gov.br/sinbc/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20241231091523",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "só o ícone de carregamento (JS não arquivado)",
+  "aprovado_captura": "2026-11-21T05:40:13"
+ },
+ {
+  "id": "caixa/internet_banking/2025-12-31",
+  "entidade": "Caixa",
+  "variante": "internet_banking",
+  "url_login": "https://internetbanking.caixa.gov.br/sinbc/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20251231104052",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "só o ícone de carregamento (JS não arquivado)",
+  "aprovado_captura": "2026-11-21T05:41:56"
+ },
+ {
+  "id": "caixa/internet_banking/ao-vivo",
+  "entidade": "Caixa",
+  "variante": "internet_banking",
+  "url_login": "https://internetbanking.caixa.gov.br/sinbc/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:43:00"
+ },
+ {
+  "id": "santander/brasil/2019-01-01",
+  "entidade": "Santander",
+  "variante": "brasil",
+  "url_login": "https://www.santander.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190101202958",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:44:29"
+ },
+ {
+  "id": "santander/brasil/2020-01-15",
+  "entidade": "Santander",
+  "variante": "brasil",
+  "url_login": "https://www.santander.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20200115104930",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "página quase em branco (imagens e JS não arquivados)",
+  "aprovado_captura": "2026-11-21T05:45:48"
+ },
+ {
+  "id": "santander/brasil/2020-12-29",
+  "entidade": "Santander",
+  "variante": "brasil",
+  "url_login": "https://www.santander.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201229132600",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "página quase em branco (imagens e JS não arquivados)",
+  "aprovado_captura": "2026-11-21T05:47:11"
+ },
+ {
+  "id": "santander/brasil/2022-01-02",
+  "entidade": "Santander",
+  "variante": "brasil",
+  "url_login": "https://www.santander.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220102175143",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:48:36"
+ },
+ {
+  "id": "santander/brasil/2022-12-31",
+  "entidade": "Santander",
+  "variante": "brasil",
+  "url_login": "https://www.santander.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20221231164853",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:49:33"
+ },
+ {
+  "id": "santander/brasil/2024-01-01",
+  "entidade": "Santander",
+  "variante": "brasil",
+  "url_login": "https://www.santander.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240101005056",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:51:00"
+ },
+ {
+  "id": "santander/brasil/2025-01-03",
+  "entidade": "Santander",
+  "variante": "brasil",
+  "url_login": "https://www.santander.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20250103185751",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "renderização quebrada (círculo preto cobrindo a página)",
+  "aprovado_captura": "2026-11-21T05:52:21"
+ },
+ {
+  "id": "santander/brasil/2026-01-01",
+  "entidade": "Santander",
+  "variante": "brasil",
+  "url_login": "https://www.santander.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101014800",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:53:49"
+ },
+ {
+  "id": "santander/brasil/ao-vivo",
+  "entidade": "Santander",
+  "variante": "brasil",
+  "url_login": "https://www.santander.com.br/",
+  "locale": "pt-BR",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "site bloqueou o navegador automático (ao vivo)",
+  "aprovado_captura": "2026-11-21T05:53:50"
+ },
+ {
+  "id": "santander/polonia/2019-01-01",
+  "entidade": "Santander",
+  "variante": "polonia",
+  "url_login": "https://www.santander.pl/",
+  "locale": "pl-PL",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20190101220042",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2019
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:54:17"
+ },
+ {
+  "id": "santander/polonia/2019-12-31",
+  "entidade": "Santander",
+  "variante": "polonia",
+  "url_login": "https://www.santander.pl/",
+  "locale": "pl-PL",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20191231132347",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2020
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:55:47"
+ },
+ {
+  "id": "santander/polonia/2020-12-29",
+  "entidade": "Santander",
+  "variante": "polonia",
+  "url_login": "https://www.santander.pl/",
+  "locale": "pl-PL",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20201229111231",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2021
+  ],
+  "buraco": null,
+  "aprovado": true,
+  "motivo": "",
+  "aprovado_captura": "2026-11-21T05:57:18"
+ },
+ {
+  "id": "santander/polonia/2022-01-16",
+  "entidade": "Santander",
+  "variante": "polonia",
+  "url_login": "https://www.santander.pl/",
+  "locale": "pl-PL",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20220116093416",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2022
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "janela de cookies escurece e cobre a página",
+  "aprovado_captura": "2026-11-21T05:58:44"
+ },
+ {
+  "id": "santander/polonia/2023-03-07",
+  "entidade": "Santander",
+  "variante": "polonia",
+  "url_login": "https://www.santander.pl/",
+  "locale": "pl-PL",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20230307103422",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2023
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "página em branco",
+  "aprovado_captura": "2026-11-21T05:59:59"
+ },
+ {
+  "id": "santander/polonia/2023-12-31",
+  "entidade": "Santander",
+  "variante": "polonia",
+  "url_login": "https://www.santander.pl/",
+  "locale": "pl-PL",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20231231234802",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2024
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "janela de cookies escurece e cobre a página",
+  "aprovado_captura": "2026-11-21T06:01:15"
+ },
+ {
+  "id": "santander/polonia/2024-08-01",
+  "entidade": "Santander",
+  "variante": "polonia",
+  "url_login": "https://www.santander.pl/",
+  "locale": "pl-PL",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20240801030209",
+  "status_cdx": 200,
+  "anos_alvo": [
+   2025
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "Wayback arquivou página de verificação anti-robô",
+  "aprovado_captura": "2026-11-21T06:02:36"
+ },
+ {
+  "id": "santander/polonia/2026-01-01",
+  "entidade": "Santander",
+  "variante": "polonia",
+  "url_login": "https://www.santander.pl/",
+  "locale": "pl-PL",
+  "seletor": null,
+  "origem": "wayback",
+  "timestamp": "20260101045119",
+  "status_cdx": 301,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "janela de cookies escurece e cobre a página",
+  "aprovado_captura": "2026-11-21T06:03:52"
+ },
+ {
+  "id": "santander/polonia/ao-vivo",
+  "entidade": "Santander",
+  "variante": "polonia",
+  "url_login": "https://www.santander.pl/",
+  "locale": "pl-PL",
+  "seletor": null,
+  "origem": "ao_vivo",
+  "timestamp": null,
+  "status_cdx": null,
+  "anos_alvo": [
+   2026
+  ],
+  "buraco": null,
+  "aprovado": false,
+  "motivo": "a página ao vivo já aparece com a marca Erste, não com o visual Santander",
+  "aprovado_captura": "2026-11-21T06:05:01"
+ }
+]

@@ -68,6 +68,7 @@ Para cada variante e cada ano de **2019 a 2026**, consulta a API CDX do Wayback 
 - **Capturas ao vivo:** entram no mesmo arquivo de saída abaixo, com `origem: ao_vivo` e a data da captura no lugar do timestamp, para que a aprovação (4.4) fique num lugar só.
 - **Saída:** `config/templates_snapshots.json` (**versionado**; não usar `.csv`, que o `.gitignore` ignora), com, por variante e ano, o timestamp escolhido ou o motivo do buraco. Esse arquivo é a "receita" reproduzível da base, e você o revisa antes da fase 2.
 - **Buracos conhecidos:** `login.microsoftonline.com` (0 snapshots), Chase antes de 2023, Apple (a API respondeu 403). Nesta fase, testam-se URLs alternativas de cada um (decididas na etapa 1). O que não tiver cobertura fica documentado como limitação, por marca e ano.
+- **Busca por prefixo (acrescentada em 21/11/2026, depois da primeira captura):** alguns logins só existem no Wayback em URLs de sessão, cada uma arquivada uma ou duas vezes. É o caso da Amazon (`/ap/signin/<sessão>?openid...`), em que a URL exata só tem a tela de CAPTCHA. Para essas variantes, a tabela de marcas traz `"busca": "prefixo"`, e o planejar lê as **5 primeiras páginas do índice da CDX** para qualquer URL que comece com a da variante (só status 200, de jun/2018 a dez/2026). É uma amostra: o prefixo da Amazon ocupa mais de 1.300 páginas do índice, varrer tudo levaria horas, e uma consulta com filtro de data estoura o limite de 60 s do próprio Wayback. Como o índice é ordenado pela URL, e o número de sessão não tem relação com a data, as primeiras páginas cobrem todos os anos sem viés de data (uma página só já tinha candidatos de 2019 a 2026). Como parte desses snapshots é CAPTCHA ou página inexistente, ele baixa o HTML original dos candidatos, do mais próximo de 1º de janeiro para o mais longe, e fica com o primeiro em que não aparece nenhum texto de `"evitar"` e aparece pelo menos um de `"exigir"`. Até 8 candidatos por ano; se nenhum servir, o ano vira buraco `sem_snapshot_valido`. A URL exata escolhida vai para o campo `url_arquivada` da entrada, que identifica o snapshot junto com o timestamp (aprovação, mesclagem e recaptura comparam os dois). As variantes de busca exata não mudam.
 
 ### 4.3 Fase 2 — capturar (`--capturar`)
 Usa o Playwright com Chromium headless, na máquina do Lucas.
@@ -119,6 +120,7 @@ Gera `data/templates/revisao.html`: uma grade com marcas nas linhas e anos nas c
 ### 4.7 Testes
 Testes unitários, sem rede, para as funções puras:
 - escolha do snapshot a partir de uma lista CDX (mais próximo, tolerância, deduplicação);
+- busca por prefixo: ordem dos candidatos, filtro de conteúdo (`evitar`/`exigir`), limite de 8 verificações, `url_arquivada` na aprovação e na recaptura, e variantes exatas inalteradas;
 - montagem das URLs `if_`/`id_`;
 - remoção do prefixo do Wayback das URLs do DOM;
 - nomes de pasta.
