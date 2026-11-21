@@ -18,7 +18,7 @@
 - Nomes de código em **português**, como no resto do projeto. Testes com `unittest`, rodados por `python -m unittest discover -s tests`.
 - Testes **não acessam a rede** nem abrem navegador.
 - Anos-alvo **2019 a 2026**, alvo = **1º de janeiro**, tolerância **183 dias**. Resoluções **1280×960** e **1366×768**, screenshot só da área visível.
-- Snapshots renderizados com o modificador **`if_`**; HTML original baixado com **`id_`**. Pausa de **1,5 s** entre requisições ao Wayback.
+- Snapshots renderizados no **modo comum** do Wayback, com a barra removida por JavaScript. O `if_` previsto inicialmente quebrou o login da Microsoft; ver spec §4.3. HTML original baixado com **`id_`**. Pausa de **1,5 s** entre requisições ao Wayback.
 - O script **não clica** em nada e **não contorna** CAPTCHA/bloqueio.
 - Nunca commitar `CLAUDE.md`, `data/` ou `*.csv`. Usar `.json` para arquivos versionados de configuração (o `.gitignore` ignora `*.csv`).
 - **Antes do primeiro commit:** perguntar ao Lucas o formato de autoria dos commits. Mensagens de commit em português.

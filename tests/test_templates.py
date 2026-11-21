@@ -1,5 +1,7 @@
+import json
 import os
 import sys
+import tempfile
 import unittest
 from datetime import datetime
 
@@ -96,6 +98,38 @@ class TestWayback(unittest.TestCase):
                 '<img src="https://web.archive.org/web/20200601224504im_/https://a.com/logo.png"></form>')
         self.assertEqual(templates.remover_prefixo_wayback(html),
                          '<form action="https://a.com/post"><img src="https://a.com/logo.png"></form>')
+
+
+def _escrever_meta(raiz, id_, conteudo, com_html_original=True):
+    """Cria a pasta da entrada e grava meta.json (dict vira JSON; str é gravada como está) e,
+    por padrão, um html_original.html, como numa captura completa."""
+    pasta = os.path.join(raiz, *id_.split("/"))
+    os.makedirs(pasta, exist_ok=True)
+    with open(os.path.join(pasta, "meta.json"), "w", encoding="utf-8") as f:
+        f.write(conteudo if isinstance(conteudo, str) else json.dumps(conteudo))
+    if com_html_original:
+        with open(os.path.join(pasta, "html_original.html"), "w", encoding="utf-8") as f:
+            f.write("<html></html>")
+
+
+META_OK = {"resolucoes": {"1280x960": {"status": "ok"}, "1366x768": {"status": "ok"}}}
+
+
+class TestCaptura(unittest.TestCase):
+    def test_pendentes(self):
+        plano = [{"id": "a/p/2019-07-01", "buraco": None}, {"id": "a/p/2020-01-03", "buraco": None},
+                 {"id": "a/p/2021-01-02", "buraco": None}, {"id": "a/p/2023-01-05", "buraco": None},
+                 {"id": "a/p/2024-01-03", "buraco": None}, {"id": "a/p/buraco-2022", "buraco": "sem_snapshot"}]
+        with tempfile.TemporaryDirectory() as raiz:
+            _escrever_meta(raiz, "a/p/2019-07-01", META_OK)
+            _escrever_meta(raiz, "a/p/2020-01-03",
+                           {"resolucoes": {"1280x960": {"status": "ok"}, "1366x768": {"status": "sem_formulario"}}})
+            os.makedirs(os.path.join(raiz, "a", "p", "2021-01-02"))  # captura interrompida: pasta sem meta.json
+            _escrever_meta(raiz, "a/p/2023-01-05", '{"resolucoes": {"1280x9')  # meta.json truncado por uma queda
+            # renderizou, mas o download do HTML original falhou (conexão derrubada pelo Wayback)
+            _escrever_meta(raiz, "a/p/2024-01-03", META_OK, com_html_original=False)
+            pendentes = [e["id"] for e in templates.entradas_pendentes(plano, raiz)]
+        self.assertEqual(pendentes, ["a/p/2020-01-03", "a/p/2021-01-02", "a/p/2023-01-05", "a/p/2024-01-03"])
 
 
 if __name__ == "__main__":

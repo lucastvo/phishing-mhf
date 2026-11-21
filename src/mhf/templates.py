@@ -11,6 +11,7 @@ Desenho: docs/especificacoes/2026-11-20-base-de-templates.md
 from __future__ import annotations
 
 import json
+import os
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -20,9 +21,17 @@ ANOS_PADRAO = range(2019, 2027)    # anos-alvo dos snapshots do Wayback (alvo = 
 TOLERANCIA = timedelta(days=183)   # mais longe que isso do alvo, o ano vira buraco
 ANO_AO_VIVO = 2026                 # ano da captura ao vivo (cenário "só 2026" da avaliação)
 
+# Resoluções dos datasets: 1280x960 (Phish360) e 1366x768 (Phishpedia, primeira dobra).
+RESOLUCOES = {"1280x960": (1280, 960), "1366x768": (1366, 768)}
+
 # Campo que indica que o formulário de login já apareceu (a captura espera por ele, não por um tempo fixo).
 SELETOR_CREDENCIAL = ('input[type=password], input[type=email], input[name*=user i], '
                       'input[name*=login i], input[name*=email i], input[id*=user i]')
+
+# Barra e banners que o Wayback injeta na página arquivada (modo comum); são removidos antes do
+# screenshot e do DOM. Medido em 20/11/2026: com eles removidos, o screenshot fica idêntico (0 pixels
+# diferentes) ao do modo if_ — que não é usado porque quebra o teste de cookies do login da Microsoft.
+SELETOR_BARRA_WAYBACK = "#wm-ipp-base, #wm-ipp-print, #donato, #wm-ipp"
 
 # Prefixo que o Wayback põe nas URLs da página arquivada, em qualquer das formas: absoluta, sem esquema
 # (//web.archive.org) ou relativa (/web/...), com ou sem modificador (if_, im_, js_, cs_...). Só é
@@ -124,8 +133,9 @@ def mesclar_plano(novo: list[dict], antigo: list[dict]) -> list[dict]:
 # ---------------------------------------------------------------- Wayback (fase "capturar")
 
 def url_wayback(timestamp: str, url: str, modo: str = "if_") -> str:
-    """URL de um snapshot. `if_` renderiza sem a barra do Wayback e com os recursos (CSS, imagens)
-    arquivados na mesma época; `id_` devolve o HTML original como foi arquivado, sem reescrita."""
+    """URL de um snapshot. `modo=""` é o modo comum (página com os recursos da época e a barra do
+    Wayback, que a captura remove); `if_` renderiza sem a barra; `id_` devolve o HTML original como
+    foi arquivado, sem reescrita."""
     return f"https://web.archive.org/web/{timestamp}{modo}/{url}"
 
 
@@ -133,3 +143,30 @@ def remover_prefixo_wayback(html: str) -> str:
     """Desfaz a reescrita de URLs do Wayback no DOM capturado. Sem isso, toda `action` de formulário
     apontaria para web.archive.org e a contagem forms_action_externa do componente s ficaria errada."""
     return _PREFIXO_WAYBACK.sub("", html)
+
+
+def pasta_entrada(raiz: str, id_: str) -> str:
+    """Pasta onde ficam os arquivos de uma entrada (o id usa "/" como separador)."""
+    return os.path.join(raiz, *id_.split("/"))
+
+
+def entradas_pendentes(plano: list[dict], raiz: str) -> list[dict]:
+    """Entradas que ainda precisam ser capturadas: não são buraco e não têm meta.json com status "ok"
+    nas duas resoluções, ou ficaram sem o html_original.html (download que falhou). Pasta sem
+    meta.json (captura interrompida) ou meta.json ilegível contam como pendentes, porque o meta.json
+    é gravado por último e marca a entrada como concluída."""
+    pendentes = []
+    for e in plano:
+        if e.get("buraco"):
+            continue
+        pasta = pasta_entrada(raiz, e["id"])
+        try:
+            with open(os.path.join(pasta, "meta.json"), encoding="utf-8") as f:
+                resolucoes = json.load(f)["resolucoes"]
+            concluida = (all(resolucoes[r]["status"] == "ok" for r in RESOLUCOES)
+                         and os.path.exists(os.path.join(pasta, "html_original.html")))
+        except (OSError, ValueError, KeyError, TypeError):
+            concluida = False
+        if not concluida:
+            pendentes.append(e)
+    return pendentes

@@ -69,7 +69,8 @@ Para cada variante e cada ano de **2019 a 2026**, consulta a API CDX do Wayback 
 
 ### 4.3 Fase 2 — capturar (`--capturar`)
 Usa o Playwright com Chromium headless, na máquina do Lucas.
-- **Snapshots do Wayback:** abre `https://web.archive.org/web/<timestamp>if_/<url>`. O modificador `if_` remove a barra do Wayback e mantém os recursos (CSS, imagens) **arquivados**. O `id_` puxaria o CSS ao vivo, de 2026, e misturaria épocas.
+- **Snapshots do Wayback:** abre `https://web.archive.org/web/<timestamp>/<url>` (modo comum), que mantém os recursos (CSS, imagens) **arquivados**, e remove por JavaScript a barra e os banners que o Wayback injeta (`#wm-ipp-base` etc.) antes do screenshot e do DOM. O `id_` puxaria o CSS ao vivo, de 2026, e misturaria épocas.
+  - *Correção feita na implementação (20/11/2026):* o desenho previa o modificador `if_`, que já vem sem barra. Na verificação, porém, o `if_` quebrou o login da Microsoft: o teste de cookies da página falha e ela redireciona para `cookiesDisabled.srf`, que não está arquivada. Com isso, 6 de 8 snapshots ficaram sem formulário. No modo comum o formulário aparece, e nos snapshots em que o `if_` funciona, o modo comum sem a barra deu **0 pixels diferentes** (PayPal 2020, Microsoft 2018).
 - **Ao vivo (2026):** abre a URL original com o `locale` da variante.
 - **Espera:** espera um campo de credencial aparecer (`input[type=password]`, `input[type=email]` ou similar), por até 30 s, e depois a rede ficar ociosa, com limite. Não usar espera de tempo fixo: o login da Microsoft de 2025 levou ~13 s para mostrar o formulário.
 - **Duas resoluções**, cada uma num carregamento separado (a página pode se reorganizar ao mudar de largura): 1280×960 (Phish360) e 1366×768 (Phishpedia). Screenshot **só da área visível**, não da página inteira.
@@ -126,6 +127,6 @@ Estas são decisões minhas, propostas para você conferir:
 - **Snapshot mais próximo de 1º de janeiro**, com tolerância de 6 meses.
 - **Captura nas duas resoluções dos datasets**, adiando a escolha da resolução para a etapa 3.
 - **Salvar o DOM renderizado e o HTML original**, adiando para a etapa 4 qual deles comparar.
-- **Modificador `if_`** para os snapshots do Wayback.
+- **Modo comum do Wayback, com a barra removida** (o `if_` foi descartado na implementação; ver 4.3).
 - **Revisão manual obrigatória** antes de um template entrar na base.
 - **Receita da base em `config/templates_snapshots.json`**, versionada; as imagens e os HTMLs ficam fora do git.
