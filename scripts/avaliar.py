@@ -390,7 +390,7 @@ def main():
             r["E3"] = {"com_estagio1": {**com, "theta_h": cal["theta_h"]}, "sem_estagio1": sem}
             s.tabela("estagio1.tex", CAB_RESUMO + ["Legítimas liberadas no estágio 1"],
                      [linha_resumo("Estágio único (principal)", sem, [avaliacao.percentual(0.0)]),
-                      linha_resumo(f"Com estágio 1 ($\theta_h$ = {cal['theta_h']} bits)", com,
+                      linha_resumo(f"Com estágio 1 (θ_h = {cal['theta_h']} bits)", com,
                                    [avaliacao.percentual(com["por_amostra"]["legitimas_liberadas_estagio1"])])],
                      "Com e sem o estágio 1 pelo pHash (teste)", "tab:estagio1")
 
