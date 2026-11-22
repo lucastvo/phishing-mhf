@@ -66,7 +66,12 @@ def verificar_tabela(a, p, b, tabela, info, modelo):
     cal = info["cascata"]
     escores = cascata.pontuar_amostras(modelo, c["X"][sel])
     r = cascata.aplicar_cascata(c["d1"][sel], c["t1"][sel], escores, c["legit"][sel], cal["theta_h"], cal["tau"])
-    print(f"Detector: {modelo.tipo} | θ_h = {cal['theta_h']} bits | τ = {cal['tau']:.4f} | {len(sel)} amostras\n")
+    print(f"Detector: {modelo.tipo} | θ_h = {cal['theta_h']} bits | τ = {cal['tau']:.4f} | {len(sel)} amostras")
+    if any(c["meta"][i]["conjunto"] == divisao.DESENVOLVIMENTO for i in sel):
+        print("Atenção: o detector final foi treinado com todo o desenvolvimento; nessas amostras o veredito "
+              "confere o funcionamento, mas não mede o desempenho (para isso: comparacao_dev.md e, na etapa 6, "
+              "o teste).")
+    print()
     print("| Amostra | Real | Veredito | Estágio | Motivo | Escore | Mais parecida pelo pHash (d₁) |")
     print("|---|---|---|---|---|---|---|")
     for k, i in enumerate(sel):
