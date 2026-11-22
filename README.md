@@ -91,3 +91,47 @@ python scripts/capturar_templates.py rejeitar --resolucao 1920x1080 --plano conf
 ```
 
 Os comandos acima usam a tabela completa (`config/marcas.json`, 20 marcas e 30 variantes; o `planejar` leva cerca de 2 minutos). Para um teste rápido, use `config/marcas.exemplo.json`, que tem só PayPal e Microsoft.
+
+## Passo 3 — impressão digital visual (h, e)
+
+`src/mhf/visual.py` calcula a parte visual da impressão digital. Desenho completo e medições em `docs/especificacoes/2026-11-21-componente-visual.md`.
+
+- **Classe de tela.** Cada captura recebe o tamanho de tela dos templates de largura mais próxima (1280x960, 1366x768 ou 1920x1080) e é comparada só com templates desse tamanho. A página muda de layout com a largura da tela, e redimensionar a imagem não desfaz isso.
+- **Primeira dobra.** O topo da captura é recortado com a altura da tela da classe. Isso importa nas capturas de página inteira do Phishpedia benign.
+  - Imagem mais larga que a classe (página que transbordou na horizontal): fica só a janela, com a largura e a altura da classe.
+  - Áreas transparentes são compostas sobre branco, como o navegador mostra a página.
+- **h:** pHash de 64 bits (256 como variação), comparado por `sim_hash` (1 − d_H/n).
+- **e:** MobileNetV3 Small (principal) e Large (comparação), pré-treinadas na ImageNet.
+  - Entrada: a dobra em 224x224.
+  - Saída: o vetor do *global average pooling*, com norma 1; assim o cosseno vira um produto interno.
+
+Os pesos são baixados uma vez, na primeira execução, de `download.pytorch.org`, para `data/torch` (fora do Git). Uma variável `TORCH_HOME` já definida tem prioridade.
+
+```bash
+python scripts/extrair_visual.py --plano config/templates_snapshots.json --raiz-templates data/templates --saida data/visual_templates
+python scripts/extrair_visual.py --indice data/phish360.csv --raiz data/Phish360 --saida data/visual_phish360
+# Phishpedia benign: capturado numa tela de 1366x768, em página inteira; a classe é fixada para o dataset todo
+python scripts/extrair_visual.py --indice data/phishpedia_benign.csv --raiz data/benign_sample_30k --classe 1366x768 --saida data/visual_phishpedia_benign
+```
+
+Saídas:
+- `<saida>.jsonl`: uma linha por captura, com id, classe, tamanho original, hashes, metadados e tempos;
+- `<saida>_small.npy` e `<saida>_large.npy`: os embeddings, na ordem das linhas do JSONL;
+- `<saida>.erros.tsv`: só se alguma captura não puder ser lida; a rodada segue sem ela.
+
+Os templates entram como um item por par (template aprovado, tamanho de tela), via `templates.templates_aprovados`.
+
+**Tempo por imagem**, uma de cada vez (como no uso real). Mediana em ms, CPU i7-4790 com 4 threads, sem outros programas abertos:
+
+| Origem | Imagens | Ler | Abrir | pHash 64 | pHash 256 | Small | Large |
+|---|---|---|---|---|---|---|---|
+| Templates | 572 | 1,1 | 10,7 | 3,5 | 4,0 | 20,2 | 31,1 |
+| Phish360 | 10.748 | 2,5 | 5,1 | 3,3 | 3,6 | 16,7 | 27,0 |
+| Phishpedia phishing | 29.496 | 1,7 | 17,4 | 5,1 | 5,5 | 19,1 | 28,2 |
+| Phishpedia benign | 30.649 | 1,8 | 18,9 | 2,9 | 3,1 | 15,5 | 24,8 |
+
+- **Ler**: leitura do arquivo do disco.
+- **Abrir**: decodificação do PNG, composição da transparência (só quando há) e recorte da primeira dobra. No navegador, a captura já vem decodificada e opaca; as capturas de página inteira do Phishpedia benign (até 85 mil px de altura) explicam o p95 de 127 ms.
+- O estágio 1 da cascata usa só o pHash de 64 bits; os embeddings entram no estágio 2.
+
+Rodada sem erros nos quatro conjuntos. Contagens do resumo: 27 + 14 capturas mais baixas que a dobra (Phish360, Phishpedia phishing), usadas como estão; 65 + 459 mais estreitas que a classe (as 800×600 do Phishpedia vão para 1280×960); 6 + 401 + 1.369 mais largas que a classe, recortadas na janela (Phish360, Phishpedia phishing, Phishpedia benign).

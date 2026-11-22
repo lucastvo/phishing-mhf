@@ -64,10 +64,18 @@ A abordagem 1 contém a 2: as imagens são redimensionadas para uma resolução 
 ### 5.1 Classe de tela
 Cada captura recebe uma das três classes, **1280×960, 1366×768 ou 1920×1080**, pela largura mais próxima. As capturas de 800×600 (4:3) vão para 1280×960. São as únicas sem template do mesmo tamanho exato, o que é registrado. A classe é gravada junto com h e e.
 
+**Classe fixa quando o tamanho de tela é conhecido (decidido com o Lucas, 21/11/2026).** O Phishpedia benign foi capturado numa tela de 1366×768, em página inteira.
+- 1.369 páginas transbordam na horizontal: a imagem fica mais larga que a tela, até 35.347 px, e todas têm pelo menos 768 px de altura.
+- Pela largura, 446 delas cairiam na classe 1920×1080 e seriam comparadas com templates do tamanho errado.
+- Por isso, a extração recebe a classe do dataset (`--classe 1366x768`).
+- Nos outros datasets, a classe vem da largura de cada imagem.
+
 ### 5.2 Normalização da imagem
-1. Abrir com `ImageFile.LOAD_TRUNCATED_IMAGES = True` e `Image.MAX_IMAGE_PIXELS = None` (armadilhas conhecidas dos datasets) e converter para RGB.
-2. **Recortar a primeira dobra:** a faixa de cima, com a largura da imagem e a altura proporcional à classe (ex.: uma captura de 1366 de largura fica com 768 px de altura). Isso afeta sobretudo o Phishpedia benign (página inteira).
-3. Capturas menores que a dobra (ex.: altura menor que a da classe) são usadas como estão, sem preencher, e contadas.
+1. Abrir com `ImageFile.LOAD_TRUNCATED_IMAGES = True` e `Image.MAX_IMAGE_PIXELS = None` (armadilhas conhecidas dos datasets) e converter para RGB. **Áreas transparentes são compostas sobre branco**, que é como o navegador mostra a página. As capturas do Phishpedia são PNG RGBA, e parte delas tem regiões com alfa 0 e RGB 0 (cerca de 5% no phishing e 13% no benign, numa amostra de 200 de cada). Descartar o alfa deixaria essas regiões pretas. Os templates (Playwright) e o Phish360 são opacos. A composição só é feita quando a imagem tem algum pixel não opaco: todas as capturas do Phishpedia são RGBA, mas cerca de 94% delas (281 de 300 sorteadas no phishing) são totalmente opacas, e nelas o resultado é pixel a pixel o mesmo da conversão direta. Conferir o canal alfa custa cerca de 4 ms numa imagem 1920×1080; compor custa cerca de 48 ms, contra 6 ms da conversão direta. Sem essa verificação, o tempo de abertura do Phishpedia triplicava por um detalhe do formato do arquivo, não do método (na extensão do navegador, a captura da aba já vem opaca).
+2. **Recortar a primeira dobra** a partir do canto superior esquerdo. Isso afeta sobretudo o Phishpedia benign (página inteira).
+   - **Imagem com largura até a da classe:** a faixa de cima, com a largura da imagem e a altura proporcional à classe. Ex.: uma captura de 1366 de largura fica com 768 px de altura.
+   - **Imagem mais larga que a classe:** a janela, com a largura e a altura da classe (decidido com o Lucas, 21/11/2026). É o caso do transbordo horizontal numa captura de página inteira, em que a tela só mostrava o canto superior esquerdo da página. É também o que a extensão do navegador recebe ao capturar a aba visível. Antes, a dobra mantinha a largura toda: uma página de 7.253 px de largura virava um recorte de 7.253 × 4.078 px espremido em 224×224.
+3. Capturas menores que a dobra (ex.: altura menor que a da classe) são usadas como estão, sem preencher, e contadas. A extração também conta as capturas mais estreitas e as mais largas que a classe.
 
 ### 5.3 h — hash perceptual
 - `imagehash.phash` sobre a dobra recortada: tons de cinza, 32×32, DCT, 8×8 coeficientes de baixa frequência → **64 bits**.
@@ -80,18 +88,20 @@ Cada captura recebe uma das três classes, **1280×960, 1366×768 ou 1920×1080*
   - Large: `IMAGENET1K_V2`, 5,5 M parâmetros, 21,1 MB.
 - Os pesos são baixados uma vez de `download.pytorch.org` (fonte oficial; o torchvision confere o hash do arquivo). Ficam em `data/torch/hub/checkpoints/`, fora do git: a extração define `TORCH_HOME=data/torch`. Download feito com o ok do Lucas em 21/11/2026.
 - Tempo medido com os pesos reais, uma imagem de cada vez, CPU i7-4790 com 4 threads: **Small 29,6 ms; Large 57,3 ms** por embedding.
+  Essa primeira medição foi feita com a captura de templates rodando ao mesmo tempo. Na extração completa, com a máquina livre, as medianas ficaram em **16–20 ms (Small) e 25–31 ms (Large)** (tabela no README, passo 3).
 - Entrada: a dobra recortada, redimensionada para **224×224** e normalizada com a média e o desvio da ImageNet (as transformações dos próprios pesos). A distorção de proporção é a mesma para amostra e template da mesma classe de tela (seção 4).
 - Saída: o vetor depois do *global average pooling*, antes do classificador (**576 dimensões na Small, 960 na Large**), normalizado em L2. Assim o cosseno vira um produto interno, que é o que o `IndexFlatIP` da etapa 4 usa.
 - CPU, `torch.inference_mode()`, modelo em `eval()`. O modelo é carregado uma vez e reaproveitado.
 
 ### 5.5 Latência
 A extração mede, por página e separadamente:
-- leitura e normalização;
-- h;
+- leitura do disco;
+- abertura e normalização (decodificar, compor a transparência e recortar a dobra);
+- h de 64 bits e h de 256 bits;
 - e (Small);
 - e (Large).
 
-Os tempos medem só o cálculo, sem a leitura do disco, e repetem a medição com uma imagem de cada vez (como no uso real), além do lote. Os números vão para o Cap. 4/5.
+A leitura do disco é medida à parte (no navegador, a captura já está na memória), e o h de 64 e o de 256 bits têm cada um o seu tempo. As imagens são processadas uma de cada vez, como no uso real, em que cada página chega sozinha. Por isso não há medição em lote: o lote só mudaria o tempo total da extração, que é relatado à parte. Os números vão para o Cap. 4/5.
 
 ### 5.6 Templates em 1920×1080
 - `RESOLUCOES` ganha `1920x1080`.
@@ -100,7 +110,7 @@ Os tempos medem só o cálculo, sem a leitura do disco, e repetem a medição co
 - A forma exata de registrar a aprovação por resolução fica para o plano, respeitando a regra atual: a aprovação vale para a captura que foi vista.
 
 ### 5.7 Saídas
-- `src/mhf/visual.py`: classe de tela, normalização, `phash`, `Embedder` (Small/Large) e `comparar(v1, v2)`, que devolve a similaridade de h (1 − d_H/n) e o cosseno de e, separados.
+- `src/mhf/visual.py`: classe de tela, normalização, `phash`, `Embedder` (Small/Large) e `comparar(v1, v2)`, que recebe `{"h", "e"}` e devolve a similaridade de h (`sim_h` = 1 − d_H/n) e o cosseno de e (`cos_e`), separados.
 - `scripts/extrair_visual.py`: como o `extrair_estrutural.py`. Lê o índice CSV de um dataset (ou o plano de templates), grava h e a classe em JSONL e os embeddings em `.npy` (fora do git), um por modelo, com os ids na mesma ordem. Erros por amostra não interrompem a rodada (`<saida>.erros.tsv`).
 - `tests/test_visual.py`: sem rede e sem baixar pesos (rede com pesos aleatórios para testar formato, normalização L2 e determinismo).
 
@@ -112,7 +122,9 @@ Os tempos medem só o cálculo, sem a leitura do disco, e repetem a medição co
 ## 7. Impacto na monografia
 
 - **Seção 2.4.3 (normalização, nota `\lucas{resolução da captura}`):** a normalização deixa de ser "uma resolução fixa" e passa a ser "classe de tela + redimensionamento fixo, comparando no mesmo tamanho de tela".
-- **Seção 2.6 (nota sobre o tamanho do hash):** 64 bits, com 256 como variação.
+- **Seção 2.6.2 (nota sobre o tamanho do hash):** 64 bits, com 256 como variação.
+- **Seção 2.6.2 (comparação de e):** cosseno, com o vetor de norma 1. O texto hoje diz "distância euclidiana ou cosseno"; com norma 1 as duas ordenam os vizinhos da mesma forma.
+- **Seção 2.6.1 e Cap. 1, item 3 do Método (rede de embeddings):** MobileNetV3 Small como principal e Large como comparação, pré-treinadas na ImageNet, sem ajuste fino.
 - **Cap. 1, item 2 do Método:** ainda cita VisualPhish e IEEE (já apontado antes).
 
 ## 8. Dependências
