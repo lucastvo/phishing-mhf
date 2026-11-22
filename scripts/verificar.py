@@ -2,14 +2,14 @@
 Passo 5c — verifica páginas com um detector salvo (passo 5b) e mostra o veredito de cada uma.
 
 Uso, com amostras das tabelas de similaridades:
-    python scripts/verificar.py --modelo data/modelos/regressao \
+    python scripts/verificar.py --modelo data/modelos/boosting \
         --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign \
         --divisao data/divisao.csv --amostras 20
-    python scripts/verificar.py --modelo data/modelos/regressao --tabelas ... --divisao data/divisao.csv \
+    python scripts/verificar.py --modelo data/modelos/boosting --tabelas ... --divisao data/divisao.csv \
         --ids "trainval\\P10001_paypal" "Amazon.com Inc.+2019-07-29-10`40`48"
 
 Uso, com uma página bruta (captura, HTML e URL), como seria no navegador:
-    python scripts/verificar.py --modelo data/modelos/regressao \
+    python scripts/verificar.py --modelo data/modelos/boosting \
         --imagem pagina.png --html pagina.html --url "http://paypal-conta.example/"
 
 O conjunto de teste só é lido com --usar-teste: ele é usado uma única vez, na avaliação (etapa 6).
@@ -113,7 +113,8 @@ def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0].strip())
-    p.add_argument("--modelo", default="data/modelos/regressao", help="pasta de um detector salvo por treinar.py")
+    p.add_argument("--modelo", default="data/modelos/boosting",
+                   help="pasta de um detector salvo por treinar.py (padrão: o gradient boosting, classificador principal)")
     p.add_argument("--base", default="data/base")
     p.add_argument("--marcas", default="config/marcas.json")
     g = p.add_argument_group("amostras das tabelas")
