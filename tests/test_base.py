@@ -78,6 +78,29 @@ class TestConstrucao(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "paypal/login/2021-01-01@1920x1080"):
                 base.construir_itens(pares, raiz, sem_ultimo, emb_cortado, TABELA)
 
+    def test_sem_templates_aprovados_recusa_base_vazia(self):
+        # ex.: --raiz-templates errado faz templates_aprovados devolver []; a base boa não pode ser trocada
+        with tempfile.TemporaryDirectory() as raiz:
+            _, _, linhas, emb = _cenario(raiz)
+            with self.assertRaisesRegex(ValueError, "nenhum template"):
+                base.construir_itens([], raiz, linhas, emb, TABELA)
+
+    def test_conferir_visual_pega_base_desatualizada(self):
+        with tempfile.TemporaryDirectory() as raiz:
+            pares, ids, linhas, emb = _cenario(raiz)
+            itens, emb_base = base.construir_itens(pares, raiz, linhas, emb, TABELA)
+        b = base.Base(itens, emb_base)
+        b.conferir_visual(linhas)  # igual: passa
+        recapturado = [dict(l, phash64="f" * 16) if l["id"] == ids[0] else l for l in linhas]
+        with self.assertRaisesRegex(ValueError, ids[0]):  # mesmo id, captura nova
+            b.conferir_visual(recapturado)
+        sobra = linhas + [{"id": "netflix/login/2022-01-01@1366x768", "phash64": "0" * 16}]
+        with self.assertRaisesRegex(ValueError, "netflix/login/2022-01-01@1366x768"):
+            b.conferir_visual(sobra)
+        b.conferir_visual(sobra, permitir_sobras=True)  # construir_base: template que deixou de ser aprovado
+        with self.assertRaisesRegex(ValueError, ids[2]):  # item da base sem linha visual
+            b.conferir_visual([l for l in linhas if l["id"] != ids[2]], permitir_sobras=True)
+
     def test_dom_ausente_deixa_s_nulo(self):
         with tempfile.TemporaryDirectory() as raiz:
             pares, ids, linhas, emb = _cenario(raiz)
@@ -209,8 +232,10 @@ class TestBusca(unittest.TestCase):
         self.assertEqual([i for i, _ in viz], [0, 1])
         self.assertAlmostEqual(viz[0][1], 1 - 2 / 64)
         self.assertEqual([i for i, _ in b.vizinhos(consulta_do_item(b, 1), "1366x768", "small", k=1)], [1])
-        self.assertEqual([i for i, _ in b.vizinhos(consulta_do_item(b, 0), "1366x768", "caminhos", k=3)][:2],
-                         [0, 1])  # c (sem s) por último
+        # c não tem s: fica de fora, em vez de aparecer com similaridade NaN
+        self.assertEqual([i for i, _ in b.vizinhos(consulta_do_item(b, 0), "1366x768", "caminhos", k=3)], [0, 1])
+        # consulta sem s (amostra sem HTML útil): nenhum vizinho por caminhos, e não o 1º template da base
+        self.assertEqual(b.vizinhos(consulta_do_item(b, 0, com_s=False), "1366x768", "caminhos"), [])
         self.assertEqual(len(b.vizinhos(consulta_do_item(b, 0), "1366x768", "large", k=10)), 3)
         with self.assertRaises(ValueError):
             b.vizinhos(consulta, "1366x768", "xyz")

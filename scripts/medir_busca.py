@@ -8,9 +8,11 @@ Uso:
                      data/estrutural_phishpedia_benign.jsonl
 
 Por classe de tela, sorteia até --por-classe amostras das saídas visuais e mede, por consulta:
-- o 1º vizinho por h64, Small e Large: exaustiva (numpy) e FAISS (IndexBinaryFlat / IndexFlatIP);
+- o 1º vizinho por h64, Small e Large: pela busca do código (Base.vizinhos, que calcula também o h de 256
+  bits quando o sinal é h), pelo núcleo numpy isolado e pelo FAISS (IndexBinaryFlat / IndexFlatIP);
 - o s contra todos os templates da classe e a busca completa (h, e e s) de Base.similaridades;
-- a concordância: fração de consultas em que os dois métodos acham um 1º vizinho com a mesma similaridade.
+- a concordância: fração de consultas em que Base.vizinhos e o FAISS acham um 1º vizinho com a mesma
+  similaridade.
 É o único lugar do projeto que usa o FAISS: a base usa a busca exaustiva (desenho, seção 4).
 
 Desenho: docs/especificacoes/2026-11-22-base-e-busca.md
@@ -76,9 +78,17 @@ def _topo(b, classe, consultas, sinal, metodo):
     return np.array([r[0] for r in res]), np.array([r[1] for r in res])
 
 
+def _consulta_base(consultas, sinal, q):
+    """Consulta no formato de Base.similaridades/vizinhos, só com o campo do sinal."""
+    campo = "phash64" if sinal == "h64" else sinal
+    return {campo: consultas[campo][q]}
+
+
 def topo_exaustivo(b, classe, consultas, sinal):
-    """Índice na base e similaridade do 1º vizinho de cada consulta, pela busca exaustiva."""
-    return _topo(b, classe, consultas, sinal, "exaustivo")
+    """Índice na base e similaridade do 1º vizinho de cada consulta pela busca do código (Base.vizinhos)."""
+    res = [b.vizinhos(_consulta_base(consultas, sinal, q), classe, sinal, k=1)[0]
+           for q in range(len(consultas["phash64"]))]
+    return np.array([r[0] for r in res]), np.array([r[1] for r in res])
 
 
 def topo_faiss(b, classe, consultas, sinal):
@@ -147,8 +157,9 @@ def main():
     b = base.Base.carregar(a.base)
     consultas = _sortear_consultas(a.consultas, a.estrutural, a.por_classe, a.semente)
     print(f"FAISS {faiss.__version__}, numpy {np.__version__}; uma consulta de cada vez; tempos: mediana (p95)\n")
-    print("| Classe | Templates | Consultas | Sinal | Exaustiva (µs) | FAISS (µs) | Concordância |")
-    print("|---|---|---|---|---|---|---|")
+    print("| Classe | Templates | Consultas | Sinal | Base.vizinhos (µs) | Núcleo numpy (µs) | FAISS (µs) | "
+          "Concordância Base.vizinhos × FAISS |")
+    print("|---|---|---|---|---|---|---|---|")
     extras = []
     for classe, q in sorted(consultas.items()):
         c = _Classe(b, classe)
@@ -156,19 +167,25 @@ def main():
         if not len(c.idx):
             continue
         for sinal in SINAIS:
-            tempos = {"exaustivo": [], "via_faiss": []}
-            sims = {"exaustivo": [], "via_faiss": []}
+            tempos = {"vizinhos": [], "exaustivo": [], "via_faiss": []}
+            sims = {"vizinhos": [], "via_faiss": []}
             for k in range(n):
                 x = _consulta_do_sinal(q, sinal, k)
-                for metodo in tempos:
+                consulta = _consulta_base(q, sinal, k)
+                t = time.perf_counter()
+                _, sim = b.vizinhos(consulta, classe, sinal, k=1)[0]
+                tempos["vizinhos"].append((time.perf_counter() - t) * 1e6)
+                sims["vizinhos"].append(sim)
+                for metodo in ("exaustivo", "via_faiss"):
                     t = time.perf_counter()
                     _, sim = getattr(c, metodo)(x, sinal)
                     tempos[metodo].append((time.perf_counter() - t) * 1e6)
-                    sims[metodo].append(sim)
-            me, pe = _mediana_p95(tempos["exaustivo"])
-            mf, pf = _mediana_p95(tempos["via_faiss"])
-            print(f"| {classe} | {len(c.idx)} | {n} | {sinal} | {me:.1f} ({pe:.1f}) | {mf:.1f} ({pf:.1f}) | "
-                  f"{concordancia(sims['exaustivo'], sims['via_faiss']):.1%} |")
+                    if metodo == "via_faiss":
+                        sims[metodo].append(sim)
+            colunas = " | ".join("{:.1f} ({:.1f})".format(*_mediana_p95(tempos[m]))
+                                 for m in ("vizinhos", "exaustivo", "via_faiss"))
+            print(f"| {classe} | {len(c.idx)} | {n} | {sinal} | {colunas} | "
+                  f"{concordancia(sims['vizinhos'], sims['via_faiss']):.1%} |")
         t_s, t_tudo = [], []
         for k in range(n):
             consulta = {"phash64": q["phash64"][k], "phash256": q["phash256"][k], "s": q["s"][k],

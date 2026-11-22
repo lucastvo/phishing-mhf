@@ -79,6 +79,8 @@ def main():
     p.add_argument("--dataset", required=True, choices=["phish360", "phishpedia"],
                    help="formato dos rótulos de marca (para a entidade de 𝒯)")
     p.add_argument("--base", default="data/base")
+    p.add_argument("--visual-templates", default="data/visual_templates",
+                   help="prefixo da saída visual dos templates, para conferir que a base está em dia")
     p.add_argument("--marcas", default="config/marcas.json")
     p.add_argument("--saida", required=True)
     a = p.parse_args()
@@ -93,6 +95,8 @@ def main():
             d = json.loads(l)
             s_por_id[d["id"]] = estrutural.ImpressaoEstrutural.de_dict(d)
     b = base.Base.carregar(a.base)
+    with open(a.visual_templates + ".jsonl", encoding="utf-8") as f:
+        b.conferir_visual([json.loads(l) for l in f])
 
     meta, matrizes = calcular_tabela(linhas, emb, s_por_id, b, marcas.ler_tabela(a.marcas), a.dataset,
                                      progresso=5000)

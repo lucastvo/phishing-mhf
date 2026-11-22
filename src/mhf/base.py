@@ -41,6 +41,8 @@ def construir_itens(pares, raiz_templates, visual_linhas, visual_emb, tabela):
     ordem dos pares, e os embeddings reordenados para essa ordem. `visual_linhas`/`visual_emb` são a
     saída de extrair_visual.py para os templates. Um par sem linha visual faz a construção falhar (a
     base não pode ficar incompleta sem aviso); um par sem DOM fica com s nulo."""
+    if not pares:
+        raise ValueError("nenhum template aprovado (conferir --plano e --raiz-templates); a base não foi montada")
     linha_do_id = {l["id"]: i for i, l in enumerate(visual_linhas)}
     ids = [f"{e['id']}@{r}" for e, r in pares]
     faltando = [i for i in ids if i not in linha_do_id]
@@ -109,6 +111,22 @@ class Base:
             emb[m] = v.astype(np.float32)
         return cls(itens, emb)
 
+    def conferir_visual(self, visual_linhas, permitir_sobras=False):
+        """Confere a base contra a saída visual atual dos templates (extrair_visual.py): todo item precisa
+        ter a linha visual de mesmo id e mesmo pHash de 64 bits (um template recapturado e reextraído sem
+        reconstruir a base muda o hash). Linha visual sem item na base também é divergência, a não ser com
+        `permitir_sobras` (construir_base: template que deixou de ser aprovado). Levanta ValueError listando
+        os ids divergentes."""
+        h_visual = {l["id"]: l.get("phash64") for l in visual_linhas}
+        problemas = [f"{it['id']} (sem linha visual)" if it["id"] not in h_visual else f"{it['id']} (pHash mudou)"
+                     for it in self.itens if h_visual.get(it["id"]) != it["phash64"]]
+        if not permitir_sobras:
+            ids_base = {it["id"] for it in self.itens}
+            problemas += [f"{i} (fora da base)" for i in h_visual if i not in ids_base]
+        if problemas:
+            raise ValueError("base desatualizada em relação à saída visual dos templates (rodar construir_base.py "
+                             "de novo): " + ", ".join(problemas))
+
     def _grupo(self, classe):
         if classe not in visual.CLASSES_TELA:
             raise ValueError(f"classe deve ser uma de {sorted(visual.CLASSES_TELA)}")
@@ -162,11 +180,13 @@ class Base:
     def vizinhos(self, consulta, classe, sinal, k=5):
         """Os k templates da classe mais parecidos com a página por um sinal (h64, h256, small, large ou
         caminhos): lista de (índice na base, similaridade), do mais parecido para o menos. Empates ficam
-        na ordem da base; templates sem o sinal (NaN) vão para o fim."""
+        na ordem da base. Templates sem o sinal (NaN, como um template sem s) ficam de fora; se a consulta
+        não tem o sinal (amostra sem HTML útil, por exemplo), a lista sai vazia."""
         if sinal not in SINAIS_VIZINHOS:
             raise ValueError(f"sinal deve ser um de {sorted(SINAIS_VIZINHOS)}")
         grupo_sinal, chave = SINAIS_VIZINHOS[sinal]
         r = self.similaridades(consulta, classe, sinais=(grupo_sinal,))
         valores = r[chave]
-        ordem = np.argsort(-np.nan_to_num(valores, nan=-np.inf), kind="stable")[:k]
+        validos = np.flatnonzero(~np.isnan(valores))
+        ordem = validos[np.argsort(-valores[validos], kind="stable")][:k]
         return [(int(r["indices"][j]), float(valores[j])) for j in ordem]

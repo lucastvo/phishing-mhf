@@ -62,6 +62,8 @@ def main():
     pares = templates.templates_aprovados(plano, a.raiz_templates)
     linhas, emb = ler_saida_visual(a.visual)
     itens, emb_base = base.construir_itens(pares, a.raiz_templates, linhas, emb, marcas.ler_tabela(a.marcas))
+    base.Base(itens, emb_base).conferir_visual(linhas, permitir_sobras=True)
+    sobras = sorted({l["id"] for l in linhas} - {i["id"] for i in itens})
 
     meta = {"construida_em": datetime.now().isoformat(timespec="seconds"), "itens": len(itens),
             "por_classe": dict(sorted(Counter(i["classe"] for i in itens).items())),
@@ -74,6 +76,8 @@ def main():
     print("Por classe de tela:", meta["por_classe"])
     print("Por entidade:", meta["por_entidade"])
     print(f"Sem s (DOM ausente ou vazio): {len(meta['sem_s'])}")
+    if sobras:
+        print(f"Linhas visuais sem template aprovado (fora da base): {len(sobras)}: {', '.join(sobras)}")
 
 
 if __name__ == "__main__":
