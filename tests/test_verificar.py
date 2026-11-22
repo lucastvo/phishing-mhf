@@ -143,3 +143,54 @@ class TestVerificarMain(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestDetectorRevisao(unittest.TestCase):
+    """Correções da revisão final: hash de 256 bits, φ incompleta e elementos derivados do s."""
+
+    def test_detector_hash_256_chega_ao_estagio2(self):
+        b = base_sintetica()
+        nomes = cascata.nomes_caracteristicas(hash_bits=256)
+        rng = np.random.default_rng(0)
+        X = rng.uniform(size=(200, len(nomes)))
+        modelo = cascata.RegressaoLogistica.treinar(X, X[:, 1] > 0.5, np.ones(200), nomes)
+        info = {"entidades": ["Netflix", "PayPal"], "cascata": {"theta_h": 64, "tau": 0.0},
+                "caracteristicas": {"nomes": nomes, "embedding": "small", "hash_bits": 256, "sinais": ["h", "e", "s"]}}
+        det = cascata.Detector(b, modelo, info, TABELA)
+        img = Image.new("RGB", (1366, 768), "white")
+        with tempfile.TemporaryDirectory() as d:
+            caminho = os.path.join(d, "shot.png")
+            img.save(caminho)
+            v = det.analisar_pagina(caminho, "<html><body><div><p>x</p></div></body></html>", "http://golpe.test/",
+                                    embedder=visual.Embedder("small", pesos=False))
+        self.assertEqual((v.estagio, v.rotulo), (2, "phishing"))
+        self.assertIsNotNone(v.escores)
+
+    def test_decidir_sem_sinal_do_modelo_levanta(self):
+        b = base_sintetica()
+        with self.assertRaisesRegex(ValueError, "cos_small"):
+            _detector(b, theta_h=64).decidir({"phash64": "0" * 16}, "1366x768", "http://golpe.test/")
+
+    def test_decidir_deriva_elementos_do_s(self):
+        b = base_sintetica()
+        det = _detector(b, theta_h=64, tau=0.3)
+        consulta = consulta_do_item(b, 0)
+        com = det.decidir(consulta, "1366x768", "http://golpe.test/", elementos=consulta["s"].contagens["elementos"])
+        sem = det.decidir(consulta, "1366x768", "http://golpe.test/")
+        self.assertEqual((sem.rotulo, sem.entidade, sem.motivo), (com.rotulo, com.entidade, com.motivo))
+        self.assertAlmostEqual(sem.escore, com.escore, places=9)
+
+    def test_decidir_sem_s_igual_a_tabela(self):
+        b = base_sintetica()
+        det = _detector(b, theta_h=64, tau=0.3)
+        consulta = {**consulta_do_item(b, 0), "s": None}
+        url = "http://golpe.test/"
+        v = det.decidir(consulta, "1366x768", url)
+        linha = {"id": "x", "classe": "1366x768", "phash64": b.itens[0]["phash64"], "phash256": b.itens[0]["phash256"],
+                 "rotulo": "phishing", "marca": "", "url": url}
+        _, z = similaridades.calcular_tabela([linha], {m: b.emb[m][:1] for m in ("small", "large")}, {}, b, TABELA,
+                                             "phish360")
+        sinais = cascata.sinais_da_tabela(z, "1366x768")
+        colunas = np.array([b.itens[k]["entidade"] for k in z["1366x768__templates"]])
+        X = cascata.caracteristicas(sinais, colunas, det.entidades, np.array([True]), det.nomes)
+        self.assertAlmostEqual(v.escore, float(np.nanmax(cascata.pontuar_amostras(det.modelo, X))), places=2)

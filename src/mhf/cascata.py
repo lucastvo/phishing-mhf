@@ -277,8 +277,10 @@ class Detector:
 
     def decidir(self, consulta, classe, url, elementos=None, completar=None, tempos=None):
         """Veredito a partir de φ. `consulta` como em Base.similaridades; `elementos` é o tamanho do DOM
-        (None se não há HTML). Se a página chegar ao estágio 2 e `completar` for dado, ele é chamado para
-        acrescentar à consulta o que faltar (embedding, s, elementos), como no navegador."""
+        (None: vem de consulta["s"], se houver). Se a página chegar ao estágio 2 e `completar` for dado, ele
+        é chamado para acrescentar à consulta o que faltar (embedding, s, elementos), como no navegador.
+        Se, no estágio 2, faltar à consulta um sinal que o modelo usa, levanta ValueError em vez de
+        devolver "legítima" em silêncio."""
         tempos = {} if tempos is None else tempos
         t = time.perf_counter()
         r = self.base.similaridades(consulta, classe, sinais=("h",))
@@ -294,13 +296,19 @@ class Detector:
                 extra = completar()
                 consulta = {**consulta, **extra}
                 elementos = extra.get("elementos", elementos)
+            if elementos is None and consulta.get("s") is not None:
+                elementos = consulta["s"].contagens.get("elementos")
             t = time.perf_counter()
-            r2 = self.base.similaridades(consulta, classe, sinais=("e", "s"))
+            # de novo com h: o completar pode ter trazido o pHash de 256 bits
+            r2 = self.base.similaridades(consulta, classe, sinais=("h", "e", "s"))
             tempos["busca_es"] = (time.perf_counter() - t) * 1000
             t = time.perf_counter()
-            sinais = sinais_da_busca({**r, **r2})
+            sinais = sinais_da_busca(r2)
             X = caracteristicas(sinais, colunas, self.entidades,
                                 np.array([consulta.get("s") is None or not s_util(elementos)]), self.nomes)
+            faltando = [n for f, n in enumerate(self.nomes) if np.isnan(X[0, :, f]).all()]
+            if faltando:
+                raise ValueError(f"a consulta não tem os sinais que o modelo usa: {', '.join(faltando)}")
             escores = pontuar_amostras(self.modelo, X)
             tempos["classificador"] = (time.perf_counter() - t) * 1000
         res = aplicar_cascata(d1, t1, escores, legit, self.theta_h, self.tau)
