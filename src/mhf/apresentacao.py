@@ -29,6 +29,9 @@ ROTULOS_SINAIS = (
 )
 _BITS = {"sim_h64": 64, "sim_h256": 256}
 _SIM_NAO = ("hash_igual", "s_ausente")
+# sinais que vêm do DOM: com o s ausente, o classificador recebe 0 neles (cascata.caracteristicas), mas não
+# houve comparação nenhuma; a tela mostra "—" para não sugerir "DOM comparado e nada em comum"
+_SINAIS_DO_DOM = ("jaccard_caminhos", "jaccard_criticos", "sim_contagens", "hash_igual")
 
 
 def _vazio(v):
@@ -64,10 +67,11 @@ def sinais_legiveis(caracteristicas: dict) -> list:
     rotulos = dict(ROTULOS_SINAIS)
     ordem = [n for n, _ in ROTULOS_SINAIS if n in caracteristicas] + \
         [n for n in caracteristicas if n not in rotulos]
+    sem_dom = not _vazio(caracteristicas.get("s_ausente")) and caracteristicas["s_ausente"] >= 0.5
     sinais = []
     for nome in ordem:
         v = caracteristicas[nome]
-        valor = None if _vazio(v) else float(v)
+        valor = None if _vazio(v) or (sem_dom and nome in _SINAIS_DO_DOM) else float(v)
         if valor is None:
             texto = "—"
         elif nome in _SIM_NAO:

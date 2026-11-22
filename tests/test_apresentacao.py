@@ -96,6 +96,36 @@ class TestSinais(unittest.TestCase):
         self.assertEqual(textos["s_ausente"], "sim")
 
 
+class TestSinaisSemDom(unittest.TestCase):
+    """Revisão: com o s ausente, o Detector entrega 0,0 (não NaN) nos sinais do DOM; a tela mostra "—"."""
+
+    DOM = ("jaccard_caminhos", "jaccard_criticos", "sim_contagens", "hash_igual")
+
+    def test_sinais_dom_ausente_com_zeros(self):
+        s = apresentacao.sinais_legiveis(_caracteristicas(jaccard_caminhos=0.0, jaccard_criticos=0.0,
+                                                          sim_contagens=0.0, hash_igual=0.0, s_ausente=1.0))
+        textos = {x["nome"]: x["texto"] for x in s}
+        self.assertEqual([textos[k] for k in self.DOM], ["—"] * 4)
+        self.assertEqual(textos["s_ausente"], "sim")
+        self.assertEqual(textos["cos_small"], "0,970")
+
+    def test_caminho_real_pagina_sem_dom(self):
+        from test_verificar import _detector
+        from mhf import visual
+        b = base_sintetica()
+        det = _detector(b, theta_h=None, tau=0.0)
+        img = Image.new("RGB", (1366, 768), "white")
+        import io as _io
+        buf = _io.BytesIO()
+        img.save(buf, format="PNG")
+        v = det.analisar_pagina(_io.BytesIO(buf.getvalue()), "<html><body></body></html>", "http://x.test/",
+                                embedder=visual.Embedder("small", pesos=False), detalhes=True)
+        r = apresentacao.montar_resultado(v, 0.0, b, TABELA, "http://x.test/", False)
+        textos = {x["nome"]: x["texto"] for x in r["sinais"]}
+        self.assertEqual([textos[k] for k in self.DOM], ["—"] * 4)
+        self.assertEqual(textos["s_ausente"], "sim")
+
+
 class TestResultado(unittest.TestCase):
     def setUp(self):
         self.b = base_sintetica()
