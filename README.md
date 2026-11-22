@@ -198,7 +198,7 @@ python scripts/treinar.py \
     --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign \
     --divisao data/divisao.csv --base data/base --marcas config/marcas.json --saida data/modelos
 # 5c. verifica com o detector salvo: amostras das tabelas...
-python scripts/verificar.py --modelo data/modelos/regressao \
+python scripts/verificar.py --modelo data/modelos/boosting \
     --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign \
     --divisao data/divisao.csv --amostras 20
 # ...ou uma página bruta (captura, HTML e URL)
@@ -208,7 +208,7 @@ python scripts/verificar.py --modelo data/modelos/boosting --imagem pagina.png -
 - **Divisão:** grupos pelo hash do DOM; grupo com amostra do test do Phish360 vai inteiro para o teste; grupos só do Phishpedia são divididos 70/30 (`StratifiedGroupKFold`, semente 0); 5 dobras de validação cruzada no desenvolvimento. As 5 amostras do CaixaBank rotuladas `caixa` no Phish360 ficam fora (`config/exclusoes.json`). Resultado: 51.214 amostras no desenvolvimento e 19.674 no teste. Os kits copiados aos milhares ficam inteiros de um lado: o teste da Microsoft tem 4.386 amostras e 15 estruturas, por isso as métricas saem também por estrutura (cada kit pesa 1).
 - **Treino:** pares (amostra, marca), rótulo "é phishing desta marca", peso por estrutura reequilibrado entre positivos e negativos; o par de uma página no domínio legítimo da própria marca fica de fora. Amostra sem HTML útil ou com 5 elementos ou menos: s = 0 e `s_ausente` = 1.
 - **Calibração (só no desenvolvimento, escores fora da dobra):** τ é o menor limiar com falso positivo ≤ 1% nas páginas legítimas.
-- **Modelos:** regressão logística (`data/modelos/regressao/modelo.json`, pontuação em numpy puro, 3 KB), Random Forest compacta (100 árvores, profundidade 12, folha 50; `floresta.joblib`, 7,3 MB) e gradient boosting pequeno (150 árvores de 15 folhas; `boosting.joblib`, 200 KB). A escolha do principal ainda está em aberto.
+- **Modelos:** regressão logística (`data/modelos/regressao/modelo.json`, pontuação em numpy puro, 3 KB), Random Forest compacta (100 árvores, profundidade 12, folha 50; `floresta.joblib`, 7,3 MB) e gradient boosting pequeno (150 árvores de 15 folhas; `boosting.joblib`, 200 KB). **O classificador principal é o gradient boosting**: acerta a marca quase tão bem quanto a floresta, funciona sem DOM e cabe numa extensão de navegador. A regressão fica como referência explicável e a floresta como comparação.
 - **Saídas:** `data/divisao.csv`, `data/modelos/{regressao,floresta,boosting}/` e `data/modelos/comparacao_dev.{md,json}`.
 - O `verificar.py` só lê o conjunto de teste com `--usar-teste`: ele é usado uma vez, na avaliação (etapa 6).
 
