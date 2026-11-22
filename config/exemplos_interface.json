@@ -85,5 +85,48 @@
       "nota": "Página legítima (saobraz.edu.br) com um formulário de login simples, parecido com o template do Yahoo."
     }
   ],
-  "urls_sugeridas": []
+  "urls_sugeridas": [
+    {
+      "titulo": "Microsoft (conta pessoal)",
+      "url": "https://login.live.com/",
+      "url_simulada": "https://microsoft-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "en-US"
+    },
+    {
+      "titulo": "Netflix",
+      "url": "https://www.netflix.com/login",
+      "url_simulada": "https://netflix-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "en-US"
+    },
+    {
+      "titulo": "Yahoo",
+      "url": "https://login.yahoo.com/",
+      "url_simulada": "https://yahoo-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "en-US"
+    },
+    {
+      "titulo": "Dropbox",
+      "url": "https://www.dropbox.com/login",
+      "url_simulada": "https://dropbox-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "en-US"
+    },
+    {
+      "titulo": "Facebook",
+      "url": "https://www.facebook.com/login.php",
+      "url_simulada": "https://facebook-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "en-US"
+    },
+    {
+      "titulo": "Bradesco",
+      "url": "https://banco.bradesco/html/classic/index.shtm",
+      "url_simulada": "https://bradesco-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "pt-BR"
+    }
+  ]
 }
