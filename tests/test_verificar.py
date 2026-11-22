@@ -208,3 +208,45 @@ class TestDetectorEstagioUnico(unittest.TestCase):
         completar.assert_called_once()
         self.assertEqual(v.estagio, 2)
         self.assertIn("classificador", v.tempos_ms)
+
+
+class TestDetalhes(unittest.TestCase):
+    """Etapa 7: detalhes do veredito para a interface (o veredito não pode mudar)."""
+
+    def _analisar(self, html, detalhes):
+        b = base_sintetica()
+        det = _detector(b, theta_h=64, tau=0.0)
+        img = Image.new("RGB", (1366, 768), "white")
+        ImageDraw.Draw(img).rectangle([400, 200, 900, 500], fill=(0, 90, 200))
+        with tempfile.TemporaryDirectory() as d:
+            caminho = os.path.join(d, "shot.png")
+            img.save(caminho)
+            v = det.analisar_pagina(caminho, html, "http://golpe.test/",
+                                    embedder=visual.Embedder("small", pesos=False), detalhes=detalhes)
+        return b, v
+
+    def test_detalhes_nao_mudam_o_veredito(self):
+        html = "<html><body><div><form><input type=email><input type=password><button>Ok</button></form>" \
+               "</div></body></html>"
+        _, sem = self._analisar(html, False)
+        b, com = self._analisar(html, True)
+        for campo in ("rotulo", "entidade", "estagio", "motivo", "escore", "escores"):
+            self.assertEqual(getattr(sem, campo), getattr(com, campo), campo)
+        self.assertIsNone(sem.detalhes)
+        d = com.detalhes
+        self.assertEqual(set(d["caracteristicas"]), {"Netflix", "PayPal"})
+        for valores in d["caracteristicas"].values():
+            self.assertEqual(list(valores), list(cascata.nomes_caracteristicas()))
+        ids_paypal = {it["id"] for it in b.itens if it["entidade"] == "PayPal" and it["classe"] == "1366x768"}
+        self.assertIn(d["melhor_template"]["PayPal"]["id"], ids_paypal)
+        self.assertIsInstance(d["melhor_template"]["PayPal"]["indice"], int)
+        self.assertIsInstance(d["melhor_template"]["PayPal"]["cosseno"], float)
+        self.assertEqual(d["dobra"].size, (1366, 768))
+        self.assertEqual(d["classe"], "1366x768")
+        self.assertFalse(d["s_ausente"])
+
+    def test_detalhes_sem_dom(self):
+        _, v = self._analisar("<html><body></body></html>", True)
+        self.assertTrue(v.detalhes["s_ausente"])
+        for valores in v.detalhes["caracteristicas"].values():
+            self.assertEqual(valores["s_ausente"], 1.0)

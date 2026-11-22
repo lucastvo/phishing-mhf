@@ -298,6 +298,7 @@ class Veredito:
     dominio: str                    # domínio registrável da URL da página
     tempos_ms: dict = field(default_factory=dict)
     escores: dict | None = None     # escore de cada entidade (estágio 2)
+    detalhes: dict | None = None    # com detalhes=True: o que a interface mostra (ver Detector.decidir)
 
 
 class Detector:
@@ -321,12 +322,18 @@ class Detector:
         modelo, info = carregar_modelo(pasta_modelo)
         return cls(base, modelo, info, tabela)
 
-    def decidir(self, consulta, classe, url, elementos=None, completar=None, tempos=None):
+    def decidir(self, consulta, classe, url, elementos=None, completar=None, tempos=None, detalhes=False):
         """Veredito a partir de φ. `consulta` como em Base.similaridades; `elementos` é o tamanho do DOM
         (None: vem de consulta["s"], se houver). Se a página chegar ao estágio 2 e `completar` for dado, ele
         é chamado para acrescentar à consulta o que faltar (embedding, s, elementos), como no navegador.
         Se, no estágio 2, faltar à consulta um sinal que o modelo usa, levanta ValueError em vez de
-        devolver "legítima" em silêncio."""
+        devolver "legítima" em silêncio.
+
+        Com `detalhes=True`, o Veredito traz em `detalhes`, sem mudar a decisão: "caracteristicas"
+        ({entidade: {nome: valor}}, o vetor que foi ao classificador), "melhor_template" ({entidade:
+        {"indice", "id", "cosseno"}}, o template da entidade de maior cosseno do embedding na classe),
+        "s_ausente" e "elementos". Entidade sem template na classe fica de fora; página liberada no
+        estágio 1 fica com os dois dicionários vazios."""
         tempos = {} if tempos is None else tempos
         t = time.perf_counter()
         r = self.base.similaridades(consulta, classe, sinais=("h",))
@@ -337,6 +344,7 @@ class Detector:
         d1, t1 = estagio1(r["dist_h64"][None, :], colunas, self.entidades)
         legit = matriz_dominio_legitimo([url], self.entidades, self.tabela)
         escores = np.full((1, len(self.entidades)), np.nan)
+        extra_detalhes = {"caracteristicas": {}, "melhor_template": {}, "s_ausente": None, "elementos": elementos}
         if self.theta_h is None or (d1[0] <= self.theta_h and not legit[0, t1[0]]):
             if completar is not None:
                 extra = completar()
@@ -357,6 +365,8 @@ class Detector:
                 raise ValueError(f"a consulta não tem os sinais que o modelo usa: {', '.join(faltando)}")
             escores = pontuar_amostras(self.modelo, X)
             tempos["classificador"] = (time.perf_counter() - t) * 1000
+            if detalhes:
+                extra_detalhes = self._detalhes(X[0], colunas, r2, consulta, elementos)
         res = aplicar_cascata(d1, t1, escores, legit, self.theta_h, self.tau)
         j = int(np.argmin(r["dist_h64"]))
         e = int(res["entidade"][0])
@@ -368,11 +378,29 @@ class Detector:
                         template_proximo_h=self.base.itens[int(r["indices"][j])]["id"],
                         dominio=marcas.dominio_registravel(url or ""), tempos_ms=tempos,
                         escores=None if np.isnan(escores).all() else
-                        {ent: float(v) for ent, v in zip(self.entidades, escores[0]) if not np.isnan(v)})
+                        {ent: float(v) for ent, v in zip(self.entidades, escores[0]) if not np.isnan(v)},
+                        detalhes=extra_detalhes if detalhes else None)
 
-    def analisar_pagina(self, imagem, html, url, classe=None, embedder=None):
+    def _detalhes(self, X, colunas, r, consulta, elementos):
+        """O que decidir(detalhes=True) devolve: características por entidade e o template de maior cosseno."""
+        caracteristicas, melhor = {}, {}
+        cos = np.asarray(r[f"cos_{self.embedding}"], dtype=float)
+        for k, ent in enumerate(self.entidades):
+            if not (colunas == ent).any():
+                continue
+            caracteristicas[ent] = {n: float(X[k, f]) for f, n in enumerate(self.nomes)}
+            cols = np.flatnonzero((colunas == ent) & ~np.isnan(cos))
+            if len(cols):
+                j = int(cols[np.argmax(cos[cols])])
+                indice = int(r["indices"][j])
+                melhor[ent] = {"indice": indice, "id": self.base.itens[indice]["id"], "cosseno": float(cos[j])}
+        return {"caracteristicas": caracteristicas, "melhor_template": melhor,
+                "s_ausente": bool(consulta.get("s") is None or not s_util(elementos)), "elementos": elementos}
+
+    def analisar_pagina(self, imagem, html, url, classe=None, embedder=None, detalhes=False):
         """Veredito para uma página bruta: captura (caminho ou bytes), HTML (str/bytes ou None) e URL.
-        O pHash vem primeiro; o embedding e o s só são calculados se a página chegar ao estágio 2."""
+        O pHash vem primeiro; o embedding e o s só são calculados se a página chegar ao estágio 2.
+        Com `detalhes=True`, os detalhes de decidir mais "dobra" (a imagem analisada) e "classe"."""
         from mhf import estrutural, visual
         tempos = {}
         inicio = t = time.perf_counter()
@@ -403,6 +431,8 @@ class Detector:
             tempos["estrutural"] = (time.perf_counter() - t) * 1000
             return extra
 
-        v = self.decidir(consulta, classe, url, completar=completar, tempos=tempos)
+        v = self.decidir(consulta, classe, url, completar=completar, tempos=tempos, detalhes=detalhes)
         tempos["total"] = (time.perf_counter() - inicio) * 1000
+        if detalhes:
+            v.detalhes.update({"dobra": dobra, "classe": classe})
         return v
