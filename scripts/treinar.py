@@ -55,29 +55,41 @@ def pares_de_treino(c, mascara):
 
 # ---------------------------------------------------------------- treino e calibração
 
-def treinar_modelo(tipo, c, mascara, arvores=300, n_jobs=4):
+def treinar_modelo(tipo, c, mascara, **floresta):
+    """`floresta`: arvores, n_jobs, profundidade e folha do Random Forest (ignorados na regressão)."""
     X, y, w = pares_de_treino(c, mascara)
     if tipo == "regressao":
         return cascata.RegressaoLogistica.treinar(X, y, w, c["nomes"])
-    return cascata.Floresta.treinar(X, y, w, c["nomes"], arvores=arvores, n_jobs=n_jobs)
+    return cascata.Floresta.treinar(X, y, w, c["nomes"], **floresta)
 
 
-def escores_fora_da_dobra(c, tipo, arvores=300, n_jobs=4, progresso=print):
+def escores_fora_da_dobra(c, tipo, progresso=print, **floresta):
     """Escores (amostras, entidades) em que cada amostra é pontuada pelo modelo treinado sem a dobra dela."""
     escores = np.full(c["X"].shape[:2], np.nan)
     for k in sorted(set(c["dobra"].tolist()) - {-1}):
         t = time.perf_counter()
-        modelo = treinar_modelo(tipo, c, (c["dobra"] != k) & (c["dobra"] >= 0), arvores, n_jobs)
+        modelo = treinar_modelo(tipo, c, (c["dobra"] != k) & (c["dobra"] >= 0), **floresta)
         alvo = c["dobra"] == k
         escores[alvo] = cascata.pontuar_amostras(modelo, c["X"][alvo])
         progresso(f"  {tipo}: dobra {k} ({time.perf_counter() - t:.0f} s)")
     return escores
 
 
-def calibrar(c, escores, alvo_fpr=0.01, alvo_rev1=0.99):
-    """θ_h: percentil `alvo_rev1` de d₁ nos phishings de 𝒯 (pelo menos essa fração chega ao estágio 2).
-    τ: menor limiar com FPR ≤ `alvo_fpr` nas páginas legítimas, por amostra, com a cascata completa.
-    Também o τ que maximiza o F1 e θ_h para 95% e 90%."""
+def calibrar(c, escores, alvo_fpr=0.01, alvo_rev1=0.99, estagio1="nenhum"):
+    """τ: menor limiar com FPR ≤ `alvo_fpr` nas páginas legítimas, por amostra, com a decisão completa;
+    também o τ que maximiza o F1. Com `estagio1="phash"`, também θ_h: percentil `alvo_rev1` de d₁ nos
+    phishings de 𝒯 (pelo menos essa fração chega ao classificador), e θ_h para 95% e 90%. Com "nenhum"
+    (padrão), θ_h = None: toda página vai ao classificador."""
+    if estagio1 == "nenhum":
+        r = cascata.aplicar_cascata(c["d1"], c["t1"], escores, c["legit"], None, -np.inf)
+        sinalizada, legit = r["phishing"], c["legitima"]
+        tau = metricas.limiar_para_fpr(r["escore"][sinalizada & legit],
+                                       np.ones(int((sinalizada & legit).sum())), float(legit.sum()), alvo_fpr)
+        alvo_f1 = sinalizada & (legit | c["phishing_T"])
+        tau_f1 = metricas.limiar_f1(r["escore"][alvo_f1], c["phishing_T"][alvo_f1],
+                                    np.ones(int(alvo_f1.sum())), float(c["phishing_T"].sum()))
+        return {"estagio1": "nenhum", "theta_h": None, "tau": float(tau), "tau_f1": float(tau_f1),
+                "alvo_fpr": alvo_fpr}
     d1_phish = c["d1"][c["phishing_T"]]
     theta = {a: int(np.quantile(d1_phish, a, method="higher")) for a in (alvo_rev1, 0.95, 0.90)}
     theta_h = theta[alvo_rev1]
@@ -92,7 +104,7 @@ def calibrar(c, escores, alvo_fpr=0.01, alvo_rev1=0.99):
     def liberadas(th):  # fração das legítimas que o estágio 1 já libera com esse θ_h
         r1 = cascata.aplicar_cascata(c["d1"], c["t1"], escores, c["legit"], th, -np.inf)
         return float(((r1["estagio"] == 1) & legit).sum() / max(legit.sum(), 1))
-    return {"theta_h": theta_h, "tau": float(tau), "tau_f1": float(tau_f1), "alvo_fpr": alvo_fpr,
+    return {"estagio1": "phash", "theta_h": theta_h, "tau": float(tau), "tau_f1": float(tau_f1), "alvo_fpr": alvo_fpr,
             "alvo_revocacao_estagio1": alvo_rev1, "theta_h_95": theta[0.95], "theta_h_90": theta[0.90],
             "fracao_legitimas_liberadas_estagio1": liberadas(theta_h),
             "fracao_legitimas_liberadas_estagio1_95": liberadas(theta[0.95]),
@@ -185,7 +197,8 @@ def relatorio_md(comp):
     linhas = ["# Comparação na validação cruzada (desenvolvimento)", "",
               f"Gerado em {comp['gerado_em']}. Características: {', '.join(comp['nomes'])}. "
               f"Amostras: {comp['n']['phishing_T']} phishings de 𝒯, {comp['n']['legitimas']} legítimas, "
-              f"{comp['n']['fora_T']} phishings fora de 𝒯. Média ± desvio entre as 5 dobras; θ_h e τ calibrados "
+              f"{comp['n']['fora_T']} phishings fora de 𝒯. Estágio 1: {comp.get('estagio1', 'phash')}. "
+              "Média ± desvio entre as 5 dobras; θ_h (se houver estágio 1) e τ calibrados "
               "sobre os escores fora da dobra de cada modelo, com um τ só para todas as dobras (por isso a FPR "
               "fica perto do alvo por construção, e o desvio não inclui a variação do limiar). AUC e top-1 "
               "medem o classificador sozinho (escore máximo e entidade de maior escore), sem o estágio 1 nem a "
@@ -221,7 +234,10 @@ def relatorio_md(comp):
                           ("fracao_legitimas_liberadas_estagio1", "Legítimas liberadas no estágio 1"),
                           ("fracao_legitimas_liberadas_estagio1_95", "Legítimas liberadas no estágio 1 (θ_h de 95%)"),
                           ("fracao_legitimas_liberadas_estagio1_90", "Legítimas liberadas no estágio 1 (θ_h de 90%)")):
-        linhas.append(f"| {rotulo} | " + " | ".join(f"{comp['modelos'][t]['calibracao'][campo]:.4g}" for t in tipos) + " |")
+        valores = [comp["modelos"][t]["calibracao"].get(campo) for t in tipos]
+        if all(v is None for v in valores):
+            continue
+        linhas.append(f"| {rotulo} | " + " | ".join("—" if v is None else f"{v:.4g}" for v in valores) + " |")
     linhas.append("| Pontuar uma página (µs, mediana) | "
                   + " | ".join(f"{comp['modelos'][t]['tempo_us']:.0f}" for t in tipos) + " |")
     linhas.append("| Tamanho do modelo salvo (KB) | "
@@ -252,7 +268,11 @@ def main():
     p.add_argument("--alvo-fpr", type=float, default=0.01)
     p.add_argument("--alvo-revocacao-estagio1", type=float, default=0.99)
     p.add_argument("--modelos", default="regressao,floresta")
+    p.add_argument("--estagio1", default="nenhum", choices=["nenhum", "phash"],
+                   help="nenhum (padrão): toda página vai ao classificador; phash: filtro pelo pHash antes dele")
     p.add_argument("--arvores", type=int, default=300)
+    p.add_argument("--profundidade", type=int, default=None, help="profundidade máxima das árvores (padrão: sem)")
+    p.add_argument("--folha", type=int, default=20, help="mínimo de amostras por folha")
     p.add_argument("--n-jobs", type=int, default=4)
     a = p.parse_args()
 
@@ -272,11 +292,13 @@ def main():
           flush=True)
 
     comp = {"gerado_em": datetime.now().isoformat(timespec="seconds"), "nomes": nomes, "sinais": list(sinais),
+            "estagio1": a.estagio1,
             "n": {"phishing_T": int(c["phishing_T"].sum()), "legitimas": int(c["legitima"].sum()),
                   "fora_T": int(c["fora_T"].sum())}, "modelos": {}}
     for tipo in tipos:
-        oof = escores_fora_da_dobra(c, tipo, a.arvores, a.n_jobs, progresso=lambda s: print(s, flush=True))
-        cal = calibrar(c, oof, a.alvo_fpr, a.alvo_revocacao_estagio1)
+        floresta = {"arvores": a.arvores, "n_jobs": a.n_jobs, "profundidade": a.profundidade, "folha": a.folha}
+        oof = escores_fora_da_dobra(c, tipo, progresso=lambda s: print(s, flush=True), **floresta)
+        cal = calibrar(c, oof, a.alvo_fpr, a.alvo_revocacao_estagio1, a.estagio1)
         dobras = [metricas_cascata(c, oof, cal["theta_h"], cal["tau"], c["dobra"] == k)
                   for k in sorted(set(c["dobra"].tolist()))]
         grupos_ds = {"phish360": c["dataset"] == "phish360",
@@ -285,7 +307,7 @@ def main():
                   if mk.any()}
 
         t = time.perf_counter()
-        modelo = treinar_modelo(tipo, c, np.ones(len(c["d1"]), dtype=bool), a.arvores, a.n_jobs)
+        modelo = treinar_modelo(tipo, c, np.ones(len(c["d1"]), dtype=bool), **floresta)
         print(f"  {tipo}: modelo final ({time.perf_counter() - t:.0f} s)", flush=True)
         pasta = os.path.join(a.saida, tipo)
         extras = {"cascata": cal, "entidades": c["entidades"], "elementos_min_s": divisao.ELEMENTOS_MIN_S,

@@ -103,7 +103,8 @@ class TestTreinar(unittest.TestCase):
             for tipo in ("regressao", "floresta"):
                 with open(os.path.join(saida, tipo, "modelo.json"), encoding="utf-8") as f:
                     m = json.load(f)
-                self.assertIn("theta_h", m["cascata"])
+                # padrão: um estágio só (sem filtro pelo pHash)
+                self.assertEqual((m["cascata"]["estagio1"], m["cascata"]["theta_h"]), ("nenhum", None))
                 self.assertIn("tau", m["cascata"])
                 self.assertEqual(m["caracteristicas"]["nomes"], script.cascata.nomes_caracteristicas())
             self.assertTrue(os.path.exists(os.path.join(saida, "floresta", "floresta.joblib")))
@@ -118,13 +119,26 @@ class TestTreinar(unittest.TestCase):
                 self.assertIn("revocacao", m["geral_tau_f1"]["por_amostra"])
                 self.assertEqual(set(m["por_s_ausente"]), {"com_s"})  # no cenário sintético todas têm s
                 self.assertIn("phishing_T_no_estagio2", m["geral"]["por_estrutura"])
-                cal = m["calibracao"]
-                self.assertIn("fracao_legitimas_liberadas_estagio1_95", cal)
-                self.assertIn("fracao_legitimas_liberadas_estagio1_90", cal)
+                self.assertIsNone(m["calibracao"]["theta_h"])
             with open(os.path.join(saida, "comparacao_dev.md"), encoding="utf-8") as f:
                 md = f.read()
             self.assertIn("AUC do classificador", md)
             self.assertIn("No τ que maximiza o F1", md)
+
+    def test_main_com_estagio1_e_floresta_compacta(self):
+        with tempfile.TemporaryDirectory() as d:
+            c = montar_cenario(d)
+            saida = os.path.join(d, "modelos")
+            argv = ["treinar.py", "--tabelas", c["prefixo"], "--divisao", c["divisao"], "--base", c["base"],
+                    "--marcas", c["marcas"], "--saida", saida, "--modelos", "floresta", "--arvores", "5",
+                    "--profundidade", "4", "--folha", "5", "--n-jobs", "1", "--estagio1", "phash"]
+            with mock.patch.object(sys, "argv", argv), mock.patch("builtins.print"):
+                script.main()
+            modelo, info = script.cascata.carregar_modelo(os.path.join(saida, "floresta"))
+            self.assertEqual(info["cascata"]["estagio1"], "phash")
+            self.assertIsInstance(info["cascata"]["theta_h"], int)
+            self.assertIn("fracao_legitimas_liberadas_estagio1_95", info["cascata"])
+            self.assertEqual((modelo.rf.n_estimators, modelo.rf.max_depth, modelo.rf.min_samples_leaf), (5, 4, 5))
 
 
 if __name__ == "__main__":

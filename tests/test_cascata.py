@@ -98,6 +98,20 @@ class TestAplicarCascata(unittest.TestCase):
                          ("dominio_legitimo_estagio2", False, 0))
 
 
+class TestEstagioUnico(unittest.TestCase):
+    def test_sem_estagio1_tudo_vai_ao_classificador(self):
+        # θ_h = None: sem estágio 1. Nem a distância grande nem o domínio de t₁ liberam a página antes do
+        # classificador; a checagem de domínio vale só para a marca atribuída (t*).
+        d1 = np.array([60, 5, 5])
+        t1 = np.array([1, 1, 1])
+        escores = np.array([[0.1, 0.9], [0.9, 0.2], [0.1, 0.9]])
+        legit = np.array([[False, False], [False, True], [False, True]])
+        r = cascata.aplicar_cascata(d1, t1, escores, legit, theta_h=None, tau=0.5)
+        self.assertEqual(r["estagio"].tolist(), [2, 2, 2])
+        self.assertEqual(r["motivo"], ["phishing", "phishing", "dominio_legitimo_estagio2"])
+        self.assertEqual(r["entidade"].tolist(), [1, 0, 1])
+
+
 class TestModelos(unittest.TestCase):
     def setUp(self):
         rng = np.random.default_rng(0)
@@ -123,6 +137,13 @@ class TestModelos(unittest.TestCase):
             self.assertEqual((lido.tipo, lido.nomes), (modelo.tipo, self.nomes))
             np.testing.assert_allclose(lido.pontuar(self.X), modelo.pontuar(self.X))
             self.assertEqual(extras["cascata"]["tau"], 0.5)
+
+    def test_floresta_compacta_e_um_nucleo_na_predicao(self):
+        m = cascata.Floresta.treinar(self.X, self.y, self.w, self.nomes, arvores=7, n_jobs=2, profundidade=3,
+                                     folha=10)
+        self.assertEqual((m.rf.n_estimators, m.rf.max_depth, m.rf.min_samples_leaf), (7, 3, 10))
+        self.assertEqual(m.rf.n_jobs, 1)  # uma página de cada vez: sem custo de dividir entre núcleos
+        self.assertEqual(m.para_dict()["profundidade"], 3)
 
     def test_pontuar_amostras_respeita_nan(self):
         m = cascata.RegressaoLogistica.treinar(self.X, self.y, self.w, self.nomes)

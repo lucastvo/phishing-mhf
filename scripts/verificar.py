@@ -66,7 +66,8 @@ def verificar_tabela(a, p, b, tabela, info, modelo):
     cal = info["cascata"]
     escores = cascata.pontuar_amostras(modelo, c["X"][sel])
     r = cascata.aplicar_cascata(c["d1"][sel], c["t1"][sel], escores, c["legit"][sel], cal["theta_h"], cal["tau"])
-    print(f"Detector: {modelo.tipo} | θ_h = {cal['theta_h']} bits | τ = {cal['tau']:.4f} | {len(sel)} amostras")
+    estagio1 = "sem estágio 1" if cal.get("theta_h") is None else f"θ_h = {cal['theta_h']} bits"
+    print(f"Detector: {modelo.tipo} | {estagio1} | τ = {cal['tau']:.4f} | {len(sel)} amostras")
     if any(c["meta"][i]["conjunto"] == divisao.DESENVOLVIMENTO for i in sel):
         print("Atenção: o detector final foi treinado com todo o desenvolvimento; nessas amostras o veredito "
               "confere o funcionamento, mas não mede o desempenho (para isso: comparacao_dev.md e, na etapa 6, "
@@ -99,8 +100,9 @@ def verificar_pagina(a, b, tabela):
     print(f"Veredito: {veredito}")
     print(f"  estágio {v.estagio}: {_MOTIVOS[v.motivo]}")
     print(f"  domínio da página: {v.dominio or '(sem domínio)'}")
+    limiar = "sem estágio 1" if det.theta_h is None else f"θ_h = {det.theta_h}"
     print(f"  template mais parecido pelo pHash: {v.template_proximo_h} ({v.entidade_proxima_h}), "
-          f"d₁ = {v.d1} bits (θ_h = {det.theta_h})")
+          f"d₁ = {v.d1} bits ({limiar})")
     if v.escores:
         top = sorted(v.escores.items(), key=lambda x: -x[1])[:3]
         print(f"  escores (τ = {det.tau:.4f}): " + ", ".join(f"{e} {s:.3f}" for e, s in top))

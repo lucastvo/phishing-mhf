@@ -120,12 +120,17 @@ def matriz_dominio_legitimo(urls, entidades, tabela):
 
 def aplicar_cascata(d1, t1, escores, legit, theta_h, tau):
     """Decisão da cascata para N amostras. Devolve phishing (bool), entidade (índice; −1 se liberada no
-    estágio 1 por falta de template próximo), estágio (1 ou 2), motivo e escore (NaN no estágio 1)."""
+    estágio 1 por falta de template próximo), estágio (1 ou 2), motivo e escore (NaN no estágio 1).
+    Com theta_h = None não há estágio 1: toda página vai ao classificador, e a checagem de domínio vale só
+    para a marca atribuída por ele."""
     d1, t1 = np.asarray(d1), np.asarray(t1)
     escores = np.asarray(escores, dtype=float)
     n = len(d1)
-    sem_proximo = d1 > theta_h
-    dom1 = ~sem_proximo & legit[np.arange(n), t1]
+    if theta_h is None:
+        sem_proximo = dom1 = np.zeros(n, dtype=bool)
+    else:
+        sem_proximo = d1 > theta_h
+        dom1 = ~sem_proximo & legit[np.arange(n), t1]
     estagio2 = ~sem_proximo & ~dom1
     melhor = np.argmax(np.nan_to_num(escores, nan=-np.inf), axis=1) if escores.size else np.zeros(n, int)
     escore_melhor = escores[np.arange(n), melhor] if escores.size else np.full(n, np.nan)
@@ -184,19 +189,23 @@ class Floresta:
         self.rf = rf
 
     @classmethod
-    def treinar(cls, X, y, pesos, nomes, arvores=300, n_jobs=4, semente=0):
+    def treinar(cls, X, y, pesos, nomes, arvores=300, n_jobs=4, semente=0, profundidade=None, folha=20):
+        """`n_jobs` vale só para o treino: o modelo salvo pontua em 1 núcleo, como no uso real (uma página
+        de cada vez, em que dividir 20 linhas entre núcleos custa mais do que pontuar)."""
         from sklearn.ensemble import RandomForestClassifier
-        rf = RandomForestClassifier(n_estimators=arvores, min_samples_leaf=20, max_features="sqrt",
-                                    n_jobs=n_jobs, random_state=semente)
+        rf = RandomForestClassifier(n_estimators=arvores, min_samples_leaf=folha, max_depth=profundidade,
+                                    max_features="sqrt", n_jobs=n_jobs, random_state=semente)
         rf.fit(X, y, sample_weight=pesos)
+        rf.n_jobs = 1
         return cls(nomes, rf)
 
     def pontuar(self, X):
         return self.rf.predict_proba(np.asarray(X, dtype=np.float32))[:, 1]
 
     def para_dict(self):
-        return {"tipo": self.tipo, "nomes": self.nomes, "arquivo": self.arquivo,
-                "arvores": self.rf.n_estimators, "importancias": self.rf.feature_importances_.tolist()}
+        return {"tipo": self.tipo, "nomes": self.nomes, "arquivo": self.arquivo, "arvores": self.rf.n_estimators,
+                "profundidade": self.rf.max_depth, "folha": self.rf.min_samples_leaf,
+                "importancias": self.rf.feature_importances_.tolist()}
 
     @classmethod
     def de_dict(cls, d, pasta):
@@ -267,7 +276,7 @@ class Detector:
         if list(modelo.nomes) != list(self.nomes):
             raise ValueError("as características do modelo não batem com as do modelo.json")
         self.entidades = info["entidades"]
-        self.theta_h, self.tau = info["cascata"]["theta_h"], info["cascata"]["tau"]
+        self.theta_h, self.tau = info["cascata"].get("theta_h"), info["cascata"]["tau"]  # θ_h None: sem estágio 1
         self._embedder = None
 
     @classmethod
@@ -291,7 +300,7 @@ class Detector:
         d1, t1 = estagio1(r["dist_h64"][None, :], colunas, self.entidades)
         legit = matriz_dominio_legitimo([url], self.entidades, self.tabela)
         escores = np.full((1, len(self.entidades)), np.nan)
-        if d1[0] <= self.theta_h and not legit[0, t1[0]]:
+        if self.theta_h is None or (d1[0] <= self.theta_h and not legit[0, t1[0]]):
             if completar is not None:
                 extra = completar()
                 consulta = {**consulta, **extra}

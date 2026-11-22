@@ -194,3 +194,17 @@ class TestDetectorRevisao(unittest.TestCase):
         colunas = np.array([b.itens[k]["entidade"] for k in z["1366x768__templates"]])
         X = cascata.caracteristicas(sinais, colunas, det.entidades, np.array([True]), det.nomes)
         self.assertAlmostEqual(v.escore, float(np.nanmax(cascata.pontuar_amostras(det.modelo, X))), places=2)
+
+
+class TestDetectorEstagioUnico(unittest.TestCase):
+    def test_sem_estagio1_sempre_calcula_tudo(self):
+        b = base_sintetica()
+        det = _detector(b, theta_h=None, tau=0.5)
+        completar = mock.Mock(side_effect=lambda: {k: v for k, v in consulta_do_item(b, 0).items()
+                                                   if k in ("small", "large", "s")})
+        # pHash longe de tudo: com estágio 1, seria liberada; sem ele, vai ao classificador
+        v = det.decidir({"phash64": "f" * 15 + "0", "phash256": "f" * 64}, "1366x768", "http://x.test/",
+                        completar=completar)
+        completar.assert_called_once()
+        self.assertEqual(v.estagio, 2)
+        self.assertIn("classificador", v.tempos_ms)
