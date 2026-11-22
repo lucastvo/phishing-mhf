@@ -1,0 +1,341 @@
+"""
+Passo 5b — treina e calibra a cascata no conjunto de desenvolvimento e compara regressão logística e
+Random Forest na validação cruzada agrupada.
+
+Uso:
+    python scripts/treinar.py \
+        --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign \
+        --divisao data/divisao.csv --base data/base --marcas config/marcas.json --saida data/modelos
+
+Passos:
+1. Monta as características de cada par (amostra, entidade) a partir das tabelas de similaridades.
+2. Validação cruzada nas 5 dobras do desenvolvimento: cada amostra é pontuada pelo modelo que não a viu.
+3. Calibra θ_h (estágio 1) e τ (estágio 2) sobre esses escores e mede a cascata em cada dobra.
+4. Treina os detectores finais com todo o desenvolvimento e grava <saida>/<modelo>/modelo.json (e
+   floresta.joblib), mais <saida>/comparacao_dev.{md,json}.
+O conjunto de teste não é lido.
+
+Desenho: docs/especificacoes/2026-11-22-cascata.md
+"""
+
+import argparse
+import hashlib
+import json
+import os
+import sys
+import time
+from datetime import datetime
+from importlib import metadata
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+import numpy as np  # noqa: E402
+
+from mhf import base as base_mod  # noqa: E402
+from mhf import cascata, divisao, marcas, metricas  # noqa: E402
+
+MODELOS = {"regressao": cascata.RegressaoLogistica, "floresta": cascata.Floresta}
+
+
+def nome_do_dataset(prefixo):
+    return os.path.basename(prefixo).removeprefix("similaridades_")
+
+
+# ---------------------------------------------------------------- dados
+
+def carregar_conjunto(prefixos, divisao_por_chave, b, tabela, conjunto, nomes):
+    """Características, estágio 1 e rótulos das amostras de um conjunto ("desenvolvimento", "teste" ou
+    None para todas as da divisão), a partir das tabelas de similaridades. Amostras fora da divisão
+    (excluídas) ficam de fora. URL vazia (Phishpedia benign) → o id, que é o domínio, vira o host."""
+    entidades = sorted({it["entidade"] for it in b.itens})
+    ent_base = np.array([it["entidade"] for it in b.itens])
+    meta, Xs, d1s, t1s, legits = [], [], [], [], []
+    for prefixo in prefixos:
+        ds = nome_do_dataset(prefixo)
+        with open(prefixo + ".jsonl", encoding="utf-8") as f:
+            linhas = [json.loads(l) for l in f]
+        z = np.load(prefixo + ".npz")
+        for classe in sorted({l["classe"] for l in linhas}):
+            da_classe = [l for l in linhas if l["classe"] == classe]
+            if z[f"{classe}__dist_h64"].shape[0] != len(da_classe):
+                raise ValueError(f"{prefixo}: {len(da_classe)} amostras de {classe} no JSONL e "
+                                 f"{z[f'{classe}__dist_h64'].shape[0]} linhas na matriz")
+            sel = []
+            for l in da_classe:
+                d = divisao_por_chave.get((ds, l["id"]))
+                if d is not None and (conjunto is None or d["conjunto"] == conjunto):
+                    sel.append((l, d))
+            if not sel:
+                continue
+            rows = np.array([l["linha_na_classe"] for l, _ in sel])
+            sub = {k: z[k][rows] for k in z.files if k.startswith(f"{classe}__") and k != f"{classe}__templates"}
+            sinais = cascata.sinais_da_tabela(sub, classe)
+            colunas = ent_base[z[f"{classe}__templates"]]
+            s_ausente = np.array([not divisao.s_util(l.get("elementos")) for l, _ in sel])
+            Xs.append(cascata.caracteristicas(sinais, colunas, entidades, s_ausente, nomes))
+            d1, t1 = cascata.estagio1(sinais["dist_h64"], colunas, entidades)
+            d1s.append(d1)
+            t1s.append(t1)
+            legits.append(cascata.matriz_dominio_legitimo([l.get("url") or l["id"] for l, _ in sel],
+                                                          entidades, tabela))
+            meta += [{**l, "dataset": ds, "conjunto": d["conjunto"], "dobra": d["dobra"], "grupo": d["grupo"],
+                      "estrato": d["estrato"]} for l, d in sel]
+    rotulo = np.array([m["rotulo"] for m in meta])
+    entidade_real = np.array([m["entidade"] if m["rotulo"] == "phishing" else None for m in meta], dtype=object)
+    phishing_T = (rotulo == "phishing") & np.array([e is not None for e in entidade_real])
+    return {"meta": meta, "entidades": entidades, "nomes": nomes,
+            "X": np.concatenate(Xs) if Xs else np.zeros((0, len(entidades), len(nomes)), np.float32),
+            "d1": np.concatenate(d1s) if d1s else np.zeros(0, int),
+            "t1": np.concatenate(t1s) if t1s else np.zeros(0, int),
+            "legit": np.concatenate(legits) if legits else np.zeros((0, len(entidades)), bool),
+            "entidade_real": entidade_real, "phishing_T": phishing_T, "legitima": rotulo == "benigno",
+            "fora_T": (rotulo == "phishing") & ~phishing_T,
+            "pesos": divisao.pesos_por_estrutura(meta) if meta else np.zeros(0),
+            "dobra": np.array([m["dobra"] for m in meta]), "dataset": np.array([m["dataset"] for m in meta])}
+
+
+def pares_de_treino(c, mascara):
+    """Pares (amostra, entidade) das amostras em `mascara`: sem entidade ausente da classe e sem o par de
+    uma página no domínio legítimo da própria entidade. Rótulo: a amostra é phishing dessa entidade. Peso:
+    o da estrutura, com positivos e negativos somando o mesmo total (média 1)."""
+    X = c["X"][mascara]
+    n, e, _ = X.shape
+    y = c["entidade_real"][mascara][:, None] == np.array(c["entidades"], dtype=object)[None, :]
+    validos = ~np.isnan(X).any(axis=2) & ~c["legit"][mascara]
+    w = np.broadcast_to(c["pesos"][mascara][:, None], (n, e))[validos].astype(float)
+    y = y[validos].astype(bool)
+    if y.any() and (~y).any():
+        w = np.where(y, w * (w[~y].sum() / w[y].sum()), w)
+    return X[validos], y, w / w.mean()
+
+
+# ---------------------------------------------------------------- treino e calibração
+
+def treinar_modelo(tipo, c, mascara, arvores=300, n_jobs=4):
+    X, y, w = pares_de_treino(c, mascara)
+    if tipo == "regressao":
+        return cascata.RegressaoLogistica.treinar(X, y, w, c["nomes"])
+    return cascata.Floresta.treinar(X, y, w, c["nomes"], arvores=arvores, n_jobs=n_jobs)
+
+
+def escores_fora_da_dobra(c, tipo, arvores=300, n_jobs=4, progresso=print):
+    """Escores (amostras, entidades) em que cada amostra é pontuada pelo modelo treinado sem a dobra dela."""
+    escores = np.full(c["X"].shape[:2], np.nan)
+    for k in sorted(set(c["dobra"].tolist()) - {-1}):
+        t = time.perf_counter()
+        modelo = treinar_modelo(tipo, c, (c["dobra"] != k) & (c["dobra"] >= 0), arvores, n_jobs)
+        alvo = c["dobra"] == k
+        escores[alvo] = cascata.pontuar_amostras(modelo, c["X"][alvo])
+        progresso(f"  {tipo}: dobra {k} ({time.perf_counter() - t:.0f} s)")
+    return escores
+
+
+def calibrar(c, escores, alvo_fpr=0.01, alvo_rev1=0.99):
+    """θ_h: percentil `alvo_rev1` de d₁ nos phishings de 𝒯 (pelo menos essa fração chega ao estágio 2).
+    τ: menor limiar com FPR ≤ `alvo_fpr` nas páginas legítimas, por amostra, com a cascata completa.
+    Também o τ que maximiza o F1 e θ_h para 95% e 90%."""
+    d1_phish = c["d1"][c["phishing_T"]]
+    theta = {a: int(np.quantile(d1_phish, a, method="higher")) for a in (alvo_rev1, 0.95, 0.90)}
+    theta_h = theta[alvo_rev1]
+    r = cascata.aplicar_cascata(c["d1"], c["t1"], escores, c["legit"], theta_h, -np.inf)
+    sinalizada = r["phishing"]  # com τ = −∞: o que o limiar ainda pode segurar
+    legit = c["legitima"]
+    tau = metricas.limiar_para_fpr(r["escore"][sinalizada & legit], np.ones(int((sinalizada & legit).sum())),
+                                   float(legit.sum()), alvo_fpr)
+    alvo_f1 = sinalizada & (legit | c["phishing_T"])
+    tau_f1 = metricas.limiar_f1(r["escore"][alvo_f1], c["phishing_T"][alvo_f1],
+                                np.ones(int(alvo_f1.sum())), float(c["phishing_T"].sum()))
+    liberadas1 = float(((r["estagio"] == 1) & legit).sum() / max(legit.sum(), 1))
+    return {"theta_h": theta_h, "tau": float(tau), "tau_f1": float(tau_f1), "alvo_fpr": alvo_fpr,
+            "alvo_revocacao_estagio1": alvo_rev1, "theta_h_95": theta[0.95], "theta_h_90": theta[0.90],
+            "fracao_legitimas_liberadas_estagio1": liberadas1}
+
+
+def metricas_cascata(c, escores, theta_h, tau, mascara=None):
+    """Métricas da cascata no subconjunto `mascara`, por amostra e por estrutura (pesos 1/grupo)."""
+    m = np.ones(len(c["d1"]), dtype=bool) if mascara is None else mascara
+    r = cascata.aplicar_cascata(c["d1"][m], c["t1"][m], escores[m], c["legit"][m], theta_h, tau)
+    pt, legit, fora = c["phishing_T"][m], c["legitima"][m], c["fora_T"][m]
+    binario = pt | legit
+    esc_max = np.nan_to_num(np.nanmax(np.nan_to_num(escores[m], nan=-1.0), axis=1), nan=0.0)
+    melhor = np.argmax(np.nan_to_num(escores[m], nan=-np.inf), axis=1)
+    ent = np.array(c["entidades"], dtype=object)
+    real = c["entidade_real"][m]
+    saida = {}
+    for nome, pesos in (("por_amostra", np.ones(int(m.sum()))), ("por_estrutura", c["pesos"][m])):
+        b = metricas.binarias(pt[binario], r["phishing"][binario], pesos[binario])
+        det = pt & r["phishing"]
+        saida[nome] = {**{k: b[k] for k in ("precisao", "revocacao", "f1", "fpr", "especificidade")},
+                       "auc": metricas.auc(pt[binario], esc_max[binario], pesos[binario]),
+                       "top1": metricas.top1(real[pt], ent[melhor[pt]], pesos[pt]),
+                       "top1_detectados": metricas.top1(real[det], ent[r["entidade"][det]], pesos[det])
+                       if det.any() else float("nan"),
+                       "fora_T_sinalizado": float((pesos[fora] * r["phishing"][fora]).sum() / pesos[fora].sum())
+                       if fora.any() else float("nan"),
+                       "legitimas_liberadas_estagio1": float((pesos[legit] * (r["estagio"][legit] == 1)).sum()
+                                                             / pesos[legit].sum()) if legit.any() else float("nan")}
+    saida["n"] = {"phishing_T": int(pt.sum()), "legitimas": int(legit.sum()), "fora_T": int(fora.sum())}
+    return saida
+
+
+def _media_desvio(dobras, chave, campo):
+    v = np.array([d[chave][campo] for d in dobras], dtype=float)
+    if np.isnan(v).all():
+        return float("nan"), float("nan")
+    return float(np.nanmean(v)), float(np.nanstd(v))
+
+
+def _tempo_por_pagina(modelo, X, n=300):
+    """Mediana, em µs, de pontuar uma página (todas as entidades), uma de cada vez."""
+    tempos = []
+    for i in range(min(n, len(X))):
+        t = time.perf_counter()
+        cascata.pontuar_amostras(modelo, X[i:i + 1])
+        tempos.append((time.perf_counter() - t) * 1e6)
+    return float(np.median(tempos)) if tempos else float("nan")
+
+
+def _tamanho(pasta):
+    return sum(os.path.getsize(os.path.join(pasta, f)) for f in os.listdir(pasta))
+
+
+def _versoes():
+    def v(p):
+        try:
+            return metadata.version(p)
+        except metadata.PackageNotFoundError:
+            return None
+    return {p: v(p) for p in ("numpy", "scikit-learn", "joblib")}
+
+
+# ---------------------------------------------------------------- relatório
+
+_CAMPOS = (("auc", "AUC"), ("revocacao", "Revocação"), ("precisao", "Precisão"), ("f1", "F1"),
+           ("fpr", "FPR"), ("top1", "Top-1 da marca"), ("top1_detectados", "Top-1 nos detectados"),
+           ("legitimas_liberadas_estagio1", "Legítimas liberadas no estágio 1"),
+           ("fora_T_sinalizado", "Phishing fora de 𝒯 sinalizado"))
+
+
+def relatorio_md(comp):
+    tipos = list(comp["modelos"])
+    linhas = ["# Comparação na validação cruzada (desenvolvimento)", "",
+              f"Gerado em {comp['gerado_em']}. Características: {', '.join(comp['nomes'])}. "
+              f"Amostras: {comp['n']['phishing_T']} phishings de 𝒯, {comp['n']['legitimas']} legítimas, "
+              f"{comp['n']['fora_T']} phishings fora de 𝒯. Média ± desvio entre as 5 dobras; θ_h e τ calibrados "
+              "sobre os escores fora da dobra de cada modelo.", ""]
+    for chave, titulo in (("por_amostra", "Por amostra"), ("por_estrutura", "Por estrutura (cada kit conta uma vez)")):
+        linhas += [f"## {titulo}", "", "| Métrica | " + " | ".join(tipos) + " |",
+                   "|---|" + "---|" * len(tipos)]
+        for campo, rotulo in _CAMPOS:
+            cel = []
+            for t in tipos:
+                m, d = _media_desvio(comp["modelos"][t]["dobras"], chave, campo)
+                cel.append(f"{m:.3f} ± {d:.3f}")
+            linhas.append(f"| {rotulo} | " + " | ".join(cel) + " |")
+        linhas.append("")
+    linhas += ["## Por dataset (escores fora da dobra, todas as dobras juntas, por amostra)", "",
+               "| Dataset | Modelo | AUC | Revocação | FPR | Top-1 |", "|---|---|---|---|---|---|"]
+    for t in tipos:
+        for ds, m in comp["modelos"][t]["por_dataset"].items():
+            a = m["por_amostra"]
+            linhas.append(f"| {ds} | {t} | {a['auc']:.3f} | {a['revocacao']:.3f} | {a['fpr']:.3f} | {a['top1']:.3f} |")
+    linhas += ["", "## Calibração e custo", "", "| | " + " | ".join(tipos) + " |", "|---|" + "---|" * len(tipos)]
+    for campo, rotulo in (("theta_h", "θ_h (bits)"), ("tau", "τ (FPR ≤ alvo)"), ("tau_f1", "τ que maximiza o F1"),
+                          ("theta_h_95", "θ_h para 95%"), ("theta_h_90", "θ_h para 90%"),
+                          ("fracao_legitimas_liberadas_estagio1", "Legítimas liberadas no estágio 1")):
+        linhas.append(f"| {rotulo} | " + " | ".join(f"{comp['modelos'][t]['calibracao'][campo]:.4g}" for t in tipos) + " |")
+    linhas.append("| Pontuar uma página (µs, mediana) | "
+                  + " | ".join(f"{comp['modelos'][t]['tempo_us']:.0f}" for t in tipos) + " |")
+    linhas.append("| Tamanho do modelo salvo (KB) | "
+                  + " | ".join(f"{comp['modelos'][t]['tamanho_bytes'] / 1024:.1f}" for t in tipos) + " |")
+    linhas += ["", "## Pesos de cada característica", "", "| Característica | Coeficiente (regressão, padronizado) | "
+               "Importância (floresta) |", "|---|---|---|"]
+    coef = comp["modelos"].get("regressao", {}).get("coef", {})
+    imp = comp["modelos"].get("floresta", {}).get("importancias", {})
+    for nome in comp["nomes"]:
+        c = f"{coef[nome]:+.3f}" if nome in coef else "—"
+        i = f"{imp[nome]:.3f}" if nome in imp else "—"
+        linhas.append(f"| {nome} | {c} | {i} |")
+    return "\n".join(linhas) + "\n"
+
+
+# ---------------------------------------------------------------- main
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0].strip())
+    p.add_argument("--tabelas", nargs="+", required=True)
+    p.add_argument("--divisao", default="data/divisao.csv")
+    p.add_argument("--base", default="data/base")
+    p.add_argument("--marcas", default="config/marcas.json")
+    p.add_argument("--saida", default="data/modelos")
+    p.add_argument("--sinais", default="h,e,s")
+    p.add_argument("--hash", type=int, default=64, choices=[64, 256])
+    p.add_argument("--embedding", default="small", choices=["small", "large"])
+    p.add_argument("--alvo-fpr", type=float, default=0.01)
+    p.add_argument("--alvo-revocacao-estagio1", type=float, default=0.99)
+    p.add_argument("--modelos", default="regressao,floresta")
+    p.add_argument("--arvores", type=int, default=300)
+    p.add_argument("--n-jobs", type=int, default=4)
+    a = p.parse_args()
+
+    inicio = time.perf_counter()
+    sinais = tuple(s for s in a.sinais.split(",") if s)
+    nomes = cascata.nomes_caracteristicas(sinais, a.hash, a.embedding)
+    tipos = [t for t in a.modelos.split(",") if t]
+    if not set(tipos) <= set(MODELOS):
+        p.error(f"--modelos deve conter só {sorted(MODELOS)}")
+    b = base_mod.Base.carregar(a.base)
+    tabela = marcas.ler_tabela(a.marcas)
+    with open(a.divisao, "rb") as f:
+        sha_divisao = hashlib.sha256(f.read()).hexdigest()
+    c = carregar_conjunto(a.tabelas, divisao.ler_divisao(a.divisao), b, tabela, divisao.DESENVOLVIMENTO, nomes)
+    print(f"Desenvolvimento: {len(c['meta'])} amostras ({int(c['phishing_T'].sum())} phishings de 𝒯, "
+          f"{int(c['legitima'].sum())} legítimas, {int(c['fora_T'].sum())} fora de 𝒯); {len(nomes)} características",
+          flush=True)
+
+    comp = {"gerado_em": datetime.now().isoformat(timespec="seconds"), "nomes": nomes, "sinais": list(sinais),
+            "n": {"phishing_T": int(c["phishing_T"].sum()), "legitimas": int(c["legitima"].sum()),
+                  "fora_T": int(c["fora_T"].sum())}, "modelos": {}}
+    for tipo in tipos:
+        oof = escores_fora_da_dobra(c, tipo, a.arvores, a.n_jobs, progresso=lambda s: print(s, flush=True))
+        cal = calibrar(c, oof, a.alvo_fpr, a.alvo_revocacao_estagio1)
+        dobras = [metricas_cascata(c, oof, cal["theta_h"], cal["tau"], c["dobra"] == k)
+                  for k in sorted(set(c["dobra"].tolist()))]
+        grupos_ds = {"phish360": c["dataset"] == "phish360",
+                     "phishpedia": np.char.startswith(c["dataset"].astype(str), "phishpedia")}
+        por_ds = {ds: metricas_cascata(c, oof, cal["theta_h"], cal["tau"], mk) for ds, mk in grupos_ds.items()
+                  if mk.any()}
+
+        t = time.perf_counter()
+        modelo = treinar_modelo(tipo, c, np.ones(len(c["d1"]), dtype=bool), a.arvores, a.n_jobs)
+        print(f"  {tipo}: modelo final ({time.perf_counter() - t:.0f} s)", flush=True)
+        pasta = os.path.join(a.saida, tipo)
+        extras = {"cascata": cal, "entidades": c["entidades"], "elementos_min_s": divisao.ELEMENTOS_MIN_S,
+                  "caracteristicas": {"sinais": list(sinais), "hash_bits": a.hash, "embedding": a.embedding,
+                                      "nomes": nomes},
+                  "treino": {"amostras": len(c["meta"]), "phishing_T": int(c["phishing_T"].sum()),
+                             "divisao_sha256": sha_divisao, "versoes": _versoes(),
+                             "treinado_em": datetime.now().isoformat(timespec="seconds")},
+                  "validacao": metricas_cascata(c, oof, cal["theta_h"], cal["tau"])}
+        cascata.salvar_modelo(pasta, modelo, extras)
+        info = {"calibracao": cal, "dobras": dobras, "geral": extras["validacao"], "por_dataset": por_ds,
+                "tempo_us": _tempo_por_pagina(modelo, c["X"]), "tamanho_bytes": _tamanho(pasta)}
+        if tipo == "regressao":
+            info["coef"] = dict(zip(nomes, modelo.coef.tolist()))
+        else:
+            info["importancias"] = dict(zip(nomes, modelo.rf.feature_importances_.tolist()))
+        comp["modelos"][tipo] = info
+        g = extras["validacao"]["por_amostra"]
+        print(f"  {tipo}: θ_h={cal['theta_h']} τ={cal['tau']:.4f} | AUC {g['auc']:.3f} revocação {g['revocacao']:.3f} "
+              f"FPR {g['fpr']:.4f} top-1 {g['top1']:.3f}", flush=True)
+
+    os.makedirs(a.saida, exist_ok=True)
+    with open(os.path.join(a.saida, "comparacao_dev.json"), "w", encoding="utf-8") as f:
+        json.dump(comp, f, ensure_ascii=False, indent=2)
+    with open(os.path.join(a.saida, "comparacao_dev.md"), "w", encoding="utf-8") as f:
+        f.write(relatorio_md(comp))
+    print(f"Comparação em {os.path.join(a.saida, 'comparacao_dev.md')} ({time.perf_counter() - inicio:.0f} s)")
+
+
+if __name__ == "__main__":
+    main()
