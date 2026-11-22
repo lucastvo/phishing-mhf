@@ -34,9 +34,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import numpy as np  # noqa: E402
 
-from mhf import avaliacao, cascata, divisao, figuras, marcas, visual  # noqa: E402
+from mhf import avaliacao, cascata, divisao, exemplos, figuras, marcas, visual  # noqa: E402
 from mhf import base as base_mod  # noqa: E402
-from PIL import Image  # noqa: E402
 
 PARTES = (("abrir", "Abrir a captura e recortar a dobra"), ("phash", "pHash"),
           ("busca_h", "Busca pelo pHash"), ("embedding", "Embedding (MobileNetV3 Small)"),
@@ -51,19 +50,7 @@ def sortear_paginas(nome, indice, raiz, classe, div, n, rng):
     escolhidas = [linhas[i] for i in sorted(rng.choice(len(linhas), size=min(n, len(linhas)), replace=False))]
     paginas = []
     for l in escolhidas:
-        with Image.open(os.path.join(raiz, l["caminho_shot"])) as img:
-            img.load()
-            largura, altura = visual.tamanho_da_dobra(img.width, classe or visual.classe_de_tela(img.width))
-            dobra = img.crop((0, 0, min(largura, img.width), min(altura, img.height)))
-        buf = io.BytesIO()
-        dobra.save(buf, format="PNG")  # a "captura da aba": só a janela, no mesmo modo de cor (com o alfa)
-        imagem = buf.getvalue()
-        html = None
-        if l.get("html_util") == "1":
-            with open(os.path.join(raiz, l["caminho_html"]), "rb") as f:
-                html = f.read()
-        paginas.append({"dataset": nome, "id": l["id"], "imagem": imagem, "html": html,
-                        "url": l.get("url") or l["id"], "classe": classe})
+        paginas.append({"dataset": nome, "id": l["id"], **exemplos.ler_pagina_do_dataset(l, raiz, classe)})
     return paginas
 
 
