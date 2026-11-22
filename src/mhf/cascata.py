@@ -73,8 +73,9 @@ def sinais_da_busca(r):
 def caracteristicas(sinais, entidades_colunas, entidades, s_ausente, nomes):
     """Tensor (amostras, entidades, características): para cada entidade, o máximo de cada sinal sobre os
     templates dela (sinais separados: o melhor pHash e o melhor cosseno podem vir de templates diferentes).
-    Entidade sem template na classe → linha NaN (não disputa a decisão). Amostra com s ausente → as
-    características de s valem 0 e `s_ausente` vale 1."""
+    Entidade sem template na classe → linha NaN (não disputa a decisão); o mesmo vale, amostra a amostra,
+    quando todos os templates dela foram filtrados (sim_h64 NaN em todas as colunas da entidade). Amostra
+    com s ausente → as características de s valem 0 e `s_ausente` vale 1."""
     s_ausente = np.asarray(s_ausente, dtype=bool)
     entidades_colunas = np.asarray(entidades_colunas)
     n = len(s_ausente)
@@ -93,6 +94,9 @@ def caracteristicas(sinais, entidades_colunas, entidades, s_ausente, nomes):
             if nome in SINAIS_S:
                 m = np.where(s_ausente, 0.0, np.nan_to_num(m, nan=0.0))
             X[:, e, f] = m
+        if "sim_h64" in sinais:  # templates filtrados para a amostra (ex.: base de 2026): marca fora da disputa
+            sem_template = np.isnan(np.asarray(sinais["sim_h64"][:, cols], dtype=np.float32)).all(axis=1)
+            X[sem_template, e, :] = np.nan
     return X
 
 
