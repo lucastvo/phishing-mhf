@@ -8,7 +8,7 @@ A impressão digital de uma página *w* é φ(w) = (h, e, s):
 - **e** — embedding visual (MobileNetV3)
 - **s** — assinatura estrutural do DOM (hash canônico, XPaths de elementos críticos, contagem de elementos)
 
-A verificação é em cascata: (1) busca rápida por *h* no FAISS; (2) só em caso de suspeita visual com domínio divergente, comparação por *e* e *s*.
+A verificação é em cascata: (1) busca rápida por *h* na base local de templates; (2) só em caso de suspeita visual com domínio divergente, comparação por *e* e *s*.
 
 ## Estrutura
 
@@ -135,3 +135,45 @@ Os templates entram como um item por par (template aprovado, tamanho de tela), v
 - O estágio 1 da cascata usa só o pHash de 64 bits; os embeddings entram no estágio 2.
 
 Rodada sem erros nos quatro conjuntos. Contagens do resumo: 27 + 14 capturas mais baixas que a dobra (Phish360, Phishpedia phishing), usadas como estão; 65 + 459 mais estreitas que a classe (as 800×600 do Phishpedia vão para 1280×960); 6 + 401 + 1.369 mais largas que a classe, recortadas na janela (Phish360, Phishpedia phishing, Phishpedia benign).
+
+## Passo 4 — base de templates e busca
+
+A base tem um item por par (template aprovado, tamanho de tela), com os três sinais da mesma captura: h e e (passo 3) e s, extraído do **DOM renderizado** nesse tamanho de tela (o HTML original de 68 dos 191 templates tem 5 elementos ou menos, porque a página é montada por JavaScript). Cada item traz também a entidade, a data e a origem do snapshot e os domínios legítimos da entidade (`config/marcas.json`).
+
+A busca é **exaustiva**: cada página é comparada com todos os templates da sua classe de tela (190 ou 191). É exata, custa frações de milissegundo e é a mesma conta que uma extensão de navegador faria. O FAISS entra só na medição, para documentar que o resultado e o tempo são equivalentes.
+
+```bash
+# 4a. monta a base em data/base/ (base.jsonl, base_small.npy, base_large.npy, base_meta.json)
+python scripts/construir_base.py --plano config/templates_snapshots.json --raiz-templates data/templates \
+    --visual data/visual_templates --marcas config/marcas.json --saida data/base
+# 4b. tabela de similaridades de cada amostra com os templates da sua classe (uma por dataset)
+python scripts/similaridades.py --visual data/visual_phish360 --estrutural data/estrutural_phish360.jsonl \
+    --dataset phish360 --saida data/similaridades_phish360
+python scripts/similaridades.py --visual data/visual_phishpedia_phish --estrutural data/estrutural_phishpedia_phish.jsonl \
+    --dataset phishpedia --saida data/similaridades_phishpedia_phish
+python scripts/similaridades.py --visual data/visual_phishpedia_benign --estrutural data/estrutural_phishpedia_benign.jsonl \
+    --dataset phishpedia --saida data/similaridades_phishpedia_benign
+# 4c. mede a busca: exaustiva × FAISS
+python scripts/medir_busca.py --base data/base \
+    --consultas data/visual_phish360 data/visual_phishpedia_phish data/visual_phishpedia_benign \
+    --estrutural data/estrutural_phish360.jsonl data/estrutural_phishpedia_phish.jsonl data/estrutural_phishpedia_benign.jsonl
+```
+
+- `construir_base.py` recusa montar uma base vazia e confere que todo template aprovado tem h e e na saída visual.
+- `similaridades.py` confere que a base está em dia com a saída visual dos templates (mesmos ids e mesmo pHash) antes de calcular.
+- Tabela: `<saida>.jsonl` (uma linha por amostra: id, classe, linha na matriz, rótulo, partição, marca, entidade de 𝒯, URL, elementos do s) e `<saida>.npz` (por classe de tela, matrizes amostras × templates de `dist_h64`, `dist_h256`, `cos_small`, `cos_large`, `hash_igual`, `jaccard_caminhos`, `jaccard_criticos` e `sim_contagens`, mais os índices na base das colunas). Amostra sem HTML útil fica com as colunas de s em NaN.
+
+Base construída: 572 itens (191 em 1280×960, 191 em 1366×768, 190 em 1920×1080), todos com s. Tabelas: 10.748 + 29.496 + 30.649 amostras, de 36 a 72 s por dataset.
+
+**Medição da busca** (`medir_busca.py`): 2.000 consultas sorteadas por classe de tela, uma de cada vez; mediana em µs (p95 entre parênteses); CPU i7-4790; FAISS 1.16.0, numpy 2.3.5. Na classe 1920×1080 (190 templates):
+
+| Sinal | `Base.vizinhos` | Núcleo numpy | FAISS exato | Mesmo 1º vizinho (`Base.vizinhos` × FAISS) |
+|---|---|---|---|---|
+| pHash 64 bits | 112,0 (118,8) | 29,5 (31,8) | 28,0 (31,7) | 100% |
+| Embedding Small | 48,3 (49,2) | 19,1 (19,4) | 27,2 (27,5) | 100% |
+| Embedding Large | 53,4 (56,4) | 24,3 (25,3) | 36,2 (37,7) | 100% |
+
+- As outras duas classes dão números iguais a menos de 4 µs, também com 100% de concordância.
+- `Base.vizinhos` é a busca do código: além do núcleo, monta a consulta, ordena e, para o pHash, calcula também a distância de 256 bits.
+- O s contra os templates da classe custa 2,4–2,6 ms (mediana; p95 até 3,5 ms), e a busca completa (h, e e s) 2,6 ms. Para comparar: o embedding Small da página custa 16–20 ms (passo 3).
+- Com centenas de templates, um índice aproximado (IVF, HNSW) não mudaria a latência por página de forma perceptível.
