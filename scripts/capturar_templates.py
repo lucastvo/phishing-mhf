@@ -30,6 +30,7 @@ from importlib.metadata import version
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from mhf import templates  # noqa: E402
+from mhf.captura import esperar_credencial  # noqa: E402
 
 PAUSA_WAYBACK_S = 1.5  # gentileza com o Internet Archive entre requisições
 PAGINAS_CDX_PREFIXO = 5  # páginas do índice da CDX lidas na busca por prefixo (~15 s e ~1,5 MB cada)
@@ -180,23 +181,6 @@ def cmd_planejar(a):
     gravar_json(a.plano, plano)
     print(f"Plano com {len(plano)} entradas gravado em {a.plano}"
           + (f" ({falhas} variante(s) com consulta falha mantiveram o plano anterior, se havia)" if falhas else ""))
-
-
-def esperar_credencial(pagina, seletor, tempo_ms):
-    """Espera um campo de credencial VISÍVEL aparecer na página ou em qualquer frame dela (o login de
-    algumas marcas fica dentro de um iframe). Devolve True se apareceu dentro do tempo."""
-    from playwright.sync_api import Error as ErroPlaywright
-
-    limite = time.monotonic() + tempo_ms / 1000
-    while time.monotonic() < limite:
-        for quadro in pagina.frames:
-            try:
-                if any(el.is_visible() for el in quadro.query_selector_all(seletor)):
-                    return True
-            except ErroPlaywright:
-                pass  # frame saindo ou navegando no meio da consulta
-        pagina.wait_for_timeout(500)
-    return False
 
 
 # ---------------------------------------------------------------- capturar
