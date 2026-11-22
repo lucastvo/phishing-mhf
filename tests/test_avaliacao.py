@@ -99,6 +99,25 @@ class TestDatas(unittest.TestCase):
         self.assertEqual(f(sem_data, itens).tolist(), [True, False, False, True])
 
 
+class TestAnoAlvo(unittest.TestCase):
+    def test_filtro_ano_alvo_usa_o_plano(self):
+        # os snapshots "de 2026" ficam perto de 1º de janeiro: muitos são de dezembro de 2025
+        anos = {"amazon/login/2025-11-10": [2026], "paypal/login/2019-01-01": [2019]}
+        itens = [{"id": "amazon/login/2025-11-10@1366x768", "origem": "wayback", "timestamp": "20251110000000"},
+                 {"id": "paypal/login/2019-01-01@1366x768", "origem": "wayback", "timestamp": "20190101000000"},
+                 {"id": "paypal/ao-vivo@1366x768", "origem": "ao_vivo", "timestamp": None},
+                 {"id": "fora/do/plano@1366x768", "origem": "wayback", "timestamp": "20260105000000"}]
+        f = avaliacao.filtro_ano_alvo(2026, anos)
+        self.assertEqual(f({}, itens).tolist(), [True, False, True, True])
+
+    def test_mascarar_entidades(self):
+        e = np.array([[0.1, 0.9, 0.5], [0.2, 0.3, 0.4]])
+        m = avaliacao.mascarar_entidades(e, ["A", "B", "C"], ("B",))
+        self.assertTrue(np.isnan(m[:, 1]).all())
+        np.testing.assert_allclose(m[:, [0, 2]], e[:, [0, 2]])
+        self.assertFalse(np.isnan(e).any())  # o original não muda
+
+
 class TestLatex(unittest.TestCase):
     def test_numero(self):
         self.assertEqual(avaliacao.numero(0.84912), "0,849")

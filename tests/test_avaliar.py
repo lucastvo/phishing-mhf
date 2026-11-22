@@ -24,6 +24,73 @@ treinar = _carregar("treinar")
 avaliar = _carregar("avaliar")
 
 
+def _preparar(d):
+    """Cenário com datas, modelos treinados e o JSONL estrutural; devolve (cenário, pasta dos modelos, estrutural)."""
+    c = montar_cenario(d, com_datas=True)
+    modelos = os.path.join(d, "modelos")
+    argv = ["treinar.py", "--tabelas", c["prefixo"], "--divisao", c["divisao"], "--base", c["base"],
+            "--marcas", c["marcas"], "--saida", modelos, "--arvores", "10", "--iteracoes", "20", "--n-jobs", "1"]
+    with mock.patch.object(sys, "argv", argv), mock.patch("builtins.print"):
+        treinar.main()
+    estrutural = os.path.join(d, "estrutural_phishpedia_phish.jsonl")
+    with open(c["prefixo"] + ".jsonl", encoding="utf-8") as f, open(estrutural, "w", encoding="utf-8") as g:
+        for i, l in enumerate(map(json.loads, f)):
+            g.write(json.dumps({"id": l["id"], "contagens": {"campos_senha": i % 2}}) + "\n")
+    return c, modelos, estrutural
+
+
+def _argv(c, modelos, estrutural, saida, *extra):
+    return ["avaliar.py", "--tabelas", c["prefixo"], "--estrutural", estrutural, "--divisao", c["divisao"],
+            "--base", c["base"], "--marcas", c["marcas"], "--plano", c["plano"], "--modelos", modelos,
+            "--saida", saida, "--bootstrap", "20", "--iteracoes", "20", "--arvores", "10", "--n-jobs", "1", *extra]
+
+
+class TestAvaliarRevisao(unittest.TestCase):
+    """Correções da revisão feita antes da rodada no teste."""
+
+    def test_temporal_ensaio_mesclagem_e_registro(self):
+        with tempfile.TemporaryDirectory() as d:
+            c, modelos, estrutural = _preparar(d)
+            saida = os.path.join(d, "avaliacao")
+            with mock.patch.object(sys, "argv", _argv(c, modelos, estrutural, saida, "--experimentos", "E0,E4a,E4b")),                     mock.patch("builtins.print"):
+                avaliar.main()
+            with mock.patch.object(sys, "argv", _argv(c, modelos, estrutural, saida, "--experimentos", "E5")),                     mock.patch("builtins.print"):
+                avaliar.main()
+            with open(os.path.join(saida, "resultados.json"), encoding="utf-8") as f:
+                r = json.load(f)
+            # E5 rodou depois, sem apagar E0 e E4
+            self.assertTrue({"E0", "E4a", "E4b", "E5"} <= set(r))
+            # base de 2026 pelo ano-alvo do plano: o template de 31/12/2025 da Netflix entra; nenhuma marca falta
+            self.assertEqual(r["E4a"]["marcas_sem_template_2026"], [])
+            self.assertIn("base_2026", r["E4a"])
+            # base da época: amostras com data, templates até a data (os de 2019)
+            self.assertIn("epoca", r["E4b"])
+            with open(os.path.join(saida, "relatorio.md"), encoding="utf-8") as f:
+                md = f.read()
+            self.assertIn("Defasagem temporal", md)
+            self.assertIn("Marcas que o classificador não viu", md)
+            with open(os.path.join(saida, "registro.jsonl"), encoding="utf-8") as f:
+                registro = [json.loads(l) for l in f]
+            self.assertEqual([x["status"] for x in registro], ["iniciado", "concluido", "iniciado", "concluido"])
+            # ensaio: uma dobra do desenvolvimento no papel do teste, em outra pasta, marcado como ensaio
+            ensaio = os.path.join(d, "ensaio")
+            with mock.patch.object(sys, "argv", _argv(c, modelos, estrutural, ensaio, "--ensaio")),                     mock.patch("builtins.print"):
+                avaliar.main()
+            with open(os.path.join(ensaio, "resultados.json"), encoding="utf-8") as f:
+                re_ = json.load(f)
+            self.assertTrue(re_["_ensaio"])
+            self.assertTrue({"E0", "E1", "E1b", "E2", "E3", "E4a", "E4b", "E5"} <= set(re_))
+
+    def test_estrutural_casado_pelo_nome(self):
+        with tempfile.TemporaryDirectory() as d:
+            c, modelos, estrutural = _preparar(d)
+            errado = os.path.join(d, "estrutural_outro.jsonl")
+            os.rename(estrutural, errado)
+            argv = _argv(c, modelos, errado, os.path.join(d, "s"), "--experimentos", "E0")
+            with mock.patch.object(sys, "argv", argv), mock.patch("builtins.print"),                     mock.patch("sys.stderr"), self.assertRaises(SystemExit):
+                avaliar.main()
+
+
 class TestAvaliar(unittest.TestCase):
     def test_main_gera_saidas(self):
         with tempfile.TemporaryDirectory() as d:
@@ -40,8 +107,8 @@ class TestAvaliar(unittest.TestCase):
                     g.write(json.dumps({"id": l["id"], "contagens": {"campos_senha": i % 2}}) + "\n")
             saida = os.path.join(d, "avaliacao")
             argv = ["avaliar.py", "--tabelas", c["prefixo"], "--estrutural", estrutural, "--divisao", c["divisao"],
-                    "--base", c["base"], "--marcas", c["marcas"], "--modelos", modelos, "--saida", saida,
-                    "--bootstrap", "20", "--iteracoes", "20", "--arvores", "10", "--n-jobs", "1"]
+                    "--base", c["base"], "--marcas", c["marcas"], "--plano", c["plano"], "--modelos", modelos,
+                    "--saida", saida, "--bootstrap", "20", "--iteracoes", "20", "--arvores", "10", "--n-jobs", "1"]
             with mock.patch.object(sys, "argv", argv), mock.patch("builtins.print"):
                 avaliar.main()
             with open(os.path.join(saida, "resultados.json"), encoding="utf-8") as f:
@@ -63,8 +130,8 @@ class TestAvaliar(unittest.TestCase):
                 avaliar.main()
             with open(os.path.join(saida, "registro.jsonl"), encoding="utf-8") as f:
                 registro = [json.loads(l) for l in f]
-            self.assertEqual(len(registro), 2)
-            self.assertEqual(registro[1]["experimentos"], ["E0"])
+            self.assertEqual(len(registro), 4)  # iniciado + concluido, duas vezes
+            self.assertEqual(registro[3]["experimentos"], ["E0"])
             self.assertIn("divisao_sha256", registro[0])
 
 

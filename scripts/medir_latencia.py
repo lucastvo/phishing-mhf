@@ -10,9 +10,14 @@ Uso:
 
 Cada --dataset é NOME ÍNDICE RAIZ [CLASSE], com o mesmo nome usado na divisão; a classe de tela é fixada
 quando o dataset foi capturado num tamanho conhecido (Phishpedia benign). Sorteia --por-dataset páginas do
-teste de cada dataset e analisa uma de cada vez com Detector.analisar_pagina: a captura e o HTML são lidos
-do disco antes (no navegador, já estão na memória) e a MobileNetV3 é carregada antes, com uma página de
-aquecimento fora da medição. Grava <saida>/latencia.json, tabelas/latencia.tex e figuras/latencia.pdf.
+teste de cada dataset e analisa uma de cada vez com Detector.analisar_pagina:
+- a captura é recortada na primeira dobra e regravada em PNG antes da medição, como a captura da aba
+  (captureVisibleTab) no navegador; sem isso, as páginas inteiras do Phishpedia benign (até 85 mil px)
+  mediriam o formato do dataset, não o detector;
+- a captura e o HTML são lidos do disco antes (no navegador, já estão na memória); a parte "estrutural"
+  inclui o parsing do HTML com o lxml, que o navegador não precisaria refazer;
+- a MobileNetV3 é carregada antes, com uma página de aquecimento fora da medição.
+Grava <saida>/latencia.json, tabelas/latencia.tex e figuras/latencia.pdf, e uma linha em registro.jsonl.
 
 Desenho: docs/especificacoes/2026-11-22-avaliacao.md, seção 5.
 """
@@ -23,6 +28,7 @@ import io
 import json
 import os
 import sys
+from datetime import datetime
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -30,6 +36,7 @@ import numpy as np  # noqa: E402
 
 from mhf import avaliacao, cascata, divisao, figuras, marcas, visual  # noqa: E402
 from mhf import base as base_mod  # noqa: E402
+from PIL import Image  # noqa: E402
 
 PARTES = (("abrir", "Abrir a captura e recortar a dobra"), ("phash", "pHash"),
           ("busca_h", "Busca pelo pHash"), ("embedding", "Embedding (MobileNetV3 Small)"),
@@ -44,8 +51,13 @@ def sortear_paginas(nome, indice, raiz, classe, div, n, rng):
     escolhidas = [linhas[i] for i in sorted(rng.choice(len(linhas), size=min(n, len(linhas)), replace=False))]
     paginas = []
     for l in escolhidas:
-        with open(os.path.join(raiz, l["caminho_shot"]), "rb") as f:
-            imagem = f.read()
+        with Image.open(os.path.join(raiz, l["caminho_shot"])) as img:
+            img.load()
+            largura, altura = visual.tamanho_da_dobra(img.width, classe or visual.classe_de_tela(img.width))
+            dobra = img.crop((0, 0, min(largura, img.width), min(altura, img.height)))
+        buf = io.BytesIO()
+        dobra.save(buf, format="PNG")  # a "captura da aba": só a janela, no mesmo modo de cor (com o alfa)
+        imagem = buf.getvalue()
         html = None
         if l.get("html_util") == "1":
             with open(os.path.join(raiz, l["caminho_html"]), "rb") as f:
@@ -81,7 +93,12 @@ def main():
     rng = np.random.default_rng(a.semente)
     paginas = []
     for d in a.dataset:
-        paginas += sortear_paginas(d[0], d[1], d[2], d[3] if len(d) == 4 else None, div, a.por_dataset, rng)
+        do_ds = sortear_paginas(d[0], d[1], d[2], d[3] if len(d) == 4 else None, div, a.por_dataset, rng)
+        if not do_ds:
+            print(f"Aviso: {d[0]} não tem páginas do teste no índice; fica de fora", flush=True)
+        paginas += do_ds
+    if not paginas:
+        p.error("nenhuma página do teste encontrada nos índices")
     det = cascata.Detector.carregar(a.modelo, base_mod.Base.carregar(a.base), marcas.ler_tabela(a.marcas))
     embedder = visual.Embedder(det.embedding, pesos=not a.sem_pesos)
     print(f"{len(paginas)} páginas do teste; aquecimento...", flush=True)
@@ -93,7 +110,8 @@ def main():
         v = det.analisar_pagina(io.BytesIO(pg["imagem"]), pg["html"], pg["url"], pg["classe"], embedder)
         tempos.append({"dataset": pg["dataset"], **v.tempos_ms})
     por_parte = {k: resumo([t[k] for t in tempos if k in t]) for k, _ in PARTES}
-    por_dataset = {ds: resumo([t["total"] for t in tempos if t["dataset"] == ds]) for ds, *_ in a.dataset}
+    por_dataset = {ds: resumo([t["total"] for t in tempos if t["dataset"] == ds]) for ds, *_ in a.dataset
+                   if any(t["dataset"] == ds for t in tempos)}
     r = {"paginas": len(tempos), "por_parte": por_parte, "por_dataset": por_dataset,
          "condicoes": "uma página de cada vez; captura e HTML já na memória; MobileNetV3 carregada antes"}
 
@@ -103,6 +121,8 @@ def main():
         json.dump(r, f, ensure_ascii=False, indent=1)
     linhas = [[rot, avaliacao.numero(por_parte[k]["mediana"], 2), avaliacao.numero(por_parte[k]["p95"], 2)]
               for k, rot in PARTES]
+    linhas += [[f"Total, {ds}", avaliacao.numero(v["mediana"], 2), avaliacao.numero(v["p95"], 2)]
+               for ds, v in por_dataset.items()]
     with open(os.path.join(a.saida, "tabelas", "latencia.tex"), "w", encoding="utf-8") as f:
         f.write(avaliacao.tabela_latex(["Parte", "Mediana (ms)", "p95 (ms)"], linhas,
                                        f"Tempo por página do detector principal ({len(tempos)} páginas do teste)",
@@ -110,9 +130,15 @@ def main():
     figuras.latencia({rot: por_parte[k]["mediana"] for k, rot in PARTES if k != "total"
                       and por_parte[k]["mediana"] is not None},
                      os.path.join(a.saida, "figuras", "latencia.pdf"))
+    with open(os.path.join(a.saida, "registro.jsonl"), "a", encoding="utf-8") as f:
+        f.write(json.dumps({"status": "latencia", "em": datetime.now().isoformat(timespec="seconds"),
+                            "paginas": len(tempos), "modelo": a.modelo, "semente": a.semente},
+                           ensure_ascii=False) + "\n")
     print("Tempo por página (mediana / p95, ms):")
     for k, rot in PARTES:
-        print(f"  {rot:40s} {por_parte[k]['mediana']:8.2f} / {por_parte[k]['p95']:8.2f}")
+        m, q = por_parte[k]["mediana"], por_parte[k]["p95"]
+        if m is not None:
+            print(f"  {rot:40s} {m:8.2f} / {q:8.2f}")
 
 
 if __name__ == "__main__":

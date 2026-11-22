@@ -26,13 +26,17 @@ def _norm(v):
     return (v / np.linalg.norm(v, axis=-1, keepdims=True)).astype(np.float32)
 
 
-def montar_cenario(pasta, n_por_tipo=40, semente=0):
+def montar_cenario(pasta, n_por_tipo=40, semente=0, com_datas=False):
     """Base com 2 templates de PayPal e 2 de Netflix (1366x768) e tabelas sintéticas em que o phishing de
     cada marca tem pHash perto e cosseno alto com os templates dela. Devolve os caminhos."""
     rng = np.random.default_rng(semente)
     entidades_t = ["PayPal", "PayPal", "Netflix", "Netflix"]
-    itens = [{"id": f"t{i}@{CLASSE}", "entidade": e, "variante": "login", "origem": "wayback",
-              "timestamp": "20210101000000", "classe": CLASSE, "phash64": "0" * 16, "phash256": "0" * 64,
+    # com_datas: templates de anos diferentes (2019, ao vivo, 2019, 31/12/2025 com ano-alvo 2026) e amostras com a
+    # data no id, como no Phishpedia, para exercitar os experimentos temporais da etapa 6
+    origens = ["wayback", "ao_vivo", "wayback", "wayback"] if com_datas else ["wayback"] * 4
+    stamps = ["20190101000000", None, "20190101000000", "20251231000000"] if com_datas else ["20210101000000"] * 4
+    itens = [{"id": f"t{i}@{CLASSE}", "entidade": e, "variante": "login", "origem": origens[i],
+              "timestamp": stamps[i], "classe": CLASSE, "phash64": "0" * 16, "phash256": "0" * 64,
               "dominios": [d for t in TABELA if t["entidade"] == e for d in t["dominios"]], "s": S_VAZIO}
              for i, e in enumerate(entidades_t)]
     emb = {"small": _norm(rng.normal(size=(4, 576))), "large": _norm(rng.normal(size=(4, 960)))}
@@ -52,7 +56,7 @@ def montar_cenario(pasta, n_por_tipo=40, semente=0):
         mats["cos_large"].append(cos)
         for k in base.SINAIS_S:
             mats[k].append(jac)
-        id_ = f"a{i}"
+        id_ = f"{ent or 'site'}+2020-05-15-{i // 60:02d}`{i % 60:02d}`00" if com_datas else f"a{i}"
         url = "https://www.paypal.com/" if i == 2 * n_por_tipo else f"http://golpe{i}.test/"  # 1 legítima própria
         linhas.append({"id": id_, "classe": CLASSE, "linha_na_classe": i, "particao": "",
                        "rotulo": "phishing" if ent else "benigno", "marca": ent or "", "entidade": ent,
@@ -72,7 +76,11 @@ def montar_cenario(pasta, n_por_tipo=40, semente=0):
     caminho_marcas = os.path.join(pasta, "marcas.json")
     with open(caminho_marcas, "w", encoding="utf-8") as f:
         json.dump(TABELA, f)
-    return {"prefixo": prefixo, "divisao": caminho_divisao, "base": pasta_base, "marcas": caminho_marcas}
+    caminho_plano = os.path.join(pasta, "plano.json")
+    with open(caminho_plano, "w", encoding="utf-8") as f:
+        json.dump([{"id": f"t{i}", "anos_alvo": [2026 if i == 3 else 2019]} for i in range(4)], f)
+    return {"prefixo": prefixo, "divisao": caminho_divisao, "base": pasta_base, "marcas": caminho_marcas,
+            "plano": caminho_plano}
 
 
 class TestTreinar(unittest.TestCase):

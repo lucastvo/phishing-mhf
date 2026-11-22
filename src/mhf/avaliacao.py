@@ -109,8 +109,35 @@ def data_do_template(item):
 
 
 def filtro_2026(meta, itens):
-    """Só templates de 2026 (Wayback de 2026 e captura ao vivo): a base "atualizada hoje"."""
+    """Só templates com data em 2026 (pelo timestamp). Para o experimento da base de 2026, use
+    filtro_ano_alvo, que segue o ano planejado de cada snapshot."""
     return np.array([data_do_template(it).year == 2026 for it in itens])
+
+
+def filtro_ano_alvo(ano, anos_por_entrada):
+    """Só os templates planejados para `ano` (o campo `anos_alvo` do plano de snapshots) e os capturados ao
+    vivo. O plano escolhe o snapshot mais próximo de 1º de janeiro, então muitos templates "de 2026" são de
+    dezembro de 2025: filtrar pelo ano do timestamp tiraria esses templates (e a Amazon inteira) da base.
+    Template fora do plano: vale o ano do timestamp."""
+    def filtro(meta, itens):
+        saida = []
+        for it in itens:
+            if it.get("origem") == "ao_vivo":
+                saida.append(True)
+                continue
+            anos = anos_por_entrada.get(it["id"].split("@")[0])
+            saida.append(ano in anos if anos else data_do_template(it).year == ano)
+        return np.array(saida)
+    return filtro
+
+
+def mascarar_entidades(escores, entidades, excluidas):
+    """Cópia dos escores com as colunas das `excluidas` em NaN (o detector "antes" de a marca existir)."""
+    saida = np.array(escores, dtype=float, copy=True)
+    for i, e in enumerate(entidades):
+        if e in set(excluidas):
+            saida[:, i] = np.nan
+    return saida
 
 
 def filtro_ate_data(corte_padrao=CORTE_PHISHPEDIA):

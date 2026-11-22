@@ -79,5 +79,28 @@ class TestMedirLatencia(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(saida, "figuras", "latencia.pdf")))
 
 
+class TestRecorteDaDobra(unittest.TestCase):
+    def test_pagina_inteira_vira_a_janela(self):
+        # o Phishpedia benign guarda a página inteira (até 85 mil px); no navegador, a captura é só a janela
+        import io
+        with tempfile.TemporaryDirectory() as d:
+            raiz = os.path.join(d, "ds")
+            os.makedirs(raiz)
+            Image.new("RGBA", (1366, 3000), (255, 255, 255, 255)).save(os.path.join(raiz, "p.png"))
+            indice = os.path.join(d, "ds.csv")
+            with open(indice, "w", encoding="utf-8", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=["id", "shot_ok", "caminho_shot", "caminho_html", "html_util", "url"])
+                w.writeheader()
+                w.writerow({"id": "p", "shot_ok": "1", "caminho_shot": "p.png", "caminho_html": "x", "html_util": "0",
+                            "url": ""})
+            div = {("ds", "p"): {"conjunto": "teste"}}
+            paginas = script.sortear_paginas("ds", indice, raiz, "1366x768", div, 5, np.random.default_rng(0))
+        with Image.open(io.BytesIO(paginas[0]["imagem"])) as img:
+            self.assertEqual(img.size, (1366, 768))
+            self.assertEqual(img.mode, "RGBA")  # a transparência continua indo para a medição
+        self.assertIsNone(paginas[0]["html"])
+        self.assertEqual(paginas[0]["url"], "p")
+
+
 if __name__ == "__main__":
     unittest.main()

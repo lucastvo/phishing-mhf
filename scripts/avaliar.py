@@ -1,22 +1,23 @@
 """
-Passo 6 — avaliação no conjunto de teste: o detector principal e os experimentos E0–E5, de uma vez.
+Passo 6 — avaliação no conjunto de teste: o detector principal e os experimentos E0–E5.
 
 Uso:
-    python scripts/avaliar.py \
-        --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign \
-        --estrutural data/estrutural_phish360.jsonl data/estrutural_phishpedia_phish.jsonl \
-                     data/estrutural_phishpedia_benign.jsonl \
-        --divisao data/divisao.csv --base data/base --marcas config/marcas.json --modelos data/modelos \
-        --saida data/avaliacao
+    python scripts/avaliar.py --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign --estrutural data/estrutural_phish360.jsonl data/estrutural_phishpedia_phish.jsonl data/estrutural_phishpedia_benign.jsonl --saida data/avaliacao
+
+    Ensaio (antes da rodada única no teste): a dobra 0 do desenvolvimento faz o papel do teste, e as dobras
+    1 a 4 o do desenvolvimento; exercita todos os caminhos sem ler o teste. Use outra --saida.
+    python scripts/avaliar.py ... --ensaio --saida data/avaliacao_ensaio
 
 Experimentos (desenho, seção 4); todo treino e toda calibração usam só o desenvolvimento:
     E0  detector principal (data/modelos/boosting): métricas com intervalo de confiança, falso positivo por
         grupo, por marca, por dataset, por tipo de página, phishing fora de 𝒯 e sem marca, curva ROC;
     E1  ablação (h, e, s e combinações); E1b  regressão e Random Forest salvos; E2  Large e pHash de 256 bits;
-    E3  com estágio 1 pelo pHash; E4a  base só com templates de 2026; E4b  base da época (Phishpedia);
-    E5  marca nova (o classificador treinado sem as marcas em que é medido).
-Saídas em --saida: resultados.json, relatorio.md, tabelas/*.tex, figuras/*.pdf; cada execução acrescenta
-uma linha a registro.jsonl (o teste é usado uma vez; uma nova execução fica visível).
+    E3  com estágio 1 pelo pHash; E4a  base com os templates planejados para 2026; E4b  base da época
+    (Phishpedia); E5  marca nova (classificador e limiar sem as marcas em que é medido).
+
+Saídas em --saida: resultados.json (mesclado entre execuções: rodar de novo um experimento não apaga os
+outros), relatorio.md, tabelas/*.tex e figuras/*.pdf, gerados a partir do JSON mesclado; registro.jsonl
+ganha uma linha no início ("iniciado") e outra no fim ("concluido") de cada execução.
 
 Desenho: docs/especificacoes/2026-11-22-avaliacao.md
 """
@@ -44,6 +45,8 @@ EXPERIMENTOS = ["E0", "E1", "E1b", "E2", "E3", "E4a", "E4b", "E5"]
 METRICAS = (("acuracia", "Acurácia"), ("precisao", "Precisão"), ("revocacao", "Revocação"), ("f1", "F1"),
             ("especificidade", "Especificidade"), ("fpr", "Taxa de falso positivo"),
             ("top1_detectados", "Marca certa nos phishings detectados"), ("auc", "AUC"))
+_POR_ARRAY = ("X", "d1", "t1", "legit", "entidade_real", "phishing_T", "legitima", "fora_T", "s_ausente",
+              "cos_max", "dobra", "dataset")
 
 
 # ---------------------------------------------------------------- utilidades
@@ -52,6 +55,15 @@ def fatiar(c, nomes):
     """O conjunto com só as características `nomes` (subconjunto do superconjunto carregado)."""
     idx = [c["nomes"].index(n) for n in nomes]
     return {**c, "X": c["X"][:, :, idx], "nomes": list(nomes)}
+
+
+def subconjunto(c, mascara):
+    """As amostras de `mascara`, com o peso por estrutura recalculado dentro delas."""
+    novo = {**c, "meta": [m for m, k in zip(c["meta"], mascara) if k]}
+    for chave in _POR_ARRAY:
+        novo[chave] = c[chave][mascara]
+    novo["pesos"] = divisao.pesos_por_estrutura(novo["meta"]) if novo["meta"] else np.zeros(0)
+    return novo
 
 
 def decidir(c, escores, theta_h, tau):
@@ -83,6 +95,14 @@ def grupos_de(c):
     return np.array([m["grupo"] for m in c["meta"]])
 
 
+def roc_resumida(c, escores, pontos=300):
+    """Curva ROC (phishing de 𝒯 × legítimas) com até `pontos` pontos, para guardar no JSON."""
+    binario = c["phishing_T"] | c["legitima"]
+    fpr, tpr, _ = roc_curve(c["phishing_T"][binario], escore_da_amostra(c, escores)[binario])
+    idx = np.unique(np.linspace(0, len(fpr) - 1, min(pontos, len(fpr))).astype(int))
+    return {"fpr": fpr[idx], "tpr": tpr[idx]}
+
+
 def limpar(o):
     """Para JSON padrão: numpy → Python, NaN/inf → None, tuplas → listas."""
     if isinstance(o, dict):
@@ -105,6 +125,11 @@ def sha256(caminho):
         return hashlib.sha256(f.read()).hexdigest()
 
 
+def _n(v):
+    """None (do JSON) → NaN, para as funções de formatação."""
+    return float("nan") if v is None else v
+
+
 # ---------------------------------------------------------------- treino de uma configuração
 
 class Rodada:
@@ -116,8 +141,9 @@ class Rodada:
         self.alvo_fpr = a.alvo_fpr
 
     def __call__(self, dev, teste, tipo="boosting", estagio1="nenhum", excluidas=(), rotulo=""):
-        """(calibração, escores do teste), ou (None, None) se o desenvolvimento não tiver pares para treinar
-        (ex.: uma base filtrada sem nenhum template)."""
+        """(calibração, escores do teste), ou (None, None) se o desenvolvimento não tiver pares positivos e
+        negativos para treinar (ex.: uma base filtrada sem templates). Com `excluidas` (marca nova), as
+        marcas ficam fora do treino e também da calibração: τ é escolhido como se elas não existissem."""
         _, y, _ = treino.pares_de_treino(dev, np.ones(len(dev["d1"]), dtype=bool), excluidas)
         if not y.any() or y.all():
             print(f"  {rotulo or tipo}: sem pares positivos e negativos para treinar", flush=True)
@@ -125,6 +151,8 @@ class Rodada:
         t = time.perf_counter()
         oof = treino.escores_fora_da_dobra(dev, tipo, progresso=lambda s: None, entidades_excluidas=excluidas,
                                            **self.params)
+        if excluidas:
+            oof = avaliacao.mascarar_entidades(oof, dev["entidades"], excluidas)
         cal = treino.calibrar(dev, oof, self.alvo_fpr, 0.99, estagio1)
         modelo = treino.treinar_modelo(tipo, dev, np.ones(len(dev["d1"]), dtype=bool), excluidas, **self.params)
         escores = cascata.pontuar_amostras(modelo, teste["X"])
@@ -195,85 +223,158 @@ def experimento_principal(c, escores, cal, campos_senha, n_boot, semente):
     rotulo = np.array([m["rotulo"] for m in c["meta"]])
     todos = (rotulo == "phishing") | c["legitima"]
     completo = metricas.binarias((rotulo == "phishing")[todos], sinalizada[todos])
-
-    binario = c["phishing_T"] | c["legitima"]
-    fpr_c, tpr_c, _ = roc_curve(c["phishing_T"][binario], esc[binario])
     return {"geral": geral, "fpr_grupos": fpr, "por_marca": linhas_marca, "por_dataset": datasets,
             "por_tipo": por_tipo, "fora_de_T": fora, "binario_completo": completo,
             "n": {"phishing_T": int(c["phishing_T"].sum()), "legitimas": int(c["legitima"].sum()),
                   "estruturas_phishing_T": len(set(grupos[c["phishing_T"]]))},
-            "_roc": (fpr_c, tpr_c, geral["por_amostra"]["auc"]), "_decisao": dec}
+            "roc": roc_resumida(c, escores), "tau": cal["tau"]}
 
 
-# ---------------------------------------------------------------- tabelas
+# ---------------------------------------------------------------- saídas (a partir do JSON mesclado)
 
 class Saidas:
-    def __init__(self, pasta):
-        self.pasta = pasta
-        self.md = []
+    def __init__(self, pasta, ensaio=False):
+        self.pasta, self.ensaio, self.md = pasta, ensaio, []
         os.makedirs(os.path.join(pasta, "tabelas"), exist_ok=True)
         os.makedirs(os.path.join(pasta, "figuras"), exist_ok=True)
 
     def tabela(self, arquivo, cabecalho, linhas, legenda, rotulo):
+        legenda = ("[ENSAIO, NÃO USAR NO TEXTO] " if self.ensaio else "") + legenda
         with open(os.path.join(self.pasta, "tabelas", arquivo), "w", encoding="utf-8") as f:
             f.write(avaliacao.tabela_latex(cabecalho, linhas, legenda, rotulo, fonte="Elaborada pelo autor."))
-        sem_latex = lambda s: str(s).replace("\\%", "%").replace("$\\mathcal{T}$", "𝒯")  # noqa: E731
+        sem_latex = lambda s: str(s).replace("\\%", "%")  # noqa: E731
         self.md += [f"## {legenda}", "", "| " + " | ".join(map(sem_latex, cabecalho)) + " |",
                     "|" + "---|" * len(cabecalho)]
         self.md += ["| " + " | ".join(map(sem_latex, l)) + " |" for l in linhas]
         self.md.append("")
 
 
-def tabelas_principal(s, e0):
-    g = e0["geral"]
-    linhas = [[rot, avaliacao.numero(g["por_amostra"][k]), avaliacao.intervalo(g["por_amostra"]["ic"].get(k)),
-               avaliacao.numero(g["por_estrutura"][k]), avaliacao.intervalo(g["por_estrutura"]["ic"].get(k))]
-              for k, rot in METRICAS]
-    s.tabela("principal.tex", ["Métrica", "Por amostra", "IC 95\\%", "Por estrutura", "IC 95\\%"], linhas,
-             "Detector principal no conjunto de teste (gradient boosting, h+e+s, estágio único)", "tab:principal")
-    nomes = {"todas": "Todas as legítimas", "phish360": "Legítimas do Phish360",
-             "phishpedia_benign": "Phishpedia benign", "paginas_das_marcas": "Páginas das próprias marcas",
-             "mais_parecidas": "10\\% mais parecidas com a base"}
-    s.tabela("fpr_grupos.tex", ["Grupo de páginas legítimas", "Páginas", "Taxa de falso positivo", "IC 95\\%"],
-             [[nomes[k], str(v["paginas"]), avaliacao.percentual(v["fpr"], 2), avaliacao.intervalo(v["ic"], 4)]
-              for k, v in e0["fpr_grupos"].items()],
-             "Taxa de falso positivo por grupo de páginas legítimas", "tab:fpr-grupos")
-    s.tabela("por_marca.tex", ["Marca", "Amostras", "Estruturas", "Revocação", "IC 95\\%", "Revocação (estrutura)",
-                               "Marca certa"],
-             [[l["entidade"], str(l["amostras"]), str(l["estruturas"]), avaliacao.numero(l["revocacao"]),
-               avaliacao.intervalo(l["ic"]), avaliacao.numero(l["revocacao_estrutura"]),
-               avaliacao.numero(l["top1_detectados"])] for l in e0["por_marca"]],
-             "Revocação e marca certa nos detectados, por marca", "tab:por-marca")
-    rot_t = {"com_senha": "Com campo de senha", "sem_senha": "Sem campo de senha", "sem_dom": "Sem DOM útil"}
-    s.tabela("por_tipo.tex", ["Tipo de página", "Phishings", "Revocação", "Legítimas", "Taxa de falso positivo"],
-             [[rot_t[k], str(v["phishing_T"]), avaliacao.numero(v["revocacao"]), str(v["legitimas"]),
-               avaliacao.percentual(v["fpr"], 2)] for k, v in e0["por_tipo"].items()],
-             "Resultado por tipo de página", "tab:por-tipo")
-    linhas = [[ds, avaliacao.numero(m["por_amostra"]["revocacao"]), avaliacao.numero(m["por_estrutura"]["revocacao"]),
-               avaliacao.percentual(m["por_amostra"]["fpr"], 2), avaliacao.numero(m["por_amostra"]["top1_detectados"])]
-              for ds, m in e0["por_dataset"].items()]
-    s.tabela("por_dataset.tex", ["Dataset", "Revocação", "Revocação (estrutura)", "Taxa de falso positivo",
-                                 "Marca certa"], linhas, "Resultado por dataset", "tab:por-dataset")
-    f = e0["fora_de_T"]
-    b = e0["binario_completo"]
-    s.tabela("fora_de_T.tex", ["Grupo", "Páginas", "Sinalizadas como phishing"],
-             [["Phishing de marcas fora da base", str(f["fora"]["paginas"]), avaliacao.percentual(f["fora"]["sinalizadas"])],
-              ["Phishing sem marca (test do Phish360)", str(f["sem_marca"]["paginas"]),
-               avaliacao.percentual(f["sem_marca"]["sinalizadas"])],
-              ["Detecção binária com todo phishing: revocação", "—", avaliacao.percentual(b["revocacao"])],
-              ["Detecção binária com todo phishing: precisão", "—", avaliacao.percentual(b["precisao"])]],
-             "Phishing de marcas fora da base e detecção com todo phishing como positivo", "tab:fora-da-base")
+def intervalo_pct(ic, casas=2):
+    return "—" if ic is None or ic[0] is None else \
+        f"{avaliacao.percentual(ic[0], casas)}–{avaliacao.percentual(ic[1], casas)}"
 
 
 def linha_resumo(nome, m, extra=()):
     a, e = m["por_amostra"], m["por_estrutura"]
-    return [nome, f"{avaliacao.numero(a['auc'])} / {avaliacao.numero(e['auc'])}",
-            f"{avaliacao.numero(a['revocacao'])} / {avaliacao.numero(e['revocacao'])}",
-            avaliacao.percentual(a["fpr"], 2), avaliacao.numero(a["top1_detectados"]), *extra]
+    return [nome, f"{avaliacao.numero(_n(a['auc']))} / {avaliacao.numero(_n(e['auc']))}",
+            f"{avaliacao.numero(_n(a['revocacao']))} / {avaliacao.numero(_n(e['revocacao']))}",
+            avaliacao.percentual(_n(a["fpr"]), 2), avaliacao.numero(_n(a["top1_detectados"])), *extra]
 
 
 CAB_RESUMO = ["Configuração", "AUC (amostra / estrutura)", "Revocação (amostra / estrutura)",
               "Taxa de falso positivo", "Marca certa"]
+
+
+def gerar_saidas(r, s):
+    """Tabelas, relatório e figuras a partir dos resultados mesclados."""
+    num, pct = avaliacao.numero, avaliacao.percentual
+    curvas = {}
+    if "E0" in r:
+        e0 = r["E0"]
+        g = e0["geral"]
+        ic = lambda chave, k: g[chave]["ic"].get(k) if g[chave].get("ic") else None  # noqa: E731
+        s.tabela("principal.tex", ["Métrica", "Por amostra", "IC 95\\%", "Por estrutura", "IC 95\\%"],
+                 [[rot, num(_n(g["por_amostra"][k])), avaliacao.intervalo(ic("por_amostra", k)) if ic("por_amostra", k)
+                   and ic("por_amostra", k)[0] is not None else "—",
+                   num(_n(g["por_estrutura"][k])), avaliacao.intervalo(ic("por_estrutura", k))
+                   if ic("por_estrutura", k) and ic("por_estrutura", k)[0] is not None else "—"]
+                  for k, rot in METRICAS],
+                 "Detector principal no conjunto de teste (gradient boosting, h+e+s, estágio único)", "tab:principal")
+        nomes = {"todas": "Todas as legítimas", "phish360": "Legítimas do Phish360",
+                 "phishpedia_benign": "Phishpedia benign", "paginas_das_marcas": "Páginas das próprias marcas",
+                 "mais_parecidas": "10\\% mais parecidas com a base"}
+        s.tabela("fpr_grupos.tex", ["Grupo de páginas legítimas", "Páginas", "Taxa de falso positivo", "IC 95\\%"],
+                 [[nomes[k], str(v["paginas"]), pct(_n(v["fpr"]), 2), intervalo_pct(v["ic"])]
+                  for k, v in e0["fpr_grupos"].items()],
+                 "Taxa de falso positivo por grupo de páginas legítimas", "tab:fpr-grupos")
+        s.tabela("por_marca.tex", ["Marca", "Amostras", "Estruturas", "Revocação", "IC 95\\%",
+                                   "Revocação (estrutura)", "Marca certa"],
+                 [[l["entidade"], str(l["amostras"]), str(l["estruturas"]), num(_n(l["revocacao"])),
+                   avaliacao.intervalo(l["ic"]) if l.get("ic") and l["ic"][0] is not None else "—",
+                   num(_n(l["revocacao_estrutura"])), num(_n(l["top1_detectados"]))] for l in e0["por_marca"]],
+                 "Revocação e marca certa nos detectados, por marca", "tab:por-marca")
+        rot_t = {"com_senha": "Com campo de senha", "sem_senha": "Sem campo de senha", "sem_dom": "Sem DOM útil"}
+        s.tabela("por_tipo.tex", ["Tipo de página", "Phishings", "Revocação", "Legítimas", "Taxa de falso positivo"],
+                 [[rot_t[k], str(v["phishing_T"]), num(_n(v["revocacao"])), str(v["legitimas"]), pct(_n(v["fpr"]), 2)]
+                  for k, v in e0["por_tipo"].items()],
+                 "Resultado por tipo de página", "tab:por-tipo")
+        s.tabela("por_dataset.tex", ["Dataset", "Phishings de marcas da base", "Legítimas", "Revocação",
+                                     "Revocação (estrutura)", "Taxa de falso positivo", "Marca certa"],
+                 [[ds, str(m["n"]["phishing_T"]), str(m["n"]["legitimas"]), num(_n(m["por_amostra"]["revocacao"])),
+                   num(_n(m["por_estrutura"]["revocacao"])), pct(_n(m["por_amostra"]["fpr"]), 2),
+                   num(_n(m["por_amostra"]["top1_detectados"]))] for ds, m in e0["por_dataset"].items()],
+                 "Resultado por dataset (no Phish360, os phishings de marcas da base no teste são só os grupos do "
+                 "trainval que compartilham estrutura com o test)", "tab:por-dataset")
+        f, b = e0["fora_de_T"], e0["binario_completo"]
+        s.tabela("fora_de_T.tex", ["Grupo", "Páginas", "Sinalizadas como phishing"],
+                 [["Phishing de marcas fora da base", str(f["fora"]["paginas"]), pct(_n(f["fora"]["sinalizadas"]))],
+                  ["Phishing sem marca (test do Phish360)", str(f["sem_marca"]["paginas"]),
+                   pct(_n(f["sem_marca"]["sinalizadas"]))],
+                  ["Detecção binária com todo phishing: revocação", "—", pct(_n(b["revocacao"]))],
+                  ["Detecção binária com todo phishing: precisão", "—", pct(_n(b["precisao"]))]],
+                 "Phishing de marcas fora da base e detecção com todo phishing como positivo", "tab:fora-da-base")
+        figuras.barras_por_marca([{**l, "revocacao": _n(l["revocacao"]),
+                                   "ic": tuple(_n(x) for x in (l.get("ic") or (None, None)))}
+                                  for l in e0["por_marca"]], os.path.join(s.pasta, "figuras", "por_marca.pdf"))
+        curvas["h+e+s (principal)"] = (e0["roc"]["fpr"], e0["roc"]["tpr"], _n(g["por_amostra"]["auc"]))
+
+    linhas = []
+    for rot, m in r.get("E1", {}).items():
+        if "por_amostra" in m:
+            linhas.append(linha_resumo(f"Sinais {rot}", m))
+            if rot in ("h", "e", "s") and m.get("roc"):
+                curvas[f"só {rot}"] = (m["roc"]["fpr"], m["roc"]["tpr"], _n(m["por_amostra"]["auc"]))
+    for tipo, rot in (("regressao", "Regressão logística"), ("floresta", "Random Forest compacta")):
+        if tipo in r.get("E1b", {}):
+            linhas.append(linha_resumo(f"{rot} (h+e+s)", r["E1b"][tipo]))
+    for rot, m in r.get("E2", {}).items():
+        if "por_amostra" in m:
+            linhas.append(linha_resumo(f"h+e+s com {rot}", m))
+    if linhas:
+        s.tabela("ablacao.tex", CAB_RESUMO, linhas, "Ablação dos sinais, classificadores e variações (teste)",
+                 "tab:ablacao")
+
+    e3 = r.get("E3", {})
+    if "com_estagio1" in e3:
+        com, sem = e3["com_estagio1"], e3["sem_estagio1"]
+        s.tabela("estagio1.tex", CAB_RESUMO + ["Legítimas liberadas no estágio 1"],
+                 [linha_resumo("Estágio único (principal)", sem, [pct(0.0)]),
+                  linha_resumo(f"Com estágio 1 (limiar de {com['theta_h']} bits no pHash)", com,
+                               [pct(_n(com["por_amostra"]["legitimas_liberadas_estagio1"]))])],
+                 "Com e sem o estágio 1 pelo pHash (teste)", "tab:estagio1")
+
+    temporal, nota = [], ""
+    e4a, e4b = r.get("E4a", {}), r.get("E4b", {})
+    if "base_2026" in e4a:
+        temporal += [linha_resumo("Base completa (2019–2026)", e4a["base_completa"]),
+                     linha_resumo("Só templates planejados para 2026", e4a["base_2026"])]
+        if e4a.get("marcas_sem_template_2026"):
+            nota = "; sem template na base de 2026: " + ", ".join(e4a["marcas_sem_template_2026"])
+    if "epoca" in e4b:
+        temporal += [linha_resumo("Phishpedia: base completa", e4b["completa"]),
+                     linha_resumo("Phishpedia: só templates anteriores à amostra", e4b["epoca"])]
+    if temporal:
+        s.tabela("temporal.tex", CAB_RESUMO, temporal, f"Defasagem temporal da base de templates (teste){nota}",
+                 "tab:temporal")
+
+    e5 = r.get("E5", {})
+    if e5.get("grupos"):
+        linhas = [[", ".join(g["marcas"]), str(g.get("phishings", 0)), num(_n(g.get("revocacao_marca_nova"))),
+                   num(_n(g.get("revocacao_principal"))), num(_n(g.get("top1_marca_nova"))),
+                   pct(_n(g.get("fpr_marca_nova")), 2)] for g in e5["grupos"]]
+        if e5.get("total"):
+            t = e5["total"]
+            linhas.append(["Todas", str(t["phishings"]), num(t["revocacao_marca_nova"]), num(t["revocacao_principal"]),
+                           "—", "—"])
+        s.tabela("marca_nova.tex", ["Marcas fora do treino", "Phishings", "Revocação (marca nova)",
+                                    "Revocação (principal)", "Marca certa (marca nova)", "Falso positivo"], linhas,
+                 "Marcas que o classificador não viu no treino nem na calibração (teste)", "tab:marca-nova")
+
+    if curvas:
+        figuras.roc(curvas, os.path.join(s.pasta, "figuras", "roc.pdf"))
+    titulo = "# Avaliação no conjunto de teste" + (" — ENSAIO (não usar no texto)" if s.ensaio else "")
+    with open(os.path.join(s.pasta, "relatorio.md"), "w", encoding="utf-8") as f:
+        f.write(titulo + "\n\n" + "\n".join(s.md))
 
 
 # ---------------------------------------------------------------- main
@@ -281,13 +382,17 @@ CAB_RESUMO = ["Configuração", "AUC (amostra / estrutura)", "Revocação (amost
 def main():
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0].strip())
     p.add_argument("--tabelas", nargs="+", required=True)
-    p.add_argument("--estrutural", nargs="+", required=True, help="JSONL estruturais, na mesma ordem das tabelas")
+    p.add_argument("--estrutural", nargs="+", required=True,
+                   help="JSONL estruturais (estrutural_<dataset>.jsonl), casados com as tabelas pelo nome")
     p.add_argument("--divisao", default="data/divisao.csv")
     p.add_argument("--base", default="data/base")
     p.add_argument("--marcas", default="config/marcas.json")
+    p.add_argument("--plano", default="config/templates_snapshots.json", help="anos planejados de cada snapshot")
     p.add_argument("--modelos", default="data/modelos")
     p.add_argument("--saida", default="data/avaliacao")
     p.add_argument("--experimentos", default=",".join(EXPERIMENTOS))
+    p.add_argument("--ensaio", action="store_true",
+                   help="a dobra 0 do desenvolvimento no papel do teste (não lê o teste)")
     p.add_argument("--bootstrap", type=int, default=1000)
     p.add_argument("--semente", type=int, default=0)
     p.add_argument("--alvo-fpr", type=float, default=0.01)
@@ -302,115 +407,119 @@ def main():
     exps = [e for e in a.experimentos.split(",") if e]
     if not set(exps) <= set(EXPERIMENTOS):
         p.error(f"--experimentos deve conter só {EXPERIMENTOS}")
-    b = base_mod.Base.carregar(a.base)
-    tabela_marcas = marcas.ler_tabela(a.marcas)
-    div = divisao.ler_divisao(a.divisao)
+    datasets = {os.path.basename(t).removeprefix("similaridades_") for t in a.tabelas}
     senha = {}
-    for prefixo, arq in zip(a.tabelas, a.estrutural):
-        ds = os.path.basename(prefixo).removeprefix("similaridades_")
+    for arq in a.estrutural:
+        ds = os.path.basename(arq).removeprefix("estrutural_").removesuffix(".jsonl")
+        if ds not in datasets:
+            p.error(f"{arq}: o nome deve ser estrutural_<dataset>.jsonl, com um dataset de --tabelas {sorted(datasets)}")
         with open(arq, encoding="utf-8") as f:
             for d in map(json.loads, f):
                 senha[(ds, d["id"])] = d.get("contagens", {}).get("campos_senha")
     campos_senha = lambda m: senha.get((m["dataset"], m["id"]))  # noqa: E731
+    anos_plano = {}
+    if os.path.exists(a.plano):
+        with open(a.plano, encoding="utf-8") as f:
+            anos_plano = {e["id"]: e.get("anos_alvo") for e in json.load(f)}
 
-    print("Carregando desenvolvimento e teste...", flush=True)
-    dev = carregar_conjunto(a.tabelas, div, b, tabela_marcas, divisao.DESENVOLVIMENTO, SUPERCONJUNTO)
-    teste = carregar_conjunto(a.tabelas, div, b, tabela_marcas, divisao.TESTE, SUPERCONJUNTO)
-    print(f"Teste: {len(teste['meta'])} amostras ({int(teste['phishing_T'].sum())} phishings de 𝒯, "
-          f"{int(teste['legitima'].sum())} legítimas)", flush=True)
+    b = base_mod.Base.carregar(a.base)
+    tabela_marcas = marcas.ler_tabela(a.marcas)
+    div = divisao.ler_divisao(a.divisao)
     principal, info_p = cascata.carregar_modelo(os.path.join(a.modelos, "boosting"))
     nomes_p = info_p["caracteristicas"]["nomes"]
-    rodada = Rodada(a)
-    r, s = {}, Saidas(a.saida)
-    curvas = {}
+    if not a.ensaio and info_p.get("treino", {}).get("divisao_sha256") not in (None, sha256(a.divisao)):
+        p.error("o detector principal foi treinado com outra divisão (divisao_sha256 diferente)")
 
+    os.makedirs(a.saida, exist_ok=True)
+    caminho_res = os.path.join(a.saida, "resultados.json")
+    anteriores = {}
+    if os.path.exists(caminho_res):
+        with open(caminho_res, encoding="utf-8") as f:
+            anteriores = json.load(f)
+        if bool(anteriores.get("_ensaio")) != a.ensaio:
+            p.error(f"{a.saida} tem resultados de {'ensaio' if anteriores.get('_ensaio') else 'teste'}; use outra --saida")
+    registro = {"experimentos": exps, "ensaio": a.ensaio, "divisao_sha256": sha256(a.divisao),
+                "base_meta_sha256": sha256(os.path.join(a.base, "base_meta.json")),
+                "modelos_sha256": {t: sha256(os.path.join(a.modelos, t, "modelo.json"))
+                                   for t in ("boosting", "regressao", "floresta")
+                                   if os.path.exists(os.path.join(a.modelos, t, "modelo.json"))},
+                "bootstrap": a.bootstrap, "semente": a.semente}
+
+    def registrar(status, **extra):
+        with open(os.path.join(a.saida, "registro.jsonl"), "a", encoding="utf-8") as f:
+            f.write(json.dumps({"status": status, "em": datetime.now().isoformat(timespec="seconds"),
+                                **registro, **extra}, ensure_ascii=False) + "\n")
+
+    registrar("iniciado")
+
+    def par(prefixos, nomes, filtro=None):
+        """(desenvolvimento, teste); no ensaio, (dobras 1–4, dobra 0) do desenvolvimento."""
+        if not a.ensaio:
+            return (carregar_conjunto(prefixos, div, b, tabela_marcas, divisao.DESENVOLVIMENTO, nomes, filtro),
+                    carregar_conjunto(prefixos, div, b, tabela_marcas, divisao.TESTE, nomes, filtro))
+        tudo = carregar_conjunto(prefixos, div, b, tabela_marcas, divisao.DESENVOLVIMENTO, nomes, filtro)
+        return subconjunto(tudo, tudo["dobra"] != 0), subconjunto(tudo, tudo["dobra"] == 0)
+
+    print("Carregando desenvolvimento e teste" + (" (ENSAIO: dobra 0 no papel do teste)" if a.ensaio else "") + "...",
+          flush=True)
+    dev, teste = par(a.tabelas, SUPERCONJUNTO)
+    print(f"Teste: {len(teste['meta'])} amostras ({int(teste['phishing_T'].sum())} phishings de 𝒯, "
+          f"{int(teste['legitima'].sum())} legítimas)", flush=True)
+    if list(info_p["entidades"]) != list(teste["entidades"]):
+        p.error("as marcas do detector principal não batem com as da base")
+    rodada = Rodada(a)
     teste_p = fatiar(teste, nomes_p)
-    escores_p = cascata.pontuar_amostras(principal, teste_p["X"])
-    cal_p = info_p["cascata"]
+    if a.ensaio:  # o detector salvo viu a dobra 0 no treino: no ensaio, o principal é retreinado sem ela
+        cal_p, escores_p = rodada(fatiar(dev, nomes_p), teste_p, rotulo="principal (ensaio)")
+    else:
+        cal_p, escores_p = info_p["cascata"], cascata.pontuar_amostras(principal, teste_p["X"])
+    r = {"_ensaio": a.ensaio}
+
     if "E0" in exps:
         print("E0: detector principal", flush=True)
-        e0 = experimento_principal(teste_p, escores_p, cal_p, campos_senha, a.bootstrap, a.semente)
-        curvas["h+e+s (principal)"] = e0.pop("_roc")
-        e0.pop("_decisao")
-        r["E0"] = e0
-        tabelas_principal(s, e0)
-        figuras.barras_por_marca(e0["por_marca"], os.path.join(a.saida, "figuras", "por_marca.pdf"))
-
-    resumo_linhas = []
+        r["E0"] = experimento_principal(teste_p, escores_p, cal_p, campos_senha, a.bootstrap, a.semente)
     if "E1" in exps:
         print("E1: ablação", flush=True)
         r["E1"] = {}
         for comb in COMBINACOES:
-            nomes = cascata.nomes_caracteristicas(comb)
-            rot = "+".join(comb)
-            cal, esc = rodada(fatiar(dev, nomes), fatiar(teste, nomes), rotulo=rot)
-            if cal is None:
-                r["E1"][rot] = {"sem_pares_no_treino": True}
-                continue
+            nomes, rot = cascata.nomes_caracteristicas(comb), "+".join(comb)
             ct = fatiar(teste, nomes)
-            r["E1"][rot] = {**resumo(ct, esc, cal), "tau": cal["tau"]}
-            resumo_linhas.append(linha_resumo(f"Sinais {rot}", r["E1"][rot]))
-            if comb in (("h",), ("e",), ("s",)):
-                binario = ct["phishing_T"] | ct["legitima"]
-                e = escore_da_amostra(ct, esc)
-                fpr_c, tpr_c, _ = roc_curve(ct["phishing_T"][binario], e[binario])
-                curvas[f"só {rot}"] = (fpr_c, tpr_c, r["E1"][rot]["por_amostra"]["auc"])
+            cal, esc = rodada(fatiar(dev, nomes), ct, rotulo=rot)
+            r["E1"][rot] = {"sem_pares_no_treino": True} if cal is None else \
+                {**resumo(ct, esc, cal), "tau": cal["tau"], "roc": roc_resumida(ct, esc)}
     if "E1b" in exps:
         print("E1b: regressão e Random Forest salvos", flush=True)
         r["E1b"] = {}
-        for tipo, rot in (("regressao", "Regressão logística"), ("floresta", "Random Forest compacta")):
+        for tipo in ("regressao", "floresta"):
             modelo, info = cascata.carregar_modelo(os.path.join(a.modelos, tipo))
             ct = fatiar(teste, info["caracteristicas"]["nomes"])
-            esc = cascata.pontuar_amostras(modelo, ct["X"])
-            r["E1b"][tipo] = resumo(ct, esc, info["cascata"])
-            resumo_linhas.append(linha_resumo(f"{rot} (h+e+s)", r["E1b"][tipo]))
+            r["E1b"][tipo] = resumo(ct, cascata.pontuar_amostras(modelo, ct["X"]), info["cascata"])
     if "E2" in exps:
         print("E2: variações dos sinais", flush=True)
         r["E2"] = {}
         for rot, nomes in (("embedding Large", cascata.nomes_caracteristicas(embedding="large")),
                            ("pHash de 256 bits", cascata.nomes_caracteristicas(hash_bits=256))):
-            cal, esc = rodada(fatiar(dev, nomes), fatiar(teste, nomes), rotulo=rot)
-            if cal is None:
-                r["E2"][rot] = {"sem_pares_no_treino": True}
-                continue
-            r["E2"][rot] = resumo(fatiar(teste, nomes), esc, cal)
-            resumo_linhas.append(linha_resumo(f"h+e+s com {rot}", r["E2"][rot]))
-    if resumo_linhas:
-        s.tabela("ablacao.tex", CAB_RESUMO, resumo_linhas,
-                 "Ablação dos sinais, classificadores e variações (teste)", "tab:ablacao")
-
+            ct = fatiar(teste, nomes)
+            cal, esc = rodada(fatiar(dev, nomes), ct, rotulo=rot)
+            r["E2"][rot] = {"sem_pares_no_treino": True} if cal is None else resumo(ct, esc, cal)
     if "E3" in exps:
         print("E3: com estágio 1", flush=True)
         cal, esc = rodada(fatiar(dev, nomes_p), teste_p, estagio1="phash", rotulo="estágio 1")
-        if cal is None:
-            r["E3"] = {"sem_pares_no_treino": True}
-        else:
-            com = resumo(teste_p, esc, cal)
-            sem = resumo(teste_p, escores_p, cal_p)
-            r["E3"] = {"com_estagio1": {**com, "theta_h": cal["theta_h"]}, "sem_estagio1": sem}
-            s.tabela("estagio1.tex", CAB_RESUMO + ["Legítimas liberadas no estágio 1"],
-                     [linha_resumo("Estágio único (principal)", sem, [avaliacao.percentual(0.0)]),
-                      linha_resumo(f"Com estágio 1 (θ_h = {cal['theta_h']} bits)", com,
-                                   [avaliacao.percentual(com["por_amostra"]["legitimas_liberadas_estagio1"])])],
-                     "Com e sem o estágio 1 pelo pHash (teste)", "tab:estagio1")
-
-    temporal = []
+        r["E3"] = {"sem_pares_no_treino": True} if cal is None else \
+            {"com_estagio1": {**resumo(teste_p, esc, cal), "theta_h": cal["theta_h"]},
+             "sem_estagio1": resumo(teste_p, escores_p, cal_p)}
     if "E4a" in exps:
-        print("E4a: base só de 2026", flush=True)
-        dev26 = carregar_conjunto(a.tabelas, div, b, tabela_marcas, divisao.DESENVOLVIMENTO, nomes_p,
-                                  filtro_templates=avaliacao.filtro_2026)
-        teste26 = carregar_conjunto(a.tabelas, div, b, tabela_marcas, divisao.TESTE, nomes_p,
-                                    filtro_templates=avaliacao.filtro_2026)
+        print("E4a: base com os templates planejados para 2026", flush=True)
+        filtro = avaliacao.filtro_ano_alvo(2026, anos_plano)
+        com_2026 = {it["entidade"] for it, ok in zip(b.itens, filtro({}, b.itens)) if ok}
+        r["E4a"] = {"marcas_sem_template_2026": sorted({it["entidade"] for it in b.itens} - com_2026),
+                    "base_completa": resumo(teste_p, escores_p, cal_p)}
+        dev26, teste26 = par(a.tabelas, nomes_p, filtro)
         cal, esc = rodada(dev26, teste26, rotulo="base de 2026")
-        sem_2026 = sorted({it["entidade"] for it in b.itens} -
-                          {it["entidade"] for it in b.itens if avaliacao.data_do_template(it).year == 2026})
-        r["E4a"] = {"marcas_sem_template_2026": sem_2026}
         if cal is None:
             r["E4a"]["sem_pares_no_treino"] = True
         else:
             r["E4a"]["base_2026"] = resumo(teste26, esc, cal)
-            temporal += [linha_resumo("Base completa (2019–2026)", resumo(teste_p, escores_p, cal_p)),
-                         linha_resumo("Só templates de 2026", r["E4a"]["base_2026"])]
     if "E4b" in exps:
         print("E4b: base da época (Phishpedia)", flush=True)
         prefixos = [t for t in a.tabelas if "phishpedia" in os.path.basename(t)]
@@ -418,23 +527,12 @@ def main():
         if not prefixos or not com_data:
             r["E4b"] = {"sem_amostras_com_data": True}
         else:
-            filtro = avaliacao.filtro_ate_data()
-            dev_c = carregar_conjunto(prefixos, div, b, tabela_marcas, divisao.DESENVOLVIMENTO, nomes_p)
-            teste_c = carregar_conjunto(prefixos, div, b, tabela_marcas, divisao.TESTE, nomes_p)
-            dev_e = carregar_conjunto(prefixos, div, b, tabela_marcas, divisao.DESENVOLVIMENTO, nomes_p, filtro)
-            teste_e = carregar_conjunto(prefixos, div, b, tabela_marcas, divisao.TESTE, nomes_p, filtro)
+            dev_c, teste_c = par(prefixos, nomes_p)
+            dev_e, teste_e = par(prefixos, nomes_p, avaliacao.filtro_ate_data())
             cal_c, esc_c = rodada(dev_c, teste_c, rotulo="Phishpedia, base completa")
             cal_e, esc_e = rodada(dev_e, teste_e, rotulo="Phishpedia, base da época")
-            if cal_c is None or cal_e is None:
-                r["E4b"] = {"sem_pares_no_treino": True}
-            else:
-                r["E4b"] = {"completa": resumo(teste_c, esc_c, cal_c), "epoca": resumo(teste_e, esc_e, cal_e)}
-                temporal += [linha_resumo("Phishpedia: base completa", r["E4b"]["completa"]),
-                             linha_resumo("Phishpedia: só templates anteriores à amostra", r["E4b"]["epoca"])]
-    if temporal:
-        s.tabela("temporal.tex", CAB_RESUMO, temporal, "Defasagem temporal da base de templates (teste)",
-                 "tab:temporal")
-
+            r["E4b"] = {"sem_pares_no_treino": True} if cal_c is None or cal_e is None else \
+                {"completa": resumo(teste_c, esc_c, cal_c), "epoca": resumo(teste_e, esc_e, cal_e)}
     if "E5" in exps:
         print("E5: marca nova", flush=True)
         dec_p = decidir(teste_p, escores_p, cal_p.get("theta_h"), cal_p["tau"])
@@ -442,52 +540,40 @@ def main():
         rng = np.random.default_rng(a.semente)
         grupos_marcas = [list(g) for g in np.array_split(rng.permutation(ents), min(4, len(ents)))]
         r["E5"] = {"grupos": []}
-        linhas, tot = [], {"n": 0, "nova": 0.0, "principal": 0.0}
+        tot = {"n": 0, "nova": 0.0, "principal": 0.0}
         ent = np.array(teste_p["entidades"], dtype=object)
         for g in grupos_marcas:
+            alvo = teste_p["phishing_T"] & np.isin(teste_p["entidade_real"].astype(str), g)
+            if not alvo.any():
+                r["E5"]["grupos"].append({"marcas": g, "sem_phishing_no_teste": True})
+                continue
             cal, esc = rodada(fatiar(dev, nomes_p), teste_p, excluidas=tuple(g), rotulo=f"sem {', '.join(g)}")
             if cal is None:
                 r["E5"]["grupos"].append({"marcas": g, "sem_pares_no_treino": True})
                 continue
             dec = decidir(teste_p, esc, None, cal["tau"])
-            alvo = teste_p["phishing_T"] & np.isin(teste_p["entidade_real"].astype(str), g)
-            if not alvo.any():
-                continue
             det = alvo & dec["phishing"]
-            item = {"marcas": g, "phishings": int(alvo.sum()), "revocacao_marca_nova": float(dec["phishing"][alvo].mean()),
+            item = {"marcas": g, "phishings": int(alvo.sum()), "tau": cal["tau"],
+                    "revocacao_marca_nova": float(dec["phishing"][alvo].mean()),
                     "revocacao_principal": float(dec_p["phishing"][alvo].mean()),
                     "top1_marca_nova": float((ent[dec["entidade"][det]] == teste_p["entidade_real"][det]).mean())
-                    if det.any() else None, "fpr_marca_nova": float(dec["phishing"][teste_p["legitima"]].mean())}
+                    if det.any() else None,
+                    "fpr_marca_nova": float(dec["phishing"][teste_p["legitima"]].mean())}
             r["E5"]["grupos"].append(item)
             tot["n"] += item["phishings"]
             tot["nova"] += item["revocacao_marca_nova"] * item["phishings"]
             tot["principal"] += item["revocacao_principal"] * item["phishings"]
-            linhas.append([", ".join(g), str(item["phishings"]), avaliacao.numero(item["revocacao_marca_nova"]),
-                           avaliacao.numero(item["revocacao_principal"]), avaliacao.numero(item["top1_marca_nova"])])
         if tot["n"]:
             r["E5"]["total"] = {"phishings": tot["n"], "revocacao_marca_nova": tot["nova"] / tot["n"],
                                 "revocacao_principal": tot["principal"] / tot["n"]}
-            linhas.append(["Todas", str(tot["n"]), avaliacao.numero(tot["nova"] / tot["n"]),
-                           avaliacao.numero(tot["principal"] / tot["n"]), "—"])
-        s.tabela("marca_nova.tex", ["Marcas fora do treino", "Phishings", "Revocação (marca nova)",
-                                    "Revocação (principal)", "Marca certa (marca nova)"], linhas,
-                 "Marcas que o classificador não viu no treino (teste)", "tab:marca-nova")
 
-    if curvas:
-        figuras.roc(curvas, os.path.join(a.saida, "figuras", "roc.pdf"))
-    with open(os.path.join(a.saida, "resultados.json"), "w", encoding="utf-8") as f:
-        json.dump(limpar(r), f, ensure_ascii=False, indent=1, allow_nan=False)
-    with open(os.path.join(a.saida, "relatorio.md"), "w", encoding="utf-8") as f:
-        f.write("# Avaliação no conjunto de teste\n\n" + "\n".join(s.md))
-    registro = {"executado_em": datetime.now().isoformat(timespec="seconds"), "experimentos": exps,
-                "divisao_sha256": sha256(a.divisao), "base_meta_sha256": sha256(os.path.join(a.base, "base_meta.json")),
-                "modelos_sha256": {t: sha256(os.path.join(a.modelos, t, "modelo.json"))
-                                   for t in ("boosting", "regressao", "floresta")
-                                   if os.path.exists(os.path.join(a.modelos, t, "modelo.json"))},
-                "bootstrap": a.bootstrap, "semente": a.semente}
-    with open(os.path.join(a.saida, "registro.jsonl"), "a", encoding="utf-8") as f:
-        f.write(json.dumps(registro, ensure_ascii=False) + "\n")
-    print(f"Saídas em {a.saida} ({time.perf_counter() - inicio:.0f} s)", flush=True)
+    mesclado = {**anteriores, **limpar(r)}
+    with open(caminho_res, "w", encoding="utf-8") as f:
+        json.dump(mesclado, f, ensure_ascii=False, indent=1, allow_nan=False)
+    gerar_saidas(mesclado, Saidas(a.saida, a.ensaio))
+    duracao = time.perf_counter() - inicio
+    registrar("concluido", duracao_s=round(duracao))
+    print(f"Saídas em {a.saida} ({duracao:.0f} s)", flush=True)
 
 
 if __name__ == "__main__":
