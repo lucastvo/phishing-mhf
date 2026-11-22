@@ -91,3 +91,33 @@ Em `data/avaliacao/` (fora do Git):
 - Cap. 5 inteiro sai destas saídas.
 - **Seção 2.11 e Cap. 1 (item "Avaliação"):** a divisão é por estrutura do DOM, não por entidade ou período; o motivo é que o `family_id` não agrupa os kits.
 - **Cap. 1, hipótese:** sai o "hash perceptual como filtro rápido" (estágio único).
+
+## 9. Correções antes da rodada (revisão independente)
+
+A revisão foi feita antes de o teste ser lido, e as correções entraram antes da rodada única:
+- **E4a:** a base de 2026 é a dos templates **planejados** para 2026 (`anos_alvo` do plano) mais os capturados ao vivo. O snapshot mais próximo de 1º de janeiro costuma ser de dezembro de 2025, e o filtro pelo ano do timestamp tirava a Amazon inteira da base.
+- **E5:** as colunas das marcas excluídas ficam fora também da calibração de τ, como se elas não existissem, e a taxa de falso positivo no teste é reportada.
+- **Latência:** a captura é recortada na primeira dobra antes da medição, como a captura da aba no navegador. Sem isso, as páginas inteiras do Phishpedia benign (até 85 mil px) mediriam o formato do dataset.
+- **Registro e ensaio:**
+  - `registro.jsonl` ganha uma linha no início e outra no fim de cada execução;
+  - os resultados se acumulam entre execuções;
+  - `--ensaio` roda tudo com a dobra 0 do desenvolvimento no papel do teste. Ele foi rodado com os dados reais antes da rodada única.
+
+## 10. Resultados (22/11/2026, rodada única no teste)
+
+Tabelas completas em `data/avaliacao/relatorio.md` e no README (passo 6). Pontos para o Cap. 5:
+- **Principal:**
+  - revocação de 0,553 por amostra (IC 0,104–0,854) e de 0,278 por estrutura (0,245–0,315);
+  - falso positivo de 1,1%: o alvo de 1%, calibrado no desenvolvimento, se manteve no teste;
+  - precisão de 0,98 por amostra, marca certa em 0,98 dos detectados e AUC de 0,943 por amostra e 0,827 por estrutura;
+  - os intervalos por amostra são largos porque poucos kits copiados aos milhares dominam o teste. As métricas por estrutura são as que permitem conclusões.
+- **Ablação:** a combinação h+e+s tem a maior AUC por estrutura (0,827). O DOM é o sinal isolado mais forte (0,720), e o embedding é o que dá a marca certa. Isso sustenta o diferencial "combinação visual + DOM" (Seção 3.6).
+- **Limites:**
+  - 8,5% de falso positivo nas legítimas mais parecidas com a base;
+  - revocação de 0,116 em páginas sem campo de senha (etapas seguintes do golpe e iscas);
+  - DHL, Adobe, Apple e Chase quase não são detectadas.
+- **Temporal:**
+  - a base só de 2026 perde um terço da revocação por estrutura (de 0,278 para 0,179). Isso sustenta a base com vários anos e a atualização periódica (Seção 3.6);
+  - no Phishpedia, os templates anteriores ao ataque dão mais revocação (0,377) que a base completa (0,279).
+- **Marca nova:** revocação de 0,560 nas marcas nunca vistas (o principal tem 0,553), com falso positivo de 1,2% a 2,4%.
+- **Latência:** 81,6 ms por página (mediana; p95 de 145 ms) em CPU, uma ordem de grandeza abaixo dos 0,24–1,1 s citados no Cap. 3.

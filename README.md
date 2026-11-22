@@ -223,3 +223,78 @@ python scripts/verificar.py --modelo data/modelos/boosting --imagem pagina.png -
 - **A revocação com 1% de falso positivo fica entre 0,35 e 0,38 por amostra (0,23 a 0,25 por estrutura) nos três modelos.** O teto vem dos sinais: páginas que não imitam o login (etapas seguintes do golpe e iscas), kits com fundo trocado e páginas legítimas parecidas com algum template.
 - **O que muda entre os modelos é a marca atribuída e o comportamento sem DOM.** A regressão quase não usa o embedding (coeficiente +0,014) e não detecta sem DOM; os modelos de árvores comparam as marcas entre si.
 - Comparação mais ampla (Random Forest de 300 árvores, com 164 MB; três tamanhos de floresta; regressão com margem do cosseno): desenho da etapa 5, seção 13. Relatório completo, por dataset e por presença do DOM: `data/modelos/comparacao_dev.md`.
+
+## Passo 6 — avaliação no conjunto de teste
+
+O conjunto de teste é usado **uma vez**, com o detector principal (gradient boosting, h+e+s, estágio único) e todos os experimentos na mesma execução; todo treino e toda calibração usam só o desenvolvimento.
+
+```bash
+# ensaio, antes da rodada única: a dobra 0 do desenvolvimento faz o papel do teste (não lê o teste)
+python scripts/avaliar.py --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign --estrutural data/estrutural_phish360.jsonl data/estrutural_phishpedia_phish.jsonl data/estrutural_phishpedia_benign.jsonl --ensaio --saida data/avaliacao_ensaio
+# rodada no teste
+python scripts/avaliar.py --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign --estrutural data/estrutural_phish360.jsonl data/estrutural_phishpedia_phish.jsonl data/estrutural_phishpedia_benign.jsonl --saida data/avaliacao
+# latência em 300 páginas brutas do teste (100 por dataset)
+python scripts/medir_latencia.py --dataset phish360 data/phish360.csv data/Phish360 --dataset phishpedia_phish data/phishpedia_phish.csv data/phish_sample_30k --dataset phishpedia_benign data/phishpedia_benign.csv data/benign_sample_30k 1366x768 --saida data/avaliacao
+```
+
+- **Experimentos:**
+  - E0: detector principal;
+  - E1: ablação, com as 7 combinações de h, e e s;
+  - E1b: regressão e Random Forest;
+  - E2: embedding Large e pHash de 256 bits;
+  - E3: com estágio 1;
+  - E4a: só os templates planejados para 2026;
+  - E4b: Phishpedia, só templates anteriores à amostra;
+  - E5: marca nova (classificador e limiar sem as marcas em que é medido).
+- **Intervalos de confiança:** bootstrap de 1.000 reamostras das estruturas de DOM do teste. Cada kit é sorteado inteiro, nunca pela metade.
+- **Saídas** em `data/avaliacao/`:
+  - `resultados.json` e `relatorio.md`;
+  - `tabelas/*.tex`: LaTeX com booktabs e `\fonte`. O preâmbulo da monografia precisa de `\usepackage{booktabs}`;
+  - `figuras/*.pdf`: curva ROC, revocação por marca e latência;
+  - `registro.jsonl`: uma linha no início e outra no fim de cada execução.
+
+**Resultado no teste.** São 19.674 amostras: 8.217 phishings de marcas da base e 7.591 legítimas.
+- **Por estrutura,** cada kit conta uma vez.
+- **Por amostra,** os kits copiados aos milhares pesam muito: a Microsoft tem 4.386 amostras e só 15 estruturas. Por isso os intervalos por amostra ficam largos.
+
+| Métrica | Por amostra (IC 95%) | Por estrutura (IC 95%) |
+|---|---|---|
+| Revocação | 0,553 (0,104–0,854) | 0,278 (0,245–0,315) |
+| Precisão | 0,982 (0,877–0,994) | 0,680 (0,622–0,736) |
+| Taxa de falso positivo | 1,1% (0,9%–1,3%) | 1,1% (0,8%–1,3%) |
+| Marca certa nos detectados | 0,977 (0,760–0,997) | 0,907 (0,864–0,947) |
+| AUC | 0,943 (0,823–0,975) | 0,827 (0,807–0,846) |
+
+- **Falso positivo por grupo de páginas legítimas:**
+  - 0,53% nas legítimas do Phish360;
+  - 1,22% no Phishpedia benign;
+  - 0 em 13 páginas das próprias marcas (a checagem de domínio funciona);
+  - **8,5% nos 10% de legítimas mais parecidas com a base**.
+- **Revocação por tipo de página:** 0,617 nos phishings com campo de senha, 0,116 sem campo de senha e 0,016 sem DOM útil.
+- **Ablação** (por estrutura, AUC / revocação):
+
+  | Sinais | AUC | Revocação |
+  |---|---|---|
+  | só h | 0,663 | 0,006 |
+  | só e | 0,626 | 0,129 |
+  | só s | 0,720 | 0,276 |
+  | e+s | 0,801 | 0,262 |
+  | **h+e+s** | **0,827** | **0,278** |
+
+  A combinação tem a maior AUC. O DOM é o sinal isolado mais forte, e o embedding é o que mais ajuda a acertar a marca: 0,994 de marca certa com e+s, contra 0,686 com h+s.
+- **Estágio 1:** liberaria só 0,3% das legítimas, com o mesmo resultado final.
+- **Defasagem temporal:**
+  - só com os templates de 2026, a revocação por estrutura cai de 0,278 para 0,179;
+  - no Phishpedia, só com templates anteriores à data de cada amostra, ela sobe de 0,279 para 0,377. Os templates da época do ataque importam mais que os mais novos.
+- **Marca nova:** sem ter visto as marcas no treino nem na calibração, a revocação nelas é 0,560 (o principal tem 0,553). O falso positivo sobe para 1,2%–2,4%. Acrescentar uma marca à base não exige retreinar, mas é recomendável recalibrar τ.
+- **Fora da base:** são sinalizados 4,6% dos phishings de marcas fora da base e 7,5% dos phishings sem marca do Phish360.
+- **Latência** (300 páginas, uma de cada vez, CPU i7-4790): mediana de **81,6 ms** por página, p95 de 145 ms.
+
+  | Parte | Mediana (ms) |
+  |---|---|
+  | Embedding | 28,9 |
+  | Abrir a captura | 16,7 |
+  | Classificador | 10,6 |
+  | pHash | 7,5 |
+  | Busca | 6,3 |
+  | DOM | 3,2 |
