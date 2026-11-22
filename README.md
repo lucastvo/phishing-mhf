@@ -298,3 +298,32 @@ python scripts/medir_latencia.py --dataset phish360 data/phish360.csv data/Phish
   | pHash | 7,5 |
   | Busca | 6,3 |
   | DOM | 3,2 |
+
+## Passo 7 — interface de demonstração
+
+Uma página local, aberta no navegador, que analisa uma página com o detector principal e mostra o veredito e o porquê. É uma prévia simplificada do que a extensão do navegador fará: olhar a página aberta, comparar com a base de templates e alertar. Tudo roda na máquina; nada da página é enviado para fora.
+
+```bash
+# uma vez: propõe candidatos do conjunto de teste e grava em data/interface/ os caminhos dos datasets
+python scripts/escolher_exemplos.py --dataset phish360 <índice> <raiz> --dataset phishpedia_phish <índice> <raiz> --dataset phishpedia_benign <índice> <raiz> 1366x768
+# depois, sempre: abre http://127.0.0.1:8000
+python scripts/interface.py
+```
+
+- **Duas entradas:**
+  - **Exemplos:** 12 páginas do conjunto de teste, que o detector nunca viu (`config/exemplos_interface.json`). São 8 acertos e 4 erros: uma isca do OneDrive, um clone sem DOM útil, uma etapa seguinte do golpe e um alerta falso. O rótulo real aparece ao lado do veredito. As capturas e os HTMLs são lidos das pastas dos datasets, sem cópia.
+  - **URL ao vivo:** o Chromium do Playwright abre a página numa janela de 1366×768, 1280×960 ou 1920×1080, espera o formulário de login (até 20 s) e captura a janela e o DOM renderizado. As URLs sugeridas foram conferidas: Microsoft, Netflix, Yahoo, Dropbox, Facebook e Bradesco. LinkedIn, Itaú e Santander respondem 403 ao navegador automatizado e ficaram de fora.
+- **"Analisar como se estivesse em…":** troca só o domínio usado na análise, nas duas entradas.
+  - O login verdadeiro da Microsoft em `login.live.com` sai legítimo pela checagem de domínio. A mesma página "em" `microsoft-verificacao.test` sai phishing da Microsoft.
+  - Sem internet, o exemplo 1 (clone da Microsoft) faz a demonstração no sentido inverso: "em" `login.microsoftonline.com`, ele sai legítimo.
+- **A tela mostra:**
+  - o veredito e o motivo em uma frase;
+  - a primeira dobra analisada ao lado do template mais parecido da marca (pelo embedding);
+  - o escore das cinco marcas mais próximas contra o limiar τ;
+  - os 7 sinais que o classificador recebeu;
+  - o domínio da página e os domínios oficiais da marca;
+  - o tempo de cada parte do detector. Na URL ao vivo, o tempo de abrir a página no navegador automatizado aparece separado, porque na extensão a página já está aberta.
+- **Limitações:**
+  - os exemplos dependem dos datasets no disco;
+  - sites que bloqueiam navegador automatizado não funcionam na URL ao vivo;
+  - é um usuário e uma análise por vez.

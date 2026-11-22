@@ -237,3 +237,31 @@ python scripts/interface.py            # abre http://127.0.0.1:8000
 ## 14. Deixado para quem implementa
 
 Organização dos arquivos estáticos, estilo visual, formato das imagens na resposta (PNG ou JPEG em base64), mensagens de erro, tamanho da amostra de candidatos por tipo e a porta, desde que respeitem as seções acima.
+
+## 15. Resultado da implementação (22/11/2026)
+
+**Exemplos** (`config/exemplos_interface.json`), escolhidos entre 270 candidatos sorteados do teste por `scripts/escolher_exemplos.py` e revisados pelo Lucas olhando as capturas. Nos 270, o veredito pela página bruta foi igual ao da tabela de similaridades da etapa 6.
+
+| # | Grupo | Página | Veredito (escore) |
+|---|---|---|---|
+| 1 | acerto | Clone do login da Microsoft (Outlook, Phishpedia) | phishing de Microsoft (0,999) |
+| 2 | acerto | Clone do login do PayPal | phishing de PayPal (0,999) |
+| 3 | acerto | Clone do login da Netflix | phishing de Netflix (0,997) |
+| 4 | acerto | Clone da página inicial do Itaú | phishing de Itaú (0,998) |
+| 5 | acerto | Clone do login da Amazon (Phish360, 1280×960) | phishing de Amazon (0,989) |
+| 6 | acerto | Login verdadeiro do eBay em `ebay.es` | legítima, abaixo do limiar (0,779) |
+| 7 | acerto | Login de outro site (StudentVIP) | legítima, abaixo do limiar (0,521) |
+| 8 | acerto | Página sem DOM útil (365area) | legítima, abaixo do limiar (0,545) |
+| 9 | erro | Isca do OneDrive | não detectado (0,662) |
+| 10 | erro | Clone do Yahoo sem DOM útil | não detectado (0,848; Yahoo é a marca mais próxima) |
+| 11 | erro | Etapa seguinte do golpe: Bank of America pedindo foto do documento (Phish360) | não detectado (0,690) |
+| 12 | erro | Alerta falso: login do vestibular de uma escola (`saobraz.edu.br`) | phishing de Yahoo (0,965) |
+
+**URLs sugeridas** (conferidas em 1366×768): `login.live.com`, `netflix.com/login`, `login.yahoo.com`, `dropbox.com/login`, `facebook.com/login.php` e `banco.bradesco` (pt-BR). Todas dão legítima no domínio real (checagem de domínio, escore 0,999) e phishing da marca no domínio simulado. `linkedin.com/login`, `itau.com.br` e `santander.com.br` respondem 403 ao navegador automatizado e ficaram de fora. Facebook e Bradesco entraram no lugar delas, pela mesma regra.
+
+**Desvios do desenho:**
+- **Demonstração do domínio sem internet (§7.2).** Nenhuma página das próprias marcas no teste passa de τ (as 6 candidatas ficam entre 0,55 e 0,78). Como a checagem de domínio só é feita depois do limiar, o exemplo 6 "em outro domínio" continuaria legítimo. A demonstração usa o exemplo 1 no sentido inverso: no domínio do golpe, phishing da Microsoft (0,999); "em" `https://login.microsoftonline.com/`, legítima pela checagem de domínio.
+- **Candidatos "página da própria marca" (§6.2).** Essas páginas saem por escore baixo, antes da checagem de domínio. Por isso o tipo do candidato passou a considerar também se o domínio é oficial de alguma marca (`tipo_do_candidato(..., dominio_de_marca)`).
+- **Imagem da página na resposta:** JPEG, e não PNG (§14). É menor e mais rápida de codificar em 1920×1080; a análise usa a captura original.
+- **Reuso:** `esperar_credencial` saiu de `scripts/capturar_templates.py` para `mhf.captura`, e o recorte da dobra de `scripts/medir_latencia.py` para `mhf.exemplos.ler_pagina_do_dataset`. O comportamento é o mesmo nos dois.
+- **Tela em 1024×768**, tamanho comum de projetor: escores e sinais ficam um sobre o outro abaixo de 1280 px de largura.
