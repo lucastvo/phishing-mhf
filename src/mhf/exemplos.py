@@ -174,13 +174,16 @@ def ler_exemplos(caminho_config: str, caminho_datasets: str, div: dict) -> tuple
 
 # ---------------------------------------------------------------- candidatos
 
-def tipo_do_candidato(estrato: str, rotulo: str, entidade: str | None, motivo: str, s_ausente: bool) -> str:
-    """Em que caixa da seção 6.1 do desenho a página cai, dado o rótulo real e o veredito."""
+def tipo_do_candidato(estrato: str, rotulo: str, entidade: str | None, motivo: str, s_ausente: bool,
+                      dominio_de_marca: bool = False) -> str:
+    """Em que caixa da seção 6.1 do desenho a página cai, dado o rótulo real e o veredito.
+    `dominio_de_marca`: o domínio da página é oficial de alguma marca de 𝒯 (páginas das próprias marcas
+    costumam sair por escore baixo, antes da checagem de domínio)."""
     phishing = rotulo == "phishing"
     if estrato == "benigno":
         if phishing:
             return "alerta_falso"
-        if motivo.startswith("dominio_legitimo"):
+        if dominio_de_marca or motivo.startswith("dominio_legitimo"):
             return "legitima_dominio_oficial"
         return "legitima_sem_dom" if s_ausente else "legitima_comum"
     if estrato in _SEM_MARCA:

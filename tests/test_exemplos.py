@@ -102,6 +102,11 @@ class TestCandidatos(unittest.TestCase):
         self.assertEqual(t("benigno", "legitima", "PayPal", "abaixo_do_limiar", True), "legitima_sem_dom")
         self.assertEqual(t("benigno", "legitima", "PayPal", "abaixo_do_limiar", False), "legitima_comum")
         self.assertEqual(t("benigno", "phishing", "PayPal", "phishing", False), "alerta_falso")
+        # página da própria marca liberada por escore baixo: o domínio é oficial de alguma marca
+        self.assertEqual(t("benigno", "legitima", "PayPal", "abaixo_do_limiar", False, dominio_de_marca=True),
+                         "legitima_dominio_oficial")
+        self.assertEqual(t("benigno", "legitima", "PayPal", "abaixo_do_limiar", True, dominio_de_marca=True),
+                         "legitima_dominio_oficial")
 
     def test_folha_de_contato(self):
         itens = []

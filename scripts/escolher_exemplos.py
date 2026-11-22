@@ -57,7 +57,8 @@ def fase_a(a, b, tabela, info, modelo, rng):
         e = int(r["entidade"][i])
         entidade = c["entidades"][e] if e >= 0 else None
         rotulo = "phishing" if r["phishing"][i] else "legitima"
-        tipo = exemplos.tipo_do_candidato(m["estrato"], rotulo, entidade, r["motivo"][i], bool(c["s_ausente"][i]))
+        tipo = exemplos.tipo_do_candidato(m["estrato"], rotulo, entidade, r["motivo"][i], bool(c["s_ausente"][i]),
+                                          dominio_de_marca=bool(c["legit"][i].any()))
         grupos[(tipo, m["estrato"], m["dataset"])].append(
             {"dataset": m["dataset"], "id": m["id"], "tipo": tipo, "estrato": m["estrato"],
              "marca_dataset": m.get("marca") or "", "url": m.get("url") or m["id"],
