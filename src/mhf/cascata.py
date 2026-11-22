@@ -197,6 +197,8 @@ class Floresta:
                                     max_features="sqrt", n_jobs=n_jobs, random_state=semente)
         rf.fit(X, y, sample_weight=pesos)
         rf.n_jobs = 1
+        if hasattr(rf, "_sample_weight"):  # cópia dos pesos de treino (~8 MB): inútil para pontuar
+            rf._sample_weight = None
         return cls(nomes, rf)
 
     def pontuar(self, X):

@@ -145,6 +145,17 @@ class TestModelos(unittest.TestCase):
         self.assertEqual(m.rf.n_jobs, 1)  # uma página de cada vez: sem custo de dividir entre núcleos
         self.assertEqual(m.para_dict()["profundidade"], 3)
 
+    def test_floresta_salva_sem_os_pesos_do_treino(self):
+        # o scikit-learn guarda os pesos de todos os pares de treino no modelo (~8 MB com 1 milhão de pares);
+        # eles não servem para pontuar e não devem ir para o arquivo
+        m = cascata.Floresta.treinar(self.X, self.y, self.w, self.nomes, arvores=5, n_jobs=1)
+        self.assertIsNone(getattr(m.rf, "_sample_weight", None))
+        antes = m.pontuar(self.X)
+        with tempfile.TemporaryDirectory() as pasta:
+            cascata.salvar_modelo(pasta, m, {})
+            lido, _ = cascata.carregar_modelo(pasta)
+        np.testing.assert_allclose(lido.pontuar(self.X), antes)
+
     def test_pontuar_amostras_respeita_nan(self):
         m = cascata.RegressaoLogistica.treinar(self.X, self.y, self.w, self.nomes)
         X3 = np.stack([self.X[:4], np.full((4, 3), np.nan)], axis=1)  # (4 amostras, 2 entidades, 3)
