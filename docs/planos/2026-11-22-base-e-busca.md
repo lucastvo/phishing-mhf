@@ -110,7 +110,7 @@
 - `test_classe_sem_templates_grava_matriz_vazia`: shape `(1, 0)`.
 - `test_amostra_sem_s_fica_nan` e `test_s_sem_visual_e_ignorado`.
 - `test_tipos`: `dist_h64` `uint8`, `dist_h256` `uint16`, `cos_small` `float16`.
-- `test_entidade_da_amostra`: rótulo `"paypal"` com `dataset="phish360"` → `"PayPal"` (tabela sintética com `rotulos_phish360`); benigno → `None`.
+- `test_entidade_da_amostra`: rótulo `"paypal"` com `dataset="phish360"` → `"PayPal"` (tabela sintética com `nomes_phish360`); benigno → `None`.
 - `test_conferir_alinhamento`.
 
 - [ ] **Step 2:** FAIL.

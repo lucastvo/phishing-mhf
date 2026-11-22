@@ -43,7 +43,7 @@ Medição com os templates reais (classe 1920×1080, 190 templates; 2.000 consul
 | Exaustiva (numpy) | 0,024 ms | 0,029 ms |
 | FAISS exato (`IndexFlatIP` / `IndexBinaryFlat`) | 0,023 ms | 0,013 ms |
 
-O embedding da página custa uns 20 ms (etapa 3), quase mil vezes a busca. A base inteira (572 pares, e Small) ocupa 1,3 MB. Com centenas de templates, índices aproximados (IVF, HNSW) não reduzem a latência por página de forma perceptível e podem perder o vizinho mais próximo.
+O embedding da página custa uns 20 ms (etapa 3), quase mil vezes a busca. Os embeddings Small dos 572 pares ocupam 1,3 MB; a base completa no disco, com o Large e os caminhos do DOM, ocupa cerca de 8 MB (o `base.jsonl` tem 4,5 MB, quase todo de caminhos, que se repetem muito e podem ser compactados para a extensão). Medição completa na base real, com as três classes e a busca do código (`Base.vizinhos`): README, passo 4. Com centenas de templates, índices aproximados (IVF, HNSW) não reduzem a latência por página de forma perceptível e podem perder o vizinho mais próximo.
 
 **Decisão:** o código faz busca exaustiva em numpy. É exata, é a mesma conta que a extensão fará em JavaScript (onde o FAISS não roda) e não acrescenta dependência à base. O FAISS entra só no script de medição (seção 5.5), para documentar que o resultado e o tempo são equivalentes. Índices aproximados passam a ser o caminho para escalar a base, se ela crescer para dezenas de milhares de entradas.
 
