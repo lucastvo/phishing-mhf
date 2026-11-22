@@ -35,7 +35,7 @@ from mhf import base as base_mod  # noqa: E402
 from mhf import cascata, divisao, marcas, metricas  # noqa: E402
 from mhf.conjuntos import carregar_conjunto, nome_do_dataset  # noqa: E402,F401
 
-MODELOS = {"regressao": cascata.RegressaoLogistica, "floresta": cascata.Floresta}
+MODELOS = {"regressao": cascata.RegressaoLogistica, "floresta": cascata.Floresta, "boosting": cascata.Boosting}
 
 
 def pares_de_treino(c, mascara):
@@ -55,11 +55,13 @@ def pares_de_treino(c, mascara):
 
 # ---------------------------------------------------------------- treino e calibração
 
-def treinar_modelo(tipo, c, mascara, **floresta):
-    """`floresta`: arvores, n_jobs, profundidade e folha do Random Forest (ignorados na regressão)."""
+def treinar_modelo(tipo, c, mascara, iteracoes=150, **floresta):
+    """`floresta`: arvores, n_jobs, profundidade e folha do Random Forest; `iteracoes`: do boosting."""
     X, y, w = pares_de_treino(c, mascara)
     if tipo == "regressao":
         return cascata.RegressaoLogistica.treinar(X, y, w, c["nomes"])
+    if tipo == "boosting":
+        return cascata.Boosting.treinar(X, y, w, c["nomes"], iteracoes=iteracoes)
     return cascata.Floresta.treinar(X, y, w, c["nomes"], **floresta)
 
 
@@ -267,12 +269,13 @@ def main():
     p.add_argument("--embedding", default="small", choices=["small", "large"])
     p.add_argument("--alvo-fpr", type=float, default=0.01)
     p.add_argument("--alvo-revocacao-estagio1", type=float, default=0.99)
-    p.add_argument("--modelos", default="regressao,floresta")
+    p.add_argument("--modelos", default="regressao,floresta,boosting")
     p.add_argument("--estagio1", default="nenhum", choices=["nenhum", "phash"],
                    help="nenhum (padrão): toda página vai ao classificador; phash: filtro pelo pHash antes dele")
-    p.add_argument("--arvores", type=int, default=300)
-    p.add_argument("--profundidade", type=int, default=None, help="profundidade máxima das árvores (padrão: sem)")
-    p.add_argument("--folha", type=int, default=20, help="mínimo de amostras por folha")
+    p.add_argument("--arvores", type=int, default=100, help="Random Forest: número de árvores")
+    p.add_argument("--profundidade", type=int, default=12, help="Random Forest: profundidade máxima (0 = sem)")
+    p.add_argument("--folha", type=int, default=50, help="Random Forest: mínimo de amostras por folha")
+    p.add_argument("--iteracoes", type=int, default=150, help="gradient boosting: número de árvores")
     p.add_argument("--n-jobs", type=int, default=4)
     a = p.parse_args()
 
@@ -296,7 +299,8 @@ def main():
             "n": {"phishing_T": int(c["phishing_T"].sum()), "legitimas": int(c["legitima"].sum()),
                   "fora_T": int(c["fora_T"].sum())}, "modelos": {}}
     for tipo in tipos:
-        floresta = {"arvores": a.arvores, "n_jobs": a.n_jobs, "profundidade": a.profundidade, "folha": a.folha}
+        floresta = {"arvores": a.arvores, "n_jobs": a.n_jobs, "profundidade": a.profundidade or None,
+                    "folha": a.folha, "iteracoes": a.iteracoes}
         oof = escores_fora_da_dobra(c, tipo, progresso=lambda s: print(s, flush=True), **floresta)
         cal = calibrar(c, oof, a.alvo_fpr, a.alvo_revocacao_estagio1, a.estagio1)
         dobras = [metricas_cascata(c, oof, cal["theta_h"], cal["tau"], c["dobra"] == k)
@@ -326,7 +330,7 @@ def main():
                 "tempo_us": _tempo_por_pagina(modelo, c["X"]), "tamanho_bytes": _tamanho(pasta)}
         if tipo == "regressao":
             info["coef"] = dict(zip(nomes, modelo.coef.tolist()))
-        else:
+        elif tipo == "floresta":
             info["importancias"] = dict(zip(nomes, modelo.rf.feature_importances_.tolist()))
         comp["modelos"][tipo] = info
         g = extras["validacao"]["por_amostra"]

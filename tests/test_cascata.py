@@ -130,7 +130,8 @@ class TestModelos(unittest.TestCase):
 
     def test_salvar_e_carregar(self):
         for modelo in (cascata.RegressaoLogistica.treinar(self.X, self.y, self.w, self.nomes),
-                       cascata.Floresta.treinar(self.X, self.y, self.w, self.nomes, arvores=20, n_jobs=1)):
+                       cascata.Floresta.treinar(self.X, self.y, self.w, self.nomes, arvores=20, n_jobs=1),
+                       cascata.Boosting.treinar(self.X, self.y, self.w, self.nomes, iteracoes=20)):
             with tempfile.TemporaryDirectory() as pasta:
                 cascata.salvar_modelo(pasta, modelo, {"cascata": {"theta_h": 20, "tau": 0.5}})
                 lido, extras = cascata.carregar_modelo(pasta)

@@ -97,10 +97,10 @@ class TestTreinar(unittest.TestCase):
             c = montar_cenario(d)
             saida = os.path.join(d, "modelos")
             argv = ["treinar.py", "--tabelas", c["prefixo"], "--divisao", c["divisao"], "--base", c["base"],
-                    "--marcas", c["marcas"], "--saida", saida, "--arvores", "10", "--n-jobs", "1"]
+                    "--marcas", c["marcas"], "--saida", saida, "--arvores", "10", "--iteracoes", "10", "--n-jobs", "1"]
             with mock.patch.object(sys, "argv", argv), mock.patch("builtins.print"):
                 script.main()
-            for tipo in ("regressao", "floresta"):
+            for tipo in ("regressao", "floresta", "boosting"):
                 with open(os.path.join(saida, tipo, "modelo.json"), encoding="utf-8") as f:
                     m = json.load(f)
                 # padrão: um estágio só (sem filtro pelo pHash)
@@ -111,7 +111,7 @@ class TestTreinar(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(saida, "comparacao_dev.md")))
             with open(os.path.join(saida, "comparacao_dev.json"), encoding="utf-8") as f:
                 comp = json.load(f)
-            for tipo in ("regressao", "floresta"):
+            for tipo in ("regressao", "floresta", "boosting"):
                 self.assertGreater(comp["modelos"][tipo]["geral"]["por_amostra"]["auc"], 0.9)
                 self.assertEqual(len(comp["modelos"][tipo]["dobras"]), 5)
                 m = comp["modelos"][tipo]

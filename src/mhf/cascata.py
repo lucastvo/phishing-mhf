@@ -215,15 +215,46 @@ class Floresta:
         return cls(d["nomes"], joblib.load(os.path.join(pasta, d["arquivo"])))
 
 
-_MODELOS = {c.tipo: c for c in (RegressaoLogistica, Floresta)}
+class Boosting:
+    """Gradient boosting pequeno (HistGradientBoosting do scikit-learn), salvo com joblib. Poucas árvores
+    rasas: o modelo cabe em centenas de KB e pontua uma página em ~1 ms."""
+    tipo = "boosting"
+    arquivo = "boosting.joblib"
+
+    def __init__(self, nomes, gb):
+        self.nomes = list(nomes)
+        self.gb = gb
+
+    @classmethod
+    def treinar(cls, X, y, pesos, nomes, iteracoes=150, folhas=15, taxa=0.1, semente=0):
+        from sklearn.ensemble import HistGradientBoostingClassifier
+        gb = HistGradientBoostingClassifier(max_iter=iteracoes, max_leaf_nodes=folhas, learning_rate=taxa,
+                                            random_state=semente)
+        gb.fit(X, y, sample_weight=pesos)
+        return cls(nomes, gb)
+
+    def pontuar(self, X):
+        return self.gb.predict_proba(np.asarray(X, dtype=np.float32))[:, 1]
+
+    def para_dict(self):
+        return {"tipo": self.tipo, "nomes": self.nomes, "arquivo": self.arquivo, "iteracoes": int(self.gb.n_iter_),
+                "folhas": self.gb.max_leaf_nodes, "taxa": self.gb.learning_rate}
+
+    @classmethod
+    def de_dict(cls, d, pasta):
+        import joblib
+        return cls(d["nomes"], joblib.load(os.path.join(pasta, d["arquivo"])))
+
+
+_MODELOS = {c.tipo: c for c in (RegressaoLogistica, Floresta, Boosting)}
 
 
 def salvar_modelo(pasta, modelo, extras):
-    """Grava <pasta>/modelo.json ({"modelo": ..., **extras}) e, na floresta, <pasta>/floresta.joblib."""
+    """Grava <pasta>/modelo.json ({"modelo": ..., **extras}) e, na floresta e no boosting, o .joblib."""
     os.makedirs(pasta, exist_ok=True)
-    if isinstance(modelo, Floresta):
+    if isinstance(modelo, (Floresta, Boosting)):
         import joblib
-        joblib.dump(modelo.rf, os.path.join(pasta, Floresta.arquivo))
+        joblib.dump(modelo.rf if isinstance(modelo, Floresta) else modelo.gb, os.path.join(pasta, modelo.arquivo))
     with open(os.path.join(pasta, "modelo.json"), "w", encoding="utf-8") as f:
         json.dump({"modelo": modelo.para_dict(), **extras}, f, ensure_ascii=False, indent=2)
 
