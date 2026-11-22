@@ -201,12 +201,96 @@ def esperar_credencial(pagina, seletor, tempo_ms):
 
 # ---------------------------------------------------------------- capturar
 
-def capturar_entrada(navegador, e, raiz, versoes):
-    """Renderiza uma entrada nas duas resoluções e grava screenshots, DOMs, HTML original e meta.json
-    (por último). Nada é clicado; falhas são registradas no status e os arquivos são salvos assim mesmo."""
+def renderizar_resolucao(navegador, e, pasta, nome, tamanho, url, seletor, salvar_original):
+    """Renderiza a entrada numa resolução e grava shot_<nome>.png e dom_<nome>.html. Devolve o resumo
+    dessa resolução (status, tempo, URL final e, no Wayback, o snapshot exibido e os vestígios no DOM).
+    Com `salvar_original`, a captura ao vivo também grava o html_original.html (se ainda não existir)."""
     from playwright.sync_api import Error as ErroPlaywright
     from playwright.sync_api import TimeoutError as TempoEsgotado
 
+    ao_vivo = e["origem"] == "ao_vivo"
+    largura, altura = tamanho
+    if not ao_vivo:
+        time.sleep(PAUSA_WAYBACK_S)
+    # Cada resolução num carregamento próprio: a página pode se reorganizar ao mudar de largura.
+    contexto = navegador.new_context(viewport={"width": largura, "height": altura}, locale=e["locale"])
+    pagina = contexto.new_page()
+    inicio = time.perf_counter()
+    erro_navegacao = None
+    try:
+        resposta = pagina.goto(url, wait_until="load", timeout=60000)
+    except ErroPlaywright as erro:  # tempo esgotado, DNS, conexão derrubada...
+        resposta = None
+        erro_navegacao = str(erro).splitlines()[0][:200]
+    if resposta is None or resposta.status >= 400:
+        status = "bloqueado" if ao_vivo else "erro_wayback"
+    else:
+        status = "ok" if esperar_credencial(pagina, seletor, 30000) else "sem_formulario"
+        try:
+            pagina.wait_for_load_state("networkidle", timeout=10000)
+        except TempoEsgotado:
+            pass  # páginas com requisições contínuas nunca ficam ociosas; o formulário já apareceu
+        if salvar_original and ao_vivo and not os.path.exists(os.path.join(pasta, "html_original.html")):
+            try:
+                with open(os.path.join(pasta, "html_original.html"), "wb") as f:
+                    f.write(resposta.body())
+            except ErroPlaywright:
+                pass
+    tempo = time.perf_counter() - inicio
+    residuos = None
+    try:
+        if not ao_vivo:
+            pagina.evaluate("s => document.querySelectorAll(s).forEach(e => e.remove())",
+                            templates.SELETOR_BARRA_WAYBACK)
+        pagina.screenshot(path=os.path.join(pasta, f"shot_{nome}.png"), full_page=False)
+        dom = pagina.content()
+        if not ao_vivo:  # scripts/estilos do próprio Wayback e URLs reescritas
+            dom = templates.remover_prefixo_wayback(templates.limpar_injecoes_wayback(dom))
+            residuos = templates.residuos_wayback(dom)
+        with open(os.path.join(pasta, f"dom_{nome}.html"), "w", encoding="utf-8") as f:
+            f.write(dom)
+    except ErroPlaywright as erro:  # ex.: redirecionamento tardio destruiu a página no meio da gravação
+        print(f"  {e['id']} {nome}: não foi possível salvar screenshot/DOM ({erro})")
+        status = "erro_captura"  # não deixa um "ok" sem arquivos; a entrada fica pendente
+    resumo = {"status": status, "tempo_s": round(tempo, 1), "url_final": pagina.url}
+    if not ao_vivo:
+        # O snapshot de fato exibido (redirecionamentos podem levar a outra captura) — é esta data
+        # que vale na avaliação, por exemplo na checagem "só templates anteriores à amostra".
+        resumo["timestamp_efetivo"] = templates.timestamp_efetivo(pagina.url)
+        resumo["residuos_wayback"] = residuos
+    if erro_navegacao:
+        resumo["erro"] = erro_navegacao  # para diagnosticar falhas intermitentes depois
+    contexto.close()
+    return resumo
+
+
+def capturar_extra_entrada(navegador, e, raiz, resolucao, versoes):
+    """Captura uma entrada já aprovada só numa resolução extra. Grava shot_/dom_ dessa resolução e, por
+    último, extra_<resolucao>.json; não toca no meta.json nem no html_original.html da captura principal."""
+    pasta = templates.pasta_entrada(raiz, e["id"])
+    for nome in templates.arquivos_extra(resolucao) + [os.path.basename(templates.meta_extra_caminho(raiz, e["id"], resolucao))]:
+        try:  # nada de uma captura extra anterior pode passar como desta
+            os.remove(os.path.join(pasta, nome))
+        except FileNotFoundError:
+            pass
+    ao_vivo = e["origem"] == "ao_vivo"
+    url = e["url_login"] if ao_vivo else templates.url_wayback(e["timestamp"], templates.url_da_captura(e), "")
+    seletor = e.get("seletor") or templates.SELETOR_CREDENCIAL
+    resumo = renderizar_resolucao(navegador, e, pasta, resolucao, templates.RESOLUCOES_EXTRAS[resolucao], url,
+                                  seletor, salvar_original=False)
+    meta = {"entidade": e["entidade"], "variante": e["variante"], "url_login": e["url_login"],
+            "origem": e["origem"], "timestamp": e["timestamp"], "resolucao": resolucao,
+            "url_snapshot": None if ao_vivo else url,
+            "data_captura": datetime.now().isoformat(timespec="seconds"), **resumo, "versoes": versoes}
+    if e.get("url_arquivada"):
+        meta["url_arquivada"] = e["url_arquivada"]
+    gravar_json(templates.meta_extra_caminho(raiz, e["id"], resolucao), meta)  # por último
+    return meta
+
+
+def capturar_entrada(navegador, e, raiz, versoes):
+    """Renderiza uma entrada nas duas resoluções e grava screenshots, DOMs, HTML original e meta.json
+    (por último). Nada é clicado; falhas são registradas no status e os arquivos são salvos assim mesmo."""
     pasta = templates.pasta_entrada(raiz, e["id"])
     os.makedirs(pasta, exist_ok=True)
     templates.limpar_pasta_captura(pasta)  # nada de uma captura anterior pode passar como desta
@@ -225,59 +309,8 @@ def capturar_entrada(navegador, e, raiz, versoes):
             with open(os.path.join(pasta, "html_original.html"), "wb") as f:
                 f.write(original)
 
-    resolucoes = {}
-    for nome, (largura, altura) in templates.RESOLUCOES.items():
-        if not ao_vivo:
-            time.sleep(PAUSA_WAYBACK_S)
-        # Cada resolução num carregamento próprio: a página pode se reorganizar ao mudar de largura.
-        contexto = navegador.new_context(viewport={"width": largura, "height": altura}, locale=e["locale"])
-        pagina = contexto.new_page()
-        inicio = time.perf_counter()
-        erro_navegacao = None
-        try:
-            resposta = pagina.goto(url, wait_until="load", timeout=60000)
-        except ErroPlaywright as erro:  # tempo esgotado, DNS, conexão derrubada...
-            resposta = None
-            erro_navegacao = str(erro).splitlines()[0][:200]
-        if resposta is None or resposta.status >= 400:
-            status = "bloqueado" if ao_vivo else "erro_wayback"
-        else:
-            status = "ok" if esperar_credencial(pagina, seletor, 30000) else "sem_formulario"
-            try:
-                pagina.wait_for_load_state("networkidle", timeout=10000)
-            except TempoEsgotado:
-                pass  # páginas com requisições contínuas nunca ficam ociosas; o formulário já apareceu
-            if ao_vivo and not os.path.exists(os.path.join(pasta, "html_original.html")):
-                try:
-                    with open(os.path.join(pasta, "html_original.html"), "wb") as f:
-                        f.write(resposta.body())
-                except ErroPlaywright:
-                    pass
-        tempo = time.perf_counter() - inicio
-        residuos = None
-        try:
-            if not ao_vivo:
-                pagina.evaluate("s => document.querySelectorAll(s).forEach(e => e.remove())",
-                                templates.SELETOR_BARRA_WAYBACK)
-            pagina.screenshot(path=os.path.join(pasta, f"shot_{nome}.png"), full_page=False)
-            dom = pagina.content()
-            if not ao_vivo:  # scripts/estilos do próprio Wayback e URLs reescritas
-                dom = templates.remover_prefixo_wayback(templates.limpar_injecoes_wayback(dom))
-                residuos = templates.residuos_wayback(dom)
-            with open(os.path.join(pasta, f"dom_{nome}.html"), "w", encoding="utf-8") as f:
-                f.write(dom)
-        except ErroPlaywright as erro:  # ex.: redirecionamento tardio destruiu a página no meio da gravação
-            print(f"  {e['id']} {nome}: não foi possível salvar screenshot/DOM ({erro})")
-            status = "erro_captura"  # não deixa um "ok" sem arquivos; a entrada fica pendente
-        resolucoes[nome] = {"status": status, "tempo_s": round(tempo, 1), "url_final": pagina.url}
-        if not ao_vivo:
-            # O snapshot de fato exibido (redirecionamentos podem levar a outra captura) — é esta data
-            # que vale na avaliação, por exemplo na checagem "só templates anteriores à amostra".
-            resolucoes[nome]["timestamp_efetivo"] = templates.timestamp_efetivo(pagina.url)
-            resolucoes[nome]["residuos_wayback"] = residuos
-        if erro_navegacao:
-            resolucoes[nome]["erro"] = erro_navegacao  # para diagnosticar falhas intermitentes depois
-        contexto.close()
+    resolucoes = {nome: renderizar_resolucao(navegador, e, pasta, nome, tamanho, url, seletor, salvar_original=True)
+                  for nome, tamanho in templates.RESOLUCOES.items()}
 
     meta = {"entidade": e["entidade"], "variante": e["variante"], "url_login": e["url_login"],
             "origem": e["origem"], "url_snapshot": None if ao_vivo else url, "timestamp": e["timestamp"],
@@ -306,9 +339,28 @@ def cmd_capturar(a):
         navegador.close()
 
 
+def cmd_capturar_extra(a):
+    from playwright.sync_api import sync_playwright
+
+    pendentes = templates.extras_pendentes(ler_json(a.plano), a.raiz, a.resolucao)
+    if a.so:
+        pendentes = [e for e in pendentes if e["id"] in set(a.so)]
+    print(f"{len(pendentes)} entradas aprovadas sem captura em {a.resolucao}")
+    with sync_playwright() as p:
+        navegador = p.chromium.launch()
+        versoes = {"playwright": version("playwright"), "chromium": navegador.version}
+        for i, e in enumerate(pendentes, 1):
+            meta = capturar_extra_entrada(navegador, e, a.raiz, a.resolucao, versoes)
+            print(f"[{i}/{len(pendentes)}] {e['id']}: {a.resolucao}={meta['status']} ({meta['tempo_s']} s)")
+        navegador.close()
+
+
 # ---------------------------------------------------------------- revisar / aprovar / rejeitar
 
 def cmd_revisar(a):
+    if a.resolucao:
+        cmd_revisar_extra(a)
+        return
     plano = ler_json(a.plano)
     metas = {}
     for e in plano:
@@ -322,9 +374,22 @@ def cmd_revisar(a):
     print(f"Página de revisão gravada em {saida} ({len(metas)} entradas capturadas)")
 
 
+def cmd_revisar_extra(a):
+    plano = ler_json(a.plano)
+    metas = {}
+    for e in plano:
+        caminho = templates.meta_extra_caminho(a.raiz, e["id"], a.resolucao)
+        if not e.get("buraco") and os.path.exists(caminho):
+            metas[e["id"]] = ler_json(caminho)
+    saida = os.path.join(a.raiz, f"revisao_{a.resolucao}.html")
+    with open(saida, "w", encoding="utf-8") as f:
+        f.write(templates.gerar_revisao_extra_html(plano, metas, a.resolucao))
+    print(f"Página de revisão gravada em {saida} ({len(metas)} entradas capturadas em {a.resolucao})")
+
+
 def _marcar(a, aprovado, motivo):
-    """Registra a decisão junto com a data da captura vista (do meta.json), para a aprovação valer só
-    para aquela captura. Se algum id for inválido, nada é gravado."""
+    """Registra a decisão junto com a data da captura vista (do meta.json, ou do extra_<r>.json com
+    --resolucao), para a aprovação valer só para aquela captura. Se algum id for inválido, nada é gravado."""
     plano = ler_json(a.plano)
     por_id = {e["id"]: e for e in plano}
     try:
@@ -333,6 +398,10 @@ def _marcar(a, aprovado, motivo):
                 raise KeyError(id_)
             # Só a captura deste snapshot (mesma URL e timestamp do plano) e completa conta como vista;
             # sem ela, aprovar é recusado (rejeitar continua possível).
+            if a.resolucao:
+                data_captura = templates.data_captura_extra_valida(a.raiz, por_id[id_], a.resolucao)
+                templates.marcar_aprovacao_extra(plano, id_, a.resolucao, aprovado, motivo, data_captura=data_captura)
+                continue
             data_captura = templates.data_captura_valida(a.raiz, por_id[id_])
             templates.marcar_aprovacao(plano, id_, aprovado, motivo, data_captura=data_captura)
     except KeyError as erro:
@@ -353,9 +422,10 @@ def cmd_rejeitar(a):
 
 # ---------------------------------------------------------------- linha de comando
 
-def main():
+def criar_parser():
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0].strip())
     sub = p.add_subparsers(dest="comando", required=True)
+    extras = sorted(templates.RESOLUCOES_EXTRAS)
 
     s = sub.add_parser("planejar", help="consulta o Wayback e grava o plano de snapshots")
     s.add_argument("--marcas", required=True, help="tabela de marcas com as variantes de login (JSON)")
@@ -368,25 +438,38 @@ def main():
     s.add_argument("--so", nargs="+", metavar="ID", help="capturar só estas entradas")
     s.set_defaults(func=cmd_capturar)
 
-    s = sub.add_parser("revisar", help="gera <raiz>/revisao.html com a grade de miniaturas")
+    s = sub.add_parser("capturar-extra", help="captura as entradas aprovadas numa resolução extra")
     s.add_argument("--plano", required=True)
     s.add_argument("--raiz", required=True)
+    s.add_argument("--resolucao", required=True, choices=extras)
+    s.add_argument("--so", nargs="+", metavar="ID", help="capturar só estas entradas")
+    s.set_defaults(func=cmd_capturar_extra)
+
+    s = sub.add_parser("revisar", help="gera <raiz>/revisao.html (ou revisao_<resolucao>.html) com as miniaturas")
+    s.add_argument("--plano", required=True)
+    s.add_argument("--raiz", required=True)
+    s.add_argument("--resolucao", choices=extras, help="revisar uma resolução extra")
     s.set_defaults(func=cmd_revisar)
 
     s = sub.add_parser("aprovar", help="aprova entradas do plano (só aprovadas entram na base)")
     s.add_argument("--plano", required=True)
     s.add_argument("--raiz", required=True, help="pasta das capturas (para registrar qual captura foi vista)")
+    s.add_argument("--resolucao", choices=extras, help="decidir só esta resolução extra")
     s.add_argument("ids", nargs="+", metavar="ID")
     s.set_defaults(func=cmd_aprovar)
 
     s = sub.add_parser("rejeitar", help="rejeita uma entrada do plano, com o motivo")
     s.add_argument("--plano", required=True)
     s.add_argument("--raiz", required=True, help="pasta das capturas (para registrar qual captura foi vista)")
+    s.add_argument("--resolucao", choices=extras, help="decidir só esta resolução extra")
     s.add_argument("ids", nargs=1, metavar="ID")
     s.add_argument("--motivo", required=True)
     s.set_defaults(func=cmd_rejeitar)
+    return p
 
-    a = p.parse_args()
+
+def main():
+    a = criar_parser().parse_args()
     a.func(a)
 
 

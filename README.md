@@ -81,4 +81,13 @@ python scripts/capturar_templates.py rejeitar --plano config/templates_snapshots
 
 Entradas aprovadas ou rejeitadas não são recapturadas. Para recapturar uma delas, limpe a decisão no plano (`"aprovado": null`). Uma variante pode definir o campo `"seletor"` na tabela de marcas quando o login dela não usar e-mail, usuário, senha, CPF ou agência.
 
+**Resolução extra (1920x1080).** É o tamanho de tela de 74% dos phishings do Phishpedia, e cada amostra é comparada com templates do mesmo tamanho de tela (desenho em `docs/especificacoes/2026-11-21-componente-visual.md`). Ela é capturada depois, só para as entradas aprovadas, com metadados (`extra_1920x1080.json`) e aprovação próprios, sem mexer na captura e na aprovação principais:
+
+```bash
+python scripts/capturar_templates.py capturar-extra --resolucao 1920x1080 --plano config/templates_snapshots.json --raiz data/templates
+python scripts/capturar_templates.py revisar  --resolucao 1920x1080 --plano config/templates_snapshots.json --raiz data/templates   # revisao_1920x1080.html
+python scripts/capturar_templates.py aprovar  --resolucao 1920x1080 --plano config/templates_snapshots.json --raiz data/templates ID [ID ...]
+python scripts/capturar_templates.py rejeitar --resolucao 1920x1080 --plano config/templates_snapshots.json --raiz data/templates ID --motivo "..."
+```
+
 Os comandos acima usam a tabela completa (`config/marcas.json`, 20 marcas e 30 variantes; o `planejar` leva cerca de 2 minutos). Para um teste rápido, use `config/marcas.exemplo.json`, que tem só PayPal e Microsoft.

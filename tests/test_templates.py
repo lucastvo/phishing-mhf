@@ -499,6 +499,140 @@ class TestAchadosDaRevisaoPrefixo(unittest.TestCase):
             self.assertEqual(templates.data_captura_valida(raiz, {**e, "url_arquivada": U1}), "t1")
 
 
+def _extra_completo(raiz, id_, data_captura, resolucao="1920x1080", status="ok", url_login="https://x.com/login",
+                    timestamp="20200101000000", com_arquivos=True):
+    """Grava extra_<resolucao>.json (e, por padrão, o screenshot e o DOM dessa resolução)."""
+    pasta = os.path.join(raiz, *id_.split("/"))
+    os.makedirs(pasta, exist_ok=True)
+    meta = {"url_login": url_login, "timestamp": timestamp, "data_captura": data_captura, "status": status}
+    with open(templates.meta_extra_caminho(raiz, id_, resolucao), "w", encoding="utf-8") as f:
+        json.dump(meta, f)
+    for nome in (templates.arquivos_extra(resolucao) if com_arquivos else []):
+        with open(os.path.join(pasta, nome), "w", encoding="utf-8") as f:
+            f.write("x")
+
+
+class TestResolucoesExtras(unittest.TestCase):
+    R = "1920x1080"
+
+    def test_extras_nao_mexem_nas_aprovacoes_existentes(self):
+        # a resolução nova não entra na captura principal: as aprovações de hoje continuam válidas
+        self.assertNotIn(self.R, templates.RESOLUCOES)
+        self.assertIn(self.R, templates.RESOLUCOES_EXTRAS)
+        self.assertNotIn(f"shot_{self.R}.png", templates.ARQUIVOS_CAPTURA)
+        plano = [_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1")]
+        with tempfile.TemporaryDirectory() as raiz:
+            _captura_completa(raiz, "x/p/2020-01-01", "t1")
+            self.assertEqual(len(templates.entradas_aprovadas(plano, raiz)), 1)
+            self.assertEqual(templates.entradas_pendentes(plano, raiz), [])
+
+    def test_extras_pendentes_so_de_aprovadas(self):
+        plano = [_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"),   # sem extra: pendente
+                 _entrada("x/p/2021-01-01", aprovado=True, aprovado_captura="t1",
+                          timestamp="20210101000000"),                                # extra ok: não
+                 _entrada("x/p/2022-01-01", aprovado=True, aprovado_captura="t1",
+                          timestamp="20220101000000"),                                # extra sem_formulario: sim
+                 _entrada("x/p/2023-01-01", aprovado=False),                          # rejeitada: não
+                 _entrada("x/p/2024-01-01", aprovado=None)]                           # a revisar: não
+        with tempfile.TemporaryDirectory() as raiz:
+            for id_, ts in (("x/p/2020-01-01", "20200101000000"), ("x/p/2021-01-01", "20210101000000"),
+                            ("x/p/2022-01-01", "20220101000000")):
+                _captura_completa(raiz, id_, "t1", timestamp=ts)
+            _extra_completo(raiz, "x/p/2021-01-01", "t2", timestamp="20210101000000")
+            _extra_completo(raiz, "x/p/2022-01-01", "t2", timestamp="20220101000000", status="sem_formulario")
+            pendentes = [e["id"] for e in templates.extras_pendentes(plano, raiz, self.R)]
+            self.assertEqual(pendentes, ["x/p/2020-01-01", "x/p/2022-01-01"])
+            # com decisão na resolução extra, não é recapturada
+            templates.marcar_aprovacao_extra(plano, "x/p/2022-01-01", self.R, False, "layout quebrado")
+            self.assertEqual([e["id"] for e in templates.extras_pendentes(plano, raiz, self.R)], ["x/p/2020-01-01"])
+
+    def test_aprovacao_extra_presa_a_captura(self):
+        plano = [_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1")]
+        with tempfile.TemporaryDirectory() as raiz:
+            _captura_completa(raiz, "x/p/2020-01-01", "t1")
+            _extra_completo(raiz, "x/p/2020-01-01", "t2")
+            self.assertEqual(templates.data_captura_extra_valida(raiz, plano[0], self.R), "t2")
+            templates.marcar_aprovacao_extra(plano, "x/p/2020-01-01", self.R, True, data_captura="t2")
+            self.assertIn((plano[0]["id"], self.R), [(e["id"], r) for e, r in templates.templates_aprovados(plano, raiz)])
+            _extra_completo(raiz, "x/p/2020-01-01", "t3")  # recapturada depois da aprovação
+            self.assertNotIn(self.R, [r for _, r in templates.templates_aprovados(plano, raiz)])
+            # extra de outro snapshot não conta como vista
+            _extra_completo(raiz, "x/p/2020-01-01", "t4", timestamp="20200105000000")
+            self.assertIsNone(templates.data_captura_extra_valida(raiz, plano[0], self.R))
+
+    def test_templates_aprovados_pares(self):
+        plano = [_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"),
+                 _entrada("x/p/2021-01-01", aprovado=True, aprovado_captura="t1", timestamp="20210101000000"),
+                 _entrada("x/p/2022-01-01", aprovado=False)]
+        with tempfile.TemporaryDirectory() as raiz:
+            _captura_completa(raiz, "x/p/2020-01-01", "t1")
+            _captura_completa(raiz, "x/p/2021-01-01", "t1", timestamp="20210101000000")
+            _extra_completo(raiz, "x/p/2020-01-01", "t2")
+            _extra_completo(raiz, "x/p/2021-01-01", "t2", timestamp="20210101000000")
+            templates.marcar_aprovacao_extra(plano, "x/p/2020-01-01", self.R, True, data_captura="t2")
+            templates.marcar_aprovacao_extra(plano, "x/p/2021-01-01", self.R, False, "layout quebrado", "t2")
+            pares = sorted((e["id"], r) for e, r in templates.templates_aprovados(plano, raiz))
+        self.assertEqual(pares, [("x/p/2020-01-01", "1280x960"), ("x/p/2020-01-01", "1366x768"),
+                                 ("x/p/2020-01-01", self.R),
+                                 ("x/p/2021-01-01", "1280x960"), ("x/p/2021-01-01", "1366x768")])
+
+    def test_mescla_herda_extras_so_no_mesmo_snapshot(self):
+        extras = {self.R: {"aprovado": True, "motivo": "", "aprovado_captura": "t2"}}
+        antigo = [{**_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"), "extras": extras},
+                  {**_entrada("x/p/2021-01-01", aprovado=True, aprovado_captura="t1"), "extras": extras}]
+        novo = [_entrada("x/p/2020-01-01"), _entrada("x/p/2021-01-01", timestamp="20210102000000")]
+        m = {e["id"]: e for e in templates.mesclar_plano(novo, antigo)}
+        self.assertEqual(m["x/p/2020-01-01"]["extras"], extras)
+        self.assertNotIn("extras", m["x/p/2021-01-01"])
+
+    def test_revisao_extra_html(self):
+        plano = [{**_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"),
+                  "extras": {self.R: {"aprovado": False, "motivo": "layout <quebrado>", "aprovado_captura": "t2"}}},
+                 _entrada("x/p/2021-01-01", aprovado=False, timestamp="20210101000000")]
+        plano[1]["anos_alvo"] = [2021]
+        metas = {"x/p/2020-01-01": {"status": "sem_formulario", "data_captura": "t2"}}
+        html = templates.gerar_revisao_extra_html(plano, metas, self.R)
+        self.assertIn(f"x/p/2020-01-01/shot_{self.R}.png", html)
+        self.assertIn("sem_formulario", html)
+        self.assertIn("layout &lt;quebrado&gt;", html)           # motivo escapado
+        self.assertNotIn(f"x/p/2021-01-01/shot_{self.R}", html)  # entrada não aprovada: sem resolução extra
+        self.assertIn("rejeitar --resolucao", html)
+
+    def test_marcar_extra_recusas(self):
+        plano = [_entrada("x/p/2020-01-01", aprovado=True, aprovado_captura="t1"), _entrada("x/p/2021-01-01"),
+                 _entrada("x/p/buraco-2022", buraco="sem_snapshot", timestamp=None)]
+        with self.assertRaises(ValueError):  # resolução que não é extra
+            templates.marcar_aprovacao_extra(plano, "x/p/2020-01-01", "1366x768", True, data_captura="t2")
+        with self.assertRaises(ValueError):  # aprovar o que não foi capturado
+            templates.marcar_aprovacao_extra(plano, "x/p/2020-01-01", self.R, True)
+        with self.assertRaises(ValueError):  # a entrada principal ainda não foi aprovada
+            templates.marcar_aprovacao_extra(plano, "x/p/2021-01-01", self.R, True, data_captura="t2")
+        with self.assertRaises(ValueError):
+            templates.marcar_aprovacao_extra(plano, "x/p/buraco-2022", self.R, False, "x")
+        with self.assertRaises(KeyError):
+            templates.marcar_aprovacao_extra(plano, "x/p/2099-01-01", self.R, False, "x")
+
+
+class TestLinhaDeComandoExtras(unittest.TestCase):
+    def test_subcomandos_da_resolucao_extra(self):
+        import importlib.util
+        caminho = os.path.join(os.path.dirname(__file__), "..", "scripts", "capturar_templates.py")
+        spec = importlib.util.spec_from_file_location("capturar_templates_cli", caminho)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        p = modulo.criar_parser()
+        base = ["--plano", "p.json", "--raiz", "r"]
+        a = p.parse_args(["capturar-extra", *base, "--resolucao", "1920x1080", "--so", "x/p/2020-01-01"])
+        self.assertEqual((a.func, a.resolucao, a.so), (modulo.cmd_capturar_extra, "1920x1080", ["x/p/2020-01-01"]))
+        self.assertEqual(p.parse_args(["revisar", *base, "--resolucao", "1920x1080"]).resolucao, "1920x1080")
+        self.assertIsNone(p.parse_args(["revisar", *base]).resolucao)  # sem a opção: revisão principal
+        self.assertEqual(p.parse_args(["aprovar", *base, "--resolucao", "1920x1080", "a", "b"]).ids, ["a", "b"])
+        a = p.parse_args(["rejeitar", *base, "--resolucao", "1920x1080", "a", "--motivo", "m"])
+        self.assertEqual((a.resolucao, a.motivo), ("1920x1080", "m"))
+        with self.assertRaises(SystemExit):  # só resoluções extras
+            p.parse_args(["capturar-extra", *base, "--resolucao", "1366x768"])
+
+
 class TestDownloadComMuitosCabecalhos(unittest.TestCase):
     def test_limite_de_cabecalhos_aumentado(self):
         # Algumas respostas do Wayback (ex.: facebook.com/index.php de 2022) trazem mais de 100 cabeçalhos;
