@@ -206,6 +206,18 @@ class TestServidor(unittest.TestCase):
         self.assertFalse(app.estado()["navegador"])
 
 
+class TestTela(unittest.TestCase):
+    def test_tela_sem_recursos_externos(self):
+        import re
+        externo = re.compile(r"""(?:src|href)\s*=\s*["']?\s*(?:https?:)?//|url\(\s*["']?\s*(?:https?:)?//|@import""", re.I)
+        for nome in ("index.html", "estilo.css", "app.js"):
+            caminho = os.path.join(servidor.RAIZ_WEB, nome)
+            self.assertTrue(os.path.exists(caminho), nome)
+            with open(caminho, encoding="utf-8") as f:
+                conteudo = f.read()
+            self.assertIsNone(externo.search(conteudo), nome)
+
+
 def _carregar_script(nome):
     caminho = os.path.join(os.path.dirname(__file__), "..", "scripts", f"{nome}.py")
     spec = importlib.util.spec_from_file_location(nome, caminho)

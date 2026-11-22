@@ -1,2 +1,150 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><title>MHF</title></head><body><p>MHF</p></body></html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MHF — detector de phishing</title>
+<link rel="stylesheet" href="/estatico/estilo.css">
+</head>
+<body>
+<header class="topo">
+  <h1 class="marca"><span class="sigla">MHF</span> <span class="subtitulo">detector de phishing por impressão digital de layout</span></h1>
+  <p class="resumo" id="resumo">Carregando o detector…</p>
+</header>
+
+<div class="corpo">
+  <aside class="lateral" aria-label="Escolha da página">
+    <div class="abas" role="tablist">
+      <button class="aba" role="tab" id="aba-exemplos" aria-selected="true" aria-controls="painel-exemplos">Exemplos</button>
+      <button class="aba" role="tab" id="aba-url" aria-selected="false" aria-controls="painel-url">URL ao vivo</button>
+    </div>
+
+    <section id="painel-exemplos" role="tabpanel" aria-labelledby="aba-exemplos">
+      <p class="explica">Páginas do conjunto de teste, que o detector nunca viu. O rótulo real aparece ao lado do veredito.</p>
+      <h2 class="grupo" id="titulo-acertos">Acertos</h2>
+      <ol class="exemplos" id="lista-acertos"></ol>
+      <h2 class="grupo" id="titulo-erros">Erros</h2>
+      <ol class="exemplos" id="lista-erros"></ol>
+      <p class="vazio" id="sem-exemplos" hidden></p>
+    </section>
+
+    <section id="painel-url" role="tabpanel" aria-labelledby="aba-url" hidden>
+      <p class="aviso" id="aviso-url"></p>
+      <form id="form-url" novalidate>
+        <label for="campo-url">Endereço</label>
+        <input id="campo-url" name="url" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+               placeholder="login.live.com">
+        <div class="linha-campos">
+          <div>
+            <label for="campo-classe">Tamanho da janela</label>
+            <select id="campo-classe" name="classe"></select>
+          </div>
+          <div>
+            <label for="campo-idioma">Idioma do navegador</label>
+            <select id="campo-idioma" name="idioma"></select>
+          </div>
+        </div>
+        <button type="submit" class="botao-principal" id="botao-url">Abrir e analisar</button>
+      </form>
+      <div id="sugestoes-bloco" hidden>
+        <h2 class="grupo">Sugestões</h2>
+        <ul class="sugestoes" id="sugestoes"></ul>
+      </div>
+    </section>
+
+    <section class="simulado" aria-labelledby="titulo-simulado">
+      <h2 class="grupo" id="titulo-simulado">Analisar como se estivesse em…</h2>
+      <p class="explica">Troca só o domínio usado na análise: a mesma página, em outro endereço.</p>
+      <div class="campo-com-botao">
+        <input id="campo-simulado" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+               placeholder="https://microsoft-verificacao.test/" aria-labelledby="titulo-simulado">
+        <button type="button" id="limpar-simulado" class="botao-leve">Limpar</button>
+      </div>
+    </section>
+  </aside>
+
+  <main class="principal" id="principal" aria-live="polite">
+    <div id="estado-inicial" class="estado">
+      <p>Escolha um exemplo à esquerda ou abra uma URL.</p>
+    </div>
+    <div id="estado-carregando" class="estado" hidden>
+      <p id="texto-carregando">Analisando…</p>
+    </div>
+    <div id="estado-erro" class="estado erro" hidden role="alert">
+      <p id="texto-erro"></p>
+    </div>
+
+    <article id="resultado" hidden>
+      <section class="veredito" id="veredito">
+        <p class="veredito-titulo"><span class="icone" id="veredito-icone" aria-hidden="true"></span><span id="veredito-titulo"></span></p>
+        <p class="veredito-frase" id="veredito-frase"></p>
+      </section>
+
+      <section class="real" id="real" hidden>
+        <p><span class="rotulo-real">Rótulo real:</span> <span id="real-texto"></span> <strong id="real-frase"></strong></p>
+        <p class="nota" id="real-nota"></p>
+      </section>
+
+      <section class="pagina-aberta" id="pagina-aberta" hidden>
+        <p id="pagina-urls"></p>
+        <p id="pagina-tempo"></p>
+      </section>
+
+      <section class="bancada" aria-label="Página analisada e template mais parecido">
+        <figure class="lado">
+          <figcaption>Página analisada <span class="detalhe" id="legenda-pagina"></span></figcaption>
+          <img id="img-pagina" alt="Primeira dobra da página analisada">
+        </figure>
+        <div class="elo" id="elo">
+          <span class="elo-valor" id="elo-valor"></span>
+          <span class="elo-rotulo">cosseno do embedding</span>
+        </div>
+        <figure class="lado">
+          <figcaption>Template mais parecido <span class="detalhe" id="legenda-template"></span></figcaption>
+          <img id="img-template" alt="Captura do template mais parecido da marca">
+          <p class="sem-template" id="sem-template" hidden>Nenhum template desta marca nesse tamanho de tela.</p>
+        </figure>
+      </section>
+      <p class="legenda-bancada" id="legenda-bancada"></p>
+
+      <div class="duas-colunas">
+        <section aria-labelledby="titulo-escores">
+          <h2 id="titulo-escores">Escore por marca</h2>
+          <p class="explica">As cinco marcas de maior escore. A linha vertical é o limiar τ.</p>
+          <div class="escores" id="escores"></div>
+        </section>
+        <section aria-labelledby="titulo-sinais">
+          <h2 id="titulo-sinais">Sinais de <span id="sinais-marca"></span></h2>
+          <p class="explica">O que o classificador recebeu: o melhor valor de cada sinal entre os templates da marca.</p>
+          <table class="sinais" id="sinais"><tbody></tbody></table>
+        </section>
+      </div>
+
+      <section class="dominio" aria-labelledby="titulo-dominio">
+        <h2 id="titulo-dominio">Domínio</h2>
+        <p>Domínio da página: <strong id="dominio"></strong> <span class="etiqueta" id="etiqueta-simulado" hidden>simulado</span></p>
+        <p id="dominios-oficiais"></p>
+      </section>
+
+      <section class="tempo" aria-labelledby="titulo-tempo">
+        <h2 id="titulo-tempo">Tempo do detector: <span id="tempo-total"></span></h2>
+        <div class="barra-tempo" id="barra-tempo" aria-hidden="true"></div>
+        <ul class="partes-tempo" id="partes-tempo"></ul>
+      </section>
+    </article>
+
+    <details class="como">
+      <summary>Como o MHF decide</summary>
+      <ol>
+        <li>Captura da janela (a primeira dobra da página).</li>
+        <li>Impressão digital φ = (h, e, s): pHash, embedding da MobileNetV3 e estrutura do DOM.</li>
+        <li>Comparação com os templates da base no mesmo tamanho de tela.</li>
+        <li>Escore de cada marca pelo gradient boosting.</li>
+        <li>Limiar τ e checagem de domínio: phishing só se o escore passa de τ e o domínio não é da marca.</li>
+      </ol>
+    </details>
+  </main>
+</div>
+<script src="/estatico/app.js"></script>
+</body>
+</html>
