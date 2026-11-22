@@ -123,7 +123,8 @@ class NavegadorAoVivo:
             from playwright.sync_api import sync_playwright
             try:
                 self._playwright = sync_playwright().start()
-                self._navegador = self._playwright.chromium.launch()
+                # o Playwright desliga o sandbox do Chromium por padrão; a aba de URL abre páginas quaisquer
+                self._navegador = self._playwright.chromium.launch(chromium_sandbox=True)
             except ErroPlaywright as erro:
                 self.fechar()
                 raise ErroCaptura("o Chromium do Playwright não abriu (instale com: python -m playwright "

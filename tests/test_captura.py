@@ -152,6 +152,35 @@ class TestCaptura(unittest.TestCase):
             captura.capturar_pagina(_Navegador(), "https://a.test/", idioma="fr-FR")
 
 
+class TestNavegadorAoVivo(unittest.TestCase):
+    def test_chromium_com_sandbox(self):
+        """Revisão: o Playwright abre o Chromium sem sandbox por padrão (chromium_sandbox=False)."""
+        from unittest import mock
+        nav_falso = _Navegador()
+        lancamentos = []
+
+        class _Chromium:
+            def launch(self, **kw):
+                lancamentos.append(kw)
+                return nav_falso
+
+        class _Playwright:
+            chromium = _Chromium()
+
+            def stop(self):
+                pass
+
+        class _Iniciador:
+            def start(self):
+                return _Playwright()
+
+        with mock.patch("playwright.sync_api.sync_playwright", return_value=_Iniciador()),                 mock.patch.object(captura, "TEMPO_CREDENCIAL_MS", 50):
+            nav = captura.NavegadorAoVivo()
+            nav.capturar("https://a.test/", "1366x768", "en-US")
+            nav.fechar()
+        self.assertEqual(lancamentos, [{"chromium_sandbox": True}])
+
+
 @unittest.skipUnless(os.environ.get("MHF_TESTE_NAVEGADOR") == "1", "só com MHF_TESTE_NAVEGADOR=1 (abre o Chromium)")
 class TestCapturaReal(unittest.TestCase):
     def test_captura_real(self):
