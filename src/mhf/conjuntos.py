@@ -18,13 +18,17 @@ def nome_do_dataset(prefixo):
     return os.path.basename(prefixo).removeprefix("similaridades_")
 
 
-def carregar_conjunto(prefixos, divisao_por_chave, b, tabela, conjunto, nomes):
+def carregar_conjunto(prefixos, divisao_por_chave, b, tabela, conjunto, nomes, filtro_templates=None):
     """Características, estágio 1 e rótulos das amostras de um conjunto ("desenvolvimento", "teste" ou
     None para todas as da divisão), a partir das tabelas de similaridades. Amostras fora da divisão
-    (excluídas) ficam de fora. URL vazia (Phishpedia benign) → o id, que é o domínio, vira o host."""
+    (excluídas) ficam de fora. URL vazia (Phishpedia benign) → o id, que é o domínio, vira o host.
+
+    `filtro_templates(meta_da_amostra, itens_das_colunas) -> bool (T,)` restringe a base por amostra (ex.:
+    só templates de 2026, ou anteriores à data da amostra): os templates fora do filtro ficam com sinais
+    NaN e distância 255, e uma marca sem nenhum template permitido sai da disputa (linha NaN)."""
     entidades = sorted({it["entidade"] for it in b.itens})
     ent_base = np.array([it["entidade"] for it in b.itens])
-    meta, Xs, d1s, t1s, legits, ausentes = [], [], [], [], [], []
+    meta, Xs, d1s, t1s, legits, ausentes, cos_max = [], [], [], [], [], [], []
     for prefixo in prefixos:
         ds = nome_do_dataset(prefixo)
         with open(prefixo + ".jsonl", encoding="utf-8") as f:
@@ -46,6 +50,13 @@ def carregar_conjunto(prefixos, divisao_por_chave, b, tabela, conjunto, nomes):
             sub = {k: z[k][rows] for k in z.files if k.startswith(f"{classe}__") and k != f"{classe}__templates"}
             sinais = cascata.sinais_da_tabela(sub, classe)
             colunas = ent_base[z[f"{classe}__templates"]]
+            if filtro_templates is not None:
+                itens = [b.itens[i] for i in z[f"{classe}__templates"]]
+                permitido = np.array([filtro_templates(l, itens) for l, _ in sel], dtype=bool).reshape(len(sel), -1)
+                for k, v in sinais.items():
+                    sinais[k] = np.where(permitido, v, 255 if k == "dist_h64" else np.nan)
+            with np.errstate(all="ignore"):
+                cos_max.append(np.nanmax(np.where(np.isnan(sinais["cos_small"]), -np.inf, sinais["cos_small"]), axis=1))
             s_ausente = np.array([not divisao.s_util(l.get("elementos")) for l, _ in sel])
             Xs.append(cascata.caracteristicas(sinais, colunas, entidades, s_ausente, nomes))
             ausentes.append(s_ausente)
@@ -67,5 +78,6 @@ def carregar_conjunto(prefixos, divisao_por_chave, b, tabela, conjunto, nomes):
             "entidade_real": entidade_real, "phishing_T": phishing_T, "legitima": rotulo == "benigno",
             "fora_T": (rotulo == "phishing") & ~phishing_T,
             "s_ausente": np.concatenate(ausentes) if ausentes else np.zeros(0, bool),
+            "cos_max": np.concatenate(cos_max) if cos_max else np.zeros(0),
             "pesos": divisao.pesos_por_estrutura(meta) if meta else np.zeros(0),
             "dobra": np.array([m["dobra"] for m in meta]), "dataset": np.array([m["dataset"] for m in meta])}
