@@ -177,3 +177,51 @@ Base construída: 572 itens (191 em 1280×960, 191 em 1366×768, 190 em 1920×10
 - `Base.vizinhos` é a busca do código: além do núcleo, monta a consulta, ordena e, para o pHash, calcula também a distância de 256 bits.
 - O s contra os templates da classe custa 2,4–2,6 ms (mediana; p95 até 3,5 ms), e a busca completa (h, e e s) 2,6 ms. Para comparar: o embedding Small da página custa 16–20 ms (passo 3).
 - Com centenas de templates, um índice aproximado (IVF, HNSW) não mudaria a latência por página de forma perceptível.
+
+## Passo 5 — cascata, treino e verificação
+
+A cascata decide f(φ(w)) → {legítima} ∪ 𝒯:
+
+1. **Estágio 1:** pHash de 64 bits contra os templates da classe de tela. Liberada se d₁ > θ_h (nenhum template parecido) ou se o domínio da página é legítimo da marca do template mais parecido.
+2. **Estágio 2:** para cada marca, o melhor valor de cada sinal (h, e, s) sobre os templates dela vira um vetor de características; um classificador dá um escore por marca. Abaixo de τ, ou no domínio legítimo da marca de maior escore → legítima; senão, phishing dessa marca.
+
+```bash
+# 5a. divide em desenvolvimento e teste, por estrutura do DOM (o mesmo kit nunca fica dos dois lados)
+python scripts/dividir.py \
+    --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign \
+    --estrutural data/estrutural_phish360.jsonl data/estrutural_phishpedia_phish.jsonl data/estrutural_phishpedia_benign.jsonl \
+    --exclusoes config/exclusoes.json --saida data/divisao.csv
+# 5b. treina, calibra e compara regressão logística × Random Forest (só no desenvolvimento)
+python scripts/treinar.py \
+    --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign \
+    --divisao data/divisao.csv --base data/base --marcas config/marcas.json --saida data/modelos
+# 5c. verifica com o detector salvo: amostras das tabelas...
+python scripts/verificar.py --modelo data/modelos/regressao \
+    --tabelas data/similaridades_phish360 data/similaridades_phishpedia_phish data/similaridades_phishpedia_benign \
+    --divisao data/divisao.csv --amostras 20
+# ...ou uma página bruta (captura, HTML e URL)
+python scripts/verificar.py --modelo data/modelos/regressao --imagem pagina.png --html pagina.html --url "http://exemplo.test/"
+```
+
+- **Divisão:** grupos pelo hash do DOM; grupo com amostra do test do Phish360 vai inteiro para o teste; grupos só do Phishpedia são divididos 70/30 (`StratifiedGroupKFold`, semente 0); 5 dobras de validação cruzada no desenvolvimento. As 5 amostras do CaixaBank rotuladas `caixa` no Phish360 ficam fora (`config/exclusoes.json`). Resultado: 51.214 amostras no desenvolvimento e 19.674 no teste. Os kits copiados aos milhares ficam inteiros de um lado: o teste da Microsoft tem 4.386 amostras e 15 estruturas, por isso as métricas saem também por estrutura (cada kit pesa 1).
+- **Treino:** pares (amostra, marca), rótulo "é phishing desta marca", peso por estrutura reequilibrado entre positivos e negativos; o par de uma página no domínio legítimo da própria marca fica de fora. Amostra sem HTML útil ou com 5 elementos ou menos: s = 0 e `s_ausente` = 1.
+- **Calibração (só no desenvolvimento, escores fora da dobra):** θ_h deixa passar ao estágio 2 pelo menos 99% dos phishings de 𝒯; τ é o menor limiar com falso positivo ≤ 1% nas páginas legítimas.
+- **Saídas:** `data/divisao.csv`, `data/modelos/regressao/modelo.json` (pontuação em numpy puro, 3,4 KB), `data/modelos/floresta/` (`modelo.json` e `floresta.joblib`) e `data/modelos/comparacao_dev.{md,json}`.
+- O `verificar.py` só lê o conjunto de teste com `--usar-teste`: ele é usado uma vez, na avaliação (etapa 6).
+
+**Validação cruzada no desenvolvimento** (média entre as 5 dobras; τ no alvo de 1% de falso positivo; "estrutura" = cada kit conta uma vez):
+
+| Métrica | Regressão logística (amostra / estrutura) | Random Forest (amostra / estrutura) |
+|---|---|---|
+| AUC do classificador | 0,817 / 0,712 | 0,831 / 0,793 |
+| Revocação | 0,381 / 0,255 | 0,329 / 0,255 |
+| Precisão | 0,952 / 0,778 | 0,944 / 0,777 |
+| Falso positivo | 0,010 / 0,010 | 0,010 / 0,010 |
+| Marca certa entre os phishings detectados | 0,641 / 0,656 | 0,953 / 0,942 |
+| Pontuar uma página | 0,03 ms | 55 ms |
+| Tamanho do modelo | 3,4 KB | 172 MB |
+
+- **O estágio 1 quase não filtra:** θ_h = 24 bits e o estágio 1 libera só 0,8% das páginas legítimas (7,9% com θ_h de 95% ou 90%, ambos 22 bits). Com 190 templates por classe, quase toda página tem algum template a menos de 24 bits.
+- **Sem DOM útil, a regressão logística não detecta nada** (AUC 0,41, revocação 0); o Random Forest chega a AUC 0,88 nessas páginas. O coeficiente do cosseno do embedding na regressão é +0,014: ela se apoia no DOM (Jaccard dos caminhos +1,07, contagens +0,64) e no pHash (+0,49).
+- No τ que maximiza o F1, a revocação sobe para 0,64 (regressão) e 0,72 (floresta), com falso positivo de 12% e 23%.
+- Relatório completo, por dataset e por presença do DOM: `data/modelos/comparacao_dev.md`.
