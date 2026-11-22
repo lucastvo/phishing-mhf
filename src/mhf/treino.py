@@ -30,7 +30,7 @@ def pares_de_treino(c, mascara, entidades_excluidas=()):
     y = y[validos].astype(bool)
     if y.any() and (~y).any():
         w = np.where(y, w * (w[~y].sum() / w[y].sum()), w)
-    return X[validos], y, w / w.mean()
+    return X[validos], y, (w / w.mean() if w.size else w)
 
 
 def treinar_modelo(tipo, c, mascara, entidades_excluidas=(), iteracoes=150, **floresta):
