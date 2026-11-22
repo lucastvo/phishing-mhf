@@ -40,10 +40,14 @@ def classe_de_tela(largura: int) -> str:
 def abrir_imagem(origem) -> Image.Image:
     """Abre a captura (caminho ou arquivo em memória) em RGB, tolerando PNG truncado e imagens muito
     altas. Áreas transparentes são compostas sobre branco, como o navegador mostra a página: as capturas
-    RGBA do Phishpedia têm regiões com alfa 0 e RGB 0, que ficariam pretas se o alfa fosse descartado."""
+    RGBA do Phishpedia têm regiões com alfa 0 e RGB 0, que ficariam pretas se o alfa fosse descartado.
+    A composição só é feita quando há algum pixel não opaco: ~94% das capturas RGBA do Phishpedia são
+    totalmente opacas, e nelas o resultado é o mesmo da conversão direta, a um custo bem menor."""
     with Image.open(origem) as img:
         if img.mode in ("RGBA", "LA", "PA") or "transparency" in img.info:
-            rgba = img.convert("RGBA")
+            rgba = img if img.mode == "RGBA" else img.convert("RGBA")
+            if rgba.getchannel("A").getextrema()[0] == 255:
+                return rgba.convert("RGB")
             return Image.alpha_composite(Image.new("RGBA", rgba.size, (255, 255, 255, 255)), rgba).convert("RGB")
         return img.convert("RGB")
 

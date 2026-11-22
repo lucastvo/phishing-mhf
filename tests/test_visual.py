@@ -137,6 +137,23 @@ class TestAbrirImagem(unittest.TestCase):
             img_p = visual.abrir_imagem(os.path.join(pasta, "p.png"))
             self.assertEqual((img_p.getpixel((5, 5)), img_p.getpixel((15, 5))), ((0, 0, 255), (255, 255, 255)))
 
+    def test_rgba_totalmente_opaca_nao_passa_pela_composicao(self):
+        # Todas as capturas do Phishpedia são RGBA, mas ~94% não têm nenhum pixel transparente. Compor
+        # essas sobre branco não muda nenhum pixel e custa ~8x a conversão simples (48 × 6 ms em 1920x1080).
+        rgba = _pagina(300, 200).convert("RGBA")
+        with tempfile.TemporaryDirectory() as pasta:
+            rgba.save(os.path.join(pasta, "opaca.png"))
+            original = Image.alpha_composite
+            chamadas = []
+            Image.alpha_composite = lambda *a: chamadas.append(1) or original(*a)
+            try:
+                img = visual.abrir_imagem(os.path.join(pasta, "opaca.png"))
+            finally:
+                Image.alpha_composite = original
+        self.assertEqual(chamadas, [])
+        self.assertEqual(img.mode, "RGB")
+        self.assertEqual(list(img.getdata()), list(rgba.convert("RGB").getdata()))  # pixels idênticos
+
 
 class TestComparar(unittest.TestCase):
     def test_comparar_devolve_componentes_separados(self):
