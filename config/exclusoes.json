@@ -1,0 +1,10 @@
+{
+  "descricao": "Amostras excluídas da avaliação (etapa 5). Cada exclusão traz o motivo; mudar esta lista muda a divisão (data/divisao.csv).",
+  "exclusoes": [
+    {"dataset": "phish360", "id": "trainval\\P10255_caixa", "motivo": "CaixaBank (Espanha), não Caixa Econômica Federal: título 'CaiEaBank | banca digital CaiEaBankNow'"},
+    {"dataset": "phish360", "id": "trainval\\P10310_caixa", "motivo": "CaixaBank (Espanha): título 'Acceso seguro a Línea Abierta'"},
+    {"dataset": "phish360", "id": "trainval\\P10322_caixa", "motivo": "CaixaBank (Espanha): título 'Particulares', domínio informacaixabanco.info"},
+    {"dataset": "phish360", "id": "trainval\\P10339_caixa", "motivo": "CaixaBank (Espanha): título 'Acceso seguro a Línea Abierta'"},
+    {"dataset": "phish360", "id": "trainval\\P10345_caixa", "motivo": "CaixaBank (Espanha): título 'CaixaBank | Particulares, Empresas'"}
+  ]
+}
