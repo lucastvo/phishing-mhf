@@ -154,6 +154,15 @@ def criar_servidor(app, porta=8000, host="127.0.0.1"):
                 traceback.print_exc(file=sys.stderr)
                 self._json(500, {"erro": f"erro interno: {erro}"})
 
+        def _origem_ok(self):
+            """Só pedidos endereçados à própria interface (barra DNS rebinding: um site de fora que aponte o
+            domínio dele para 127.0.0.1 manda outro Host)."""
+            porta_real = self.server.server_address[1]
+            if self.headers.get("Host", "").lower() in {f"127.0.0.1:{porta_real}", f"localhost:{porta_real}"}:
+                return True
+            self._json(403, {"erro": f"pedido recusado: a interface só atende http://127.0.0.1:{porta_real}"})
+            return False
+
         def _estatico(self, nome):
             if nome not in ESTATICOS:
                 self._responder(404, "não encontrado".encode("utf-8"), "text/plain; charset=utf-8")
@@ -162,6 +171,8 @@ def criar_servidor(app, porta=8000, host="127.0.0.1"):
                 self._responder(200, f.read(), ESTATICOS[nome])
 
         def do_GET(self):
+            if not self._origem_ok():
+                return
             u = urllib.parse.urlsplit(self.path)
             if u.path == "/":
                 self._estatico("index.html")
@@ -179,6 +190,8 @@ def criar_servidor(app, porta=8000, host="127.0.0.1"):
                 self._responder(404, "não encontrado".encode("utf-8"), "text/plain; charset=utf-8")
 
         def do_POST(self):
+            if not self._origem_ok():
+                return
             u = urllib.parse.urlsplit(self.path)
             rotas = {"/api/exemplo": lambda d: app.analisar_exemplo(d.get("numero"), d.get("url_simulada")),
                      "/api/url": lambda d: app.analisar_url(d.get("url", ""), d.get("classe", CLASSE_PADRAO),
@@ -187,6 +200,11 @@ def criar_servidor(app, porta=8000, host="127.0.0.1"):
                 self._responder(404, "não encontrado".encode("utf-8"), "text/plain; charset=utf-8")
                 return
 
+            # JSON obrigatório: um site de fora só consegue mandar POST "simples" (text/plain, formulário) sem
+            # pedir permissão ao navegador
+            if not self.headers.get("Content-Type", "").lower().startswith("application/json"):
+                self._json(415, {"erro": "o pedido precisa ser JSON (Content-Type: application/json)"})
+                return
             tamanho = int(self.headers.get("Content-Length") or 0)
             try:
                 dados = json.loads(self.rfile.read(tamanho) or b"{}")

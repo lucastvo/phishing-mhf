@@ -220,6 +220,32 @@ class TestServidor(unittest.TestCase):
         with self.assertRaises(OSError):
             servidor.criar_servidor(self.app, porta=self.porta)
 
+    def test_pedido_de_outro_host_403(self):
+        """Revisão: DNS rebinding — um site de fora que aponte o próprio domínio para 127.0.0.1."""
+        for metodo, caminho, corpo in (("GET", "/api/estado", None), ("POST", "/api/exemplo", b'{"numero": 1}')):
+            c = http.client.HTTPConnection("127.0.0.1", self.porta, timeout=10)
+            c.request(metodo, caminho, body=corpo, headers={"Host": f"golpe.test:{self.porta}",
+                                                            "Content-Type": "application/json"})
+            r = c.getresponse()
+            self.assertEqual(r.status, 403, caminho)
+            self.assertIn("127.0.0.1", json.loads(r.read())["erro"])
+            c.close()
+        c = http.client.HTTPConnection("localhost", self.porta, timeout=10)
+        c.request("GET", "/api/estado")
+        self.assertEqual(c.getresponse().status, 200)
+        c.close()
+
+    def test_post_sem_json_415(self):
+        """Revisão: um site de fora pode mandar POST "simples" (text/plain) sem permissão do navegador."""
+        antes = len(self.nav.chamadas)
+        c = http.client.HTTPConnection("127.0.0.1", self.porta, timeout=10)
+        c.request("POST", "/api/url", body=b'{"url": "a.test"}', headers={"Content-Type": "text/plain"})
+        r = c.getresponse()
+        self.assertEqual(r.status, 415)
+        self.assertIn("JSON", json.loads(r.read())["erro"])
+        c.close()
+        self.assertEqual(len(self.nav.chamadas), antes)  # o navegador não foi chamado
+
     def test_sem_navegador_400(self):
         app = servidor.Aplicacao(self.app.detector, self.app.embedder, TABELA, self.app.raiz_templates, [], [],
                                  navegador=None)
