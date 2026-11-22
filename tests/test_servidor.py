@@ -85,8 +85,9 @@ class TestServidor(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.srv.shutdown()
-        cls.srv.server_close()
+        cls.srv.encerrar()
         cls.tmp.cleanup()
+        assert cls.nav.fechado
 
     def setUp(self):
         self.nav.erro, self.nav.url_final = None, None
@@ -196,6 +197,28 @@ class TestServidor(unittest.TestCase):
         self.assertIn(b"<html", conteudo.lower())
         for caminho in ("/estatico/../README.md", "/estatico/servidor.py", "/nao-existe"):
             self.assertEqual(self._pedir("GET", caminho)[0], 404, caminho)
+
+    def test_conexao_ociosa_nao_trava(self):
+        """Revisão: navegadores abrem conexões antes de precisar; com um servidor sem threads, uma conexão
+        ociosa prende todas as outras."""
+        import socket
+        import time
+        ociosa = socket.create_connection(("127.0.0.1", self.porta))
+        try:
+            inicio = time.monotonic()
+            c = http.client.HTTPConnection("127.0.0.1", self.porta, timeout=5)
+            c.request("GET", "/api/estado")
+            status = c.getresponse().status
+            c.close()
+            self.assertEqual(status, 200)
+            self.assertLess(time.monotonic() - inicio, 3)
+        finally:
+            ociosa.close()
+
+    def test_porta_ocupada(self):
+        """Revisão: no Windows, SO_REUSEADDR deixaria uma segunda interface ligar na mesma porta sem erro."""
+        with self.assertRaises(OSError):
+            servidor.criar_servidor(self.app, porta=self.porta)
 
     def test_sem_navegador_400(self):
         app = servidor.Aplicacao(self.app.detector, self.app.embedder, TABELA, self.app.raiz_templates, [], [],

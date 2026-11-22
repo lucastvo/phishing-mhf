@@ -1,9 +1,12 @@
 """
 Servidor local da interface (etapa 7): junta o detector, os exemplos, a captura ao vivo e a apresentação, e
-atende a página em src/mhf/web/. Só em 127.0.0.1, uma requisição por vez (http.server sem threads): é uma
-demonstração de um usuário, e assim o Playwright (API síncrona, presa a uma thread) roda na mesma thread.
+atende a página em src/mhf/web/. Só em 127.0.0.1.
 
-Desenho: docs/especificacoes/2026-11-22-interface.md, seção 5.
+Cada conexão tem sua thread (os navegadores abrem conexões antes de precisar; num servidor sem threads, uma
+conexão ociosa prenderia as outras), mas toda chamada à Aplicação passa por um único trabalhador: as análises
+saem uma por vez, e o Playwright, cuja API síncrona fica presa à thread que o iniciou, é sempre usado na mesma.
+
+Desenho: docs/especificacoes/2026-11-22-interface.md, seções 5 e 15.
 """
 
 import io
@@ -12,7 +15,8 @@ import os
 import sys
 import traceback
 import urllib.parse
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from concurrent.futures import ThreadPoolExecutor
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from mhf import apresentacao, captura, exemplos, visual
 
@@ -95,10 +99,34 @@ class Aplicacao:
             self.navegador.fechar()
 
 
+class ServidorInterface(ThreadingHTTPServer):
+    """Uma thread por conexão; as chamadas à Aplicação vão para um único trabalhador (executar)."""
+    daemon_threads = True
+    allow_reuse_address = False  # no Windows, SO_REUSEADDR deixaria duas interfaces na mesma porta sem erro
+
+    def __init__(self, endereco, manipulador, app):
+        super().__init__(endereco, manipulador)
+        self.app = app
+        self.trabalhador = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mhf-analise")
+
+    def executar(self, funcao):
+        return self.trabalhador.submit(funcao).result()
+
+    def encerrar(self):
+        """Fecha o navegador automatizado (na thread que o abriu), o trabalhador e o socket."""
+        try:
+            self.executar(self.app.fechar)
+        finally:
+            self.trabalhador.shutdown(wait=True)
+            self.server_close()
+
+
 def criar_servidor(app, porta=8000, host="127.0.0.1"):
-    """HTTPServer (sem threads) com as rotas da interface."""
+    """ServidorInterface com as rotas da interface. Porta ocupada → OSError."""
 
     class Manipulador(BaseHTTPRequestHandler):
+        timeout = 30  # conexão ociosa é fechada depois disso (cada uma tem sua thread)
+
         def log_message(self, formato, *args):  # silencioso: o terminal fica para os avisos
             pass
 
@@ -115,8 +143,9 @@ def criar_servidor(app, porta=8000, host="127.0.0.1"):
                             "application/json; charset=utf-8")
 
         def _tratar(self, funcao):
+            """Executa `funcao` no trabalhador único e responde com o JSON dela, ou com o erro."""
             try:
-                self._json(200, funcao())
+                self._json(200, self.server.executar(funcao))
             except captura.ErroCaptura as erro:
                 self._json(502, {"erro": str(erro)})
             except ValueError as erro:
@@ -143,7 +172,7 @@ def criar_servidor(app, porta=8000, host="127.0.0.1"):
             elif u.path == "/api/template":
                 id_template = urllib.parse.parse_qs(u.query).get("id", [""])[0]
                 try:
-                    self._responder(200, app.imagem_template(id_template), "image/png")
+                    self._responder(200, self.server.executar(lambda: app.imagem_template(id_template)), "image/png")
                 except ValueError as erro:
                     self._json(400, {"erro": str(erro)})
             else:
@@ -158,16 +187,14 @@ def criar_servidor(app, porta=8000, host="127.0.0.1"):
                 self._responder(404, "não encontrado".encode("utf-8"), "text/plain; charset=utf-8")
                 return
 
-            def executar():
-                tamanho = int(self.headers.get("Content-Length") or 0)
-                try:
-                    dados = json.loads(self.rfile.read(tamanho) or b"{}")
-                except ValueError as erro:
-                    raise ValueError("pedido inválido (JSON)") from erro
-                if not isinstance(dados, dict):
-                    raise ValueError("pedido inválido (JSON)")
-                return rotas[u.path](dados)
+            tamanho = int(self.headers.get("Content-Length") or 0)
+            try:
+                dados = json.loads(self.rfile.read(tamanho) or b"{}")
+            except ValueError:
+                dados = None
+            if not isinstance(dados, dict):
+                self._json(400, {"erro": "pedido inválido (JSON)"})
+                return
+            self._tratar(lambda: rotas[u.path](dados))
 
-            self._tratar(executar)
-
-    return HTTPServer((host, porta), Manipulador)
+    return ServidorInterface((host, porta), Manipulador, app)

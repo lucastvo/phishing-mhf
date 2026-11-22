@@ -75,8 +75,7 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
-        app.fechar()
-        srv.server_close()
+        srv.encerrar()
         print("Interface encerrada.")
 
 
