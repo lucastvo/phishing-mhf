@@ -1,0 +1,132 @@
+{
+  "exemplos": [
+    {
+      "dataset": "phishpedia_phish",
+      "id": "Outlook+2020-09-13-19`38`21",
+      "grupo": "acerto",
+      "titulo": "Clone do login da Microsoft (Outlook)",
+      "nota": "Cópia do login corporativo da Microsoft com a foto de fundo clássica, num subdomínio de appspot.com. É a variante que os kits mais copiam."
+    },
+    {
+      "dataset": "phishpedia_phish",
+      "id": "PayPal Inc.+2020-08-24-11`17`27",
+      "grupo": "acerto",
+      "titulo": "Clone do login do PayPal",
+      "nota": "Cópia fiel da página de login do PayPal, num site de hospedagem gratuita (000webhostapp.com)."
+    },
+    {
+      "dataset": "phishpedia_phish",
+      "id": "Netflix Inc.+2019-07-29-04`53`03",
+      "grupo": "acerto",
+      "titulo": "Clone do login da Netflix",
+      "nota": "Cópia do login da Netflix com a imagem de fundo da época, num site invadido."
+    },
+    {
+      "dataset": "phishpedia_phish",
+      "id": "Itau Unibanco S.A+2020-08-20-13`22`05",
+      "grupo": "acerto",
+      "titulo": "Clone da página inicial do Itaú",
+      "nota": "Imita a página inicial do Itaú, com a caixa de acesso; o domínio imita o nome do banco."
+    },
+    {
+      "dataset": "phish360",
+      "id": "trainval\\P18906_amazon",
+      "grupo": "acerto",
+      "titulo": "Clone do login da Amazon (Phish360)",
+      "nota": "Amostra do Phish360, capturada em 1280 × 960: cópia do login da Amazon."
+    },
+    {
+      "dataset": "phishpedia_benign",
+      "id": "ebay.es",
+      "grupo": "acerto",
+      "titulo": "Login verdadeiro do eBay da Espanha",
+      "nota": "Página real, em ebay.es. O escore fica abaixo do limiar (a base não tem a versão espanhola); mesmo que passasse, o domínio é oficial do eBay."
+    },
+    {
+      "dataset": "phishpedia_benign",
+      "id": "studentvip.com.au",
+      "grupo": "acerto",
+      "titulo": "Login de outro site (StudentVIP)",
+      "nota": "Página de login legítima de um site fora da base. O formulário lembra vários templates, mas o escore fica abaixo do limiar."
+    },
+    {
+      "dataset": "phishpedia_benign",
+      "id": "365area.com",
+      "grupo": "acerto",
+      "titulo": "Página sem DOM útil (365area)",
+      "nota": "O dataset não guardou o HTML desta página; o detector decide só com o visual e o indicador de DOM ausente."
+    },
+    {
+      "dataset": "phishpedia_phish",
+      "id": "Microsoft OneDrive+2020-05-19-12`18`31",
+      "grupo": "erro",
+      "titulo": "Isca do OneDrive",
+      "nota": "Não copia uma página real: inventa uma tela de documento compartilhado com botões de vários provedores. Não há template para comparar."
+    },
+    {
+      "dataset": "phishpedia_phish",
+      "id": "Yahoo! Inc+2019-08-06-17`28`35",
+      "grupo": "erro",
+      "titulo": "Clone do Yahoo sem DOM útil",
+      "nota": "A imagem é o login do Yahoo, e o Yahoo é a marca mais próxima, mas sem o DOM o escore não chega ao limiar."
+    },
+    {
+      "dataset": "phish360",
+      "id": "trainval\\P12086_boa",
+      "grupo": "erro",
+      "titulo": "Etapa seguinte do golpe: Bank of America (Phish360)",
+      "nota": "Pede a foto do documento depois do login. Essa tela não existe no site verdadeiro, então não há template dela."
+    },
+    {
+      "dataset": "phishpedia_benign",
+      "id": "saobraz.edu.br",
+      "grupo": "erro",
+      "titulo": "Alerta falso: login do vestibular de uma escola",
+      "nota": "Página legítima (saobraz.edu.br) com um formulário de login simples, parecido com o template do Yahoo."
+    }
+  ],
+  "urls_sugeridas": [
+    {
+      "titulo": "Microsoft (conta pessoal)",
+      "url": "https://login.live.com/",
+      "url_simulada": "https://microsoft-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "en-US"
+    },
+    {
+      "titulo": "Netflix",
+      "url": "https://www.netflix.com/login",
+      "url_simulada": "https://netflix-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "en-US"
+    },
+    {
+      "titulo": "Yahoo",
+      "url": "https://login.yahoo.com/",
+      "url_simulada": "https://yahoo-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "en-US"
+    },
+    {
+      "titulo": "Dropbox",
+      "url": "https://www.dropbox.com/login",
+      "url_simulada": "https://dropbox-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "en-US"
+    },
+    {
+      "titulo": "Facebook",
+      "url": "https://www.facebook.com/login.php",
+      "url_simulada": "https://facebook-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "en-US"
+    },
+    {
+      "titulo": "Bradesco",
+      "url": "https://banco.bradesco/html/classic/index.shtm",
+      "url_simulada": "https://bradesco-verificacao.test/",
+      "classe": "1366x768",
+      "idioma": "pt-BR"
+    }
+  ]
+}
