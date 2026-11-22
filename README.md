@@ -123,11 +123,15 @@ Os templates entram como um item por par (template aprovado, tamanho de tela), v
 
 **Tempo por imagem**, uma de cada vez (como no uso real). Mediana em ms, CPU i7-4790 com 4 threads, sem outros programas abertos:
 
-| Origem | Imagens | Abrir e recortar | pHash (64 + 256) | Small | Large |
-|---|---|---|---|---|---|
-| Templates | 572 | 11,8 | 7,3 | 18,7 | 30,3 |
-| Phish360 | 10.748 | 6,8 | 6,8 | 16,2 | 25,4 |
-| Phishpedia phishing | 29.496 | 15,3 | 10,6 | 19,0 | 27,7 |
-| Phishpedia benign | 30.649 | 17,5 | 6,0 | 15,5 | 25,0 |
+| Origem | Imagens | Ler | Abrir | pHash 64 | pHash 256 | Small | Large |
+|---|---|---|---|---|---|---|---|
+| Templates | 572 | 1,1 | 10,7 | 3,5 | 4,0 | 20,2 | 31,1 |
+| Phish360 | 10.748 | 2,5 | 5,1 | 3,3 | 3,6 | 16,7 | 27,0 |
+| Phishpedia phishing | 29.496 | 1,7 | 17,4 | 5,1 | 5,5 | 19,1 | 28,2 |
+| Phishpedia benign | 30.649 | 1,8 | 18,9 | 2,9 | 3,1 | 15,5 | 24,8 |
 
-"Abrir e recortar" inclui a leitura do disco e a decodificação do PNG; no navegador, a captura já vem decodificada.
+- **Ler**: leitura do arquivo do disco.
+- **Abrir**: decodificação do PNG, composição da transparência (só quando há) e recorte da primeira dobra. No navegador, a captura já vem decodificada e opaca; as capturas de página inteira do Phishpedia benign (até 85 mil px de altura) explicam o p95 de 127 ms.
+- O estágio 1 da cascata usa só o pHash de 64 bits; os embeddings entram no estágio 2.
+
+Rodada sem erros nos quatro conjuntos. Contagens do resumo: 27 + 14 capturas mais baixas que a dobra (Phish360, Phishpedia phishing), usadas como estão; 65 + 459 mais estreitas que a classe (as 800×600 do Phishpedia vão para 1280×960); 6 + 401 + 1.369 mais largas que a classe, recortadas na janela (Phish360, Phishpedia phishing, Phishpedia benign).
