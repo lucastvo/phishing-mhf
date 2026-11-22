@@ -89,10 +89,14 @@ def calibrar(c, escores, alvo_fpr=0.01, alvo_rev1=0.99):
     alvo_f1 = sinalizada & (legit | c["phishing_T"])
     tau_f1 = metricas.limiar_f1(r["escore"][alvo_f1], c["phishing_T"][alvo_f1],
                                 np.ones(int(alvo_f1.sum())), float(c["phishing_T"].sum()))
-    liberadas1 = float(((r["estagio"] == 1) & legit).sum() / max(legit.sum(), 1))
+    def liberadas(th):  # fração das legítimas que o estágio 1 já libera com esse θ_h
+        r1 = cascata.aplicar_cascata(c["d1"], c["t1"], escores, c["legit"], th, -np.inf)
+        return float(((r1["estagio"] == 1) & legit).sum() / max(legit.sum(), 1))
     return {"theta_h": theta_h, "tau": float(tau), "tau_f1": float(tau_f1), "alvo_fpr": alvo_fpr,
             "alvo_revocacao_estagio1": alvo_rev1, "theta_h_95": theta[0.95], "theta_h_90": theta[0.90],
-            "fracao_legitimas_liberadas_estagio1": liberadas1}
+            "fracao_legitimas_liberadas_estagio1": liberadas(theta_h),
+            "fracao_legitimas_liberadas_estagio1_95": liberadas(theta[0.95]),
+            "fracao_legitimas_liberadas_estagio1_90": liberadas(theta[0.90])}
 
 
 def metricas_cascata(c, escores, theta_h, tau, mascara=None):
@@ -117,7 +121,9 @@ def metricas_cascata(c, escores, theta_h, tau, mascara=None):
                        "fora_T_sinalizado": float((pesos[fora] * r["phishing"][fora]).sum() / pesos[fora].sum())
                        if fora.any() else float("nan"),
                        "legitimas_liberadas_estagio1": float((pesos[legit] * (r["estagio"][legit] == 1)).sum()
-                                                             / pesos[legit].sum()) if legit.any() else float("nan")}
+                                                             / pesos[legit].sum()) if legit.any() else float("nan"),
+                       "phishing_T_no_estagio2": float((pesos[pt] * (r["estagio"][pt] == 2)).sum()
+                                                       / pesos[pt].sum()) if pt.any() else float("nan")}
     saida["n"] = {"phishing_T": int(pt.sum()), "legitimas": int(legit.sum()), "fora_T": int(fora.sum())}
     return saida
 
@@ -154,10 +160,24 @@ def _versoes():
 
 # ---------------------------------------------------------------- relatório
 
-_CAMPOS = (("auc", "AUC"), ("revocacao", "Revocação"), ("precisao", "Precisão"), ("f1", "F1"),
-           ("fpr", "FPR"), ("top1", "Top-1 da marca"), ("top1_detectados", "Top-1 nos detectados"),
+_CAMPOS = (("auc", "AUC do classificador"), ("revocacao", "Revocação"), ("precisao", "Precisão"), ("f1", "F1"),
+           ("fpr", "FPR"), ("top1", "Top-1 da marca (do classificador)"),
+           ("top1_detectados", "Top-1 nos phishings detectados"),
+           ("phishing_T_no_estagio2", "Phishing de 𝒯 que chega ao estágio 2"),
            ("legitimas_liberadas_estagio1", "Legítimas liberadas no estágio 1"),
            ("fora_T_sinalizado", "Phishing fora de 𝒯 sinalizado"))
+
+
+def _tabela_unica(titulo, por_modelo, nota=""):
+    """Tabela métrica × modelo de um único resultado (sem dobras), por amostra e por estrutura."""
+    tipos = list(por_modelo)
+    linhas = [f"## {titulo}", ""] + ([nota, ""] if nota else [])
+    linhas += ["| Métrica | " + " | ".join(f"{t} (amostra)" for t in tipos) + " | "
+               + " | ".join(f"{t} (estrutura)" for t in tipos) + " |", "|---|" + "---|" * (2 * len(tipos))]
+    for campo, rotulo in _CAMPOS:
+        cel = [f"{por_modelo[t][k][campo]:.3f}" for k in ("por_amostra", "por_estrutura") for t in tipos]
+        linhas.append(f"| {rotulo} | " + " | ".join(cel) + " |")
+    return linhas + [""]
 
 
 def relatorio_md(comp):
@@ -166,7 +186,10 @@ def relatorio_md(comp):
               f"Gerado em {comp['gerado_em']}. Características: {', '.join(comp['nomes'])}. "
               f"Amostras: {comp['n']['phishing_T']} phishings de 𝒯, {comp['n']['legitimas']} legítimas, "
               f"{comp['n']['fora_T']} phishings fora de 𝒯. Média ± desvio entre as 5 dobras; θ_h e τ calibrados "
-              "sobre os escores fora da dobra de cada modelo.", ""]
+              "sobre os escores fora da dobra de cada modelo, com um τ só para todas as dobras (por isso a FPR "
+              "fica perto do alvo por construção, e o desvio não inclui a variação do limiar). AUC e top-1 "
+              "medem o classificador sozinho (escore máximo e entidade de maior escore), sem o estágio 1 nem a "
+              "checagem de domínio.", ""]
     for chave, titulo in (("por_amostra", "Por amostra"), ("por_estrutura", "Por estrutura (cada kit conta uma vez)")):
         linhas += [f"## {titulo}", "", "| Métrica | " + " | ".join(tipos) + " |",
                    "|---|" + "---|" * len(tipos)]
@@ -177,6 +200,15 @@ def relatorio_md(comp):
                 cel.append(f"{m:.3f} ± {d:.3f}")
             linhas.append(f"| {rotulo} | " + " | ".join(cel) + " |")
         linhas.append("")
+    linhas += _tabela_unica("No τ que maximiza o F1 (todas as dobras juntas)",
+                            {t: comp["modelos"][t]["geral_tau_f1"] for t in tipos},
+                            "Mesmos escores fora da dobra, com o τ que maximiza o F1 em vez do alvo de FPR.")
+    for chave, titulo in (("com_s", "Amostras com DOM útil (s presente)"),
+                          ("sem_s", "Amostras sem DOM útil (s ausente: sem HTML ou ≤ 5 elementos)")):
+        if all(chave in comp["modelos"][t]["por_s_ausente"] for t in tipos):
+            linhas += _tabela_unica(titulo, {t: comp["modelos"][t]["por_s_ausente"][chave] for t in tipos},
+                                    "O s ausente é muito mais comum nas legítimas (Phishpedia benign sem HTML) que "
+                                    "no phishing: estas linhas mostram se o classificador depende disso.")
     linhas += ["## Por dataset (escores fora da dobra, todas as dobras juntas, por amostra)", "",
                "| Dataset | Modelo | AUC | Revocação | FPR | Top-1 |", "|---|---|---|---|---|---|"]
     for t in tipos:
@@ -186,7 +218,9 @@ def relatorio_md(comp):
     linhas += ["", "## Calibração e custo", "", "| | " + " | ".join(tipos) + " |", "|---|" + "---|" * len(tipos)]
     for campo, rotulo in (("theta_h", "θ_h (bits)"), ("tau", "τ (FPR ≤ alvo)"), ("tau_f1", "τ que maximiza o F1"),
                           ("theta_h_95", "θ_h para 95%"), ("theta_h_90", "θ_h para 90%"),
-                          ("fracao_legitimas_liberadas_estagio1", "Legítimas liberadas no estágio 1")):
+                          ("fracao_legitimas_liberadas_estagio1", "Legítimas liberadas no estágio 1"),
+                          ("fracao_legitimas_liberadas_estagio1_95", "Legítimas liberadas no estágio 1 (θ_h de 95%)"),
+                          ("fracao_legitimas_liberadas_estagio1_90", "Legítimas liberadas no estágio 1 (θ_h de 90%)")):
         linhas.append(f"| {rotulo} | " + " | ".join(f"{comp['modelos'][t]['calibracao'][campo]:.4g}" for t in tipos) + " |")
     linhas.append("| Pontuar uma página (µs, mediana) | "
                   + " | ".join(f"{comp['modelos'][t]['tempo_us']:.0f}" for t in tipos) + " |")
@@ -262,7 +296,11 @@ def main():
                              "treinado_em": datetime.now().isoformat(timespec="seconds")},
                   "validacao": metricas_cascata(c, oof, cal["theta_h"], cal["tau"])}
         cascata.salvar_modelo(pasta, modelo, extras)
+        s_aus = c["s_ausente"]
+        por_s = {nome: metricas_cascata(c, oof, cal["theta_h"], cal["tau"], mk)
+                 for nome, mk in (("com_s", ~s_aus), ("sem_s", s_aus)) if mk.any()}
         info = {"calibracao": cal, "dobras": dobras, "geral": extras["validacao"], "por_dataset": por_ds,
+                "geral_tau_f1": metricas_cascata(c, oof, cal["theta_h"], cal["tau_f1"]), "por_s_ausente": por_s,
                 "tempo_us": _tempo_por_pagina(modelo, c["X"]), "tamanho_bytes": _tamanho(pasta)}
         if tipo == "regressao":
             info["coef"] = dict(zip(nomes, modelo.coef.tolist()))

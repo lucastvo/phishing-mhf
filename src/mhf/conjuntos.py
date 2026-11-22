@@ -24,7 +24,7 @@ def carregar_conjunto(prefixos, divisao_por_chave, b, tabela, conjunto, nomes):
     (excluídas) ficam de fora. URL vazia (Phishpedia benign) → o id, que é o domínio, vira o host."""
     entidades = sorted({it["entidade"] for it in b.itens})
     ent_base = np.array([it["entidade"] for it in b.itens])
-    meta, Xs, d1s, t1s, legits = [], [], [], [], []
+    meta, Xs, d1s, t1s, legits, ausentes = [], [], [], [], [], []
     for prefixo in prefixos:
         ds = nome_do_dataset(prefixo)
         with open(prefixo + ".jsonl", encoding="utf-8") as f:
@@ -48,6 +48,7 @@ def carregar_conjunto(prefixos, divisao_por_chave, b, tabela, conjunto, nomes):
             colunas = ent_base[z[f"{classe}__templates"]]
             s_ausente = np.array([not divisao.s_util(l.get("elementos")) for l, _ in sel])
             Xs.append(cascata.caracteristicas(sinais, colunas, entidades, s_ausente, nomes))
+            ausentes.append(s_ausente)
             d1, t1 = cascata.estagio1(sinais["dist_h64"], colunas, entidades)
             d1s.append(d1)
             t1s.append(t1)
@@ -65,5 +66,6 @@ def carregar_conjunto(prefixos, divisao_por_chave, b, tabela, conjunto, nomes):
             "legit": np.concatenate(legits) if legits else np.zeros((0, len(entidades)), bool),
             "entidade_real": entidade_real, "phishing_T": phishing_T, "legitima": rotulo == "benigno",
             "fora_T": (rotulo == "phishing") & ~phishing_T,
+            "s_ausente": np.concatenate(ausentes) if ausentes else np.zeros(0, bool),
             "pesos": divisao.pesos_por_estrutura(meta) if meta else np.zeros(0),
             "dobra": np.array([m["dobra"] for m in meta]), "dataset": np.array([m["dataset"] for m in meta])}

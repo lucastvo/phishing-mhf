@@ -113,6 +113,18 @@ class TestTreinar(unittest.TestCase):
             for tipo in ("regressao", "floresta"):
                 self.assertGreater(comp["modelos"][tipo]["geral"]["por_amostra"]["auc"], 0.9)
                 self.assertEqual(len(comp["modelos"][tipo]["dobras"]), 5)
+                m = comp["modelos"][tipo]
+                # resultado também no τ que maximiza o F1 e separado por s ausente (revisão final)
+                self.assertIn("revocacao", m["geral_tau_f1"]["por_amostra"])
+                self.assertEqual(set(m["por_s_ausente"]), {"com_s"})  # no cenário sintético todas têm s
+                self.assertIn("phishing_T_no_estagio2", m["geral"]["por_estrutura"])
+                cal = m["calibracao"]
+                self.assertIn("fracao_legitimas_liberadas_estagio1_95", cal)
+                self.assertIn("fracao_legitimas_liberadas_estagio1_90", cal)
+            with open(os.path.join(saida, "comparacao_dev.md"), encoding="utf-8") as f:
+                md = f.read()
+            self.assertIn("AUC do classificador", md)
+            self.assertIn("No τ que maximiza o F1", md)
 
 
 if __name__ == "__main__":
