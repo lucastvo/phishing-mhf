@@ -18,12 +18,14 @@ Desenho: docs/especificacoes/2026-11-22-cascata.md
 
 import json
 import os
+import time
 import warnings
+from dataclasses import dataclass, field
 
 import numpy as np
 
 from mhf import marcas
-from mhf.divisao import s_util  # noqa: F401  (regra do s ausente, reexportada para quem usa a cascata)
+from mhf.divisao import s_util
 
 SINAIS_S = ("jaccard_caminhos", "jaccard_criticos", "sim_contagens", "hash_igual")
 MOTIVOS = ("sem_template_proximo", "dominio_legitimo_estagio1", "abaixo_do_limiar", "dominio_legitimo_estagio2",
@@ -232,3 +234,121 @@ def pontuar_amostras(modelo, X):
     if validos.any():
         escores[validos] = modelo.pontuar(plano[validos])
     return escores.reshape(n, e)
+
+
+# ---------------------------------------------------------------- uma página
+
+@dataclass
+class Veredito:
+    """Decisão da cascata para uma página, com o que levou a ela."""
+    rotulo: str                     # "phishing" ou "legitima"
+    entidade: str | None            # marca imitada (phishing), a do domínio legítimo, ou a de maior escore
+    estagio: int                    # 1 ou 2
+    motivo: str                     # um de MOTIVOS
+    escore: float | None            # escore da entidade no estágio 2 (None no estágio 1)
+    d1: int                         # menor distância de Hamming (64 bits) a um template
+    entidade_proxima_h: str         # entidade do template mais próximo pelo pHash
+    template_proximo_h: str         # id desse template
+    dominio: str                    # domínio registrável da URL da página
+    tempos_ms: dict = field(default_factory=dict)
+    escores: dict | None = None     # escore de cada entidade (estágio 2)
+
+
+class Detector:
+    """A cascata treinada, para uma página de cada vez (verificação, interface e, depois, a extensão).
+
+    `decidir` recebe φ já calculada (ou parte dela: o estágio 1 só precisa do pHash de 64 bits);
+    `analisar_pagina` recebe a página bruta e calcula o embedding e o s só se ela chegar ao estágio 2."""
+
+    def __init__(self, base, modelo, info, tabela):
+        self.base, self.modelo, self.tabela = base, modelo, tabela
+        car = info["caracteristicas"]
+        self.nomes, self.embedding, self.hash_bits = car["nomes"], car["embedding"], car["hash_bits"]
+        if list(modelo.nomes) != list(self.nomes):
+            raise ValueError("as características do modelo não batem com as do modelo.json")
+        self.entidades = info["entidades"]
+        self.theta_h, self.tau = info["cascata"]["theta_h"], info["cascata"]["tau"]
+        self._embedder = None
+
+    @classmethod
+    def carregar(cls, pasta_modelo, base, tabela):
+        modelo, info = carregar_modelo(pasta_modelo)
+        return cls(base, modelo, info, tabela)
+
+    def decidir(self, consulta, classe, url, elementos=None, completar=None, tempos=None):
+        """Veredito a partir de φ. `consulta` como em Base.similaridades; `elementos` é o tamanho do DOM
+        (None se não há HTML). Se a página chegar ao estágio 2 e `completar` for dado, ele é chamado para
+        acrescentar à consulta o que faltar (embedding, s, elementos), como no navegador."""
+        tempos = {} if tempos is None else tempos
+        t = time.perf_counter()
+        r = self.base.similaridades(consulta, classe, sinais=("h",))
+        tempos["busca_h"] = (time.perf_counter() - t) * 1000
+        if len(r["indices"]) == 0:
+            raise ValueError(f"a base não tem templates na classe {classe}")
+        colunas = np.array([self.base.itens[i]["entidade"] for i in r["indices"]])
+        d1, t1 = estagio1(r["dist_h64"][None, :], colunas, self.entidades)
+        legit = matriz_dominio_legitimo([url], self.entidades, self.tabela)
+        escores = np.full((1, len(self.entidades)), np.nan)
+        if d1[0] <= self.theta_h and not legit[0, t1[0]]:
+            if completar is not None:
+                extra = completar()
+                consulta = {**consulta, **extra}
+                elementos = extra.get("elementos", elementos)
+            t = time.perf_counter()
+            r2 = self.base.similaridades(consulta, classe, sinais=("e", "s"))
+            tempos["busca_es"] = (time.perf_counter() - t) * 1000
+            t = time.perf_counter()
+            sinais = sinais_da_busca({**r, **r2})
+            X = caracteristicas(sinais, colunas, self.entidades,
+                                np.array([consulta.get("s") is None or not s_util(elementos)]), self.nomes)
+            escores = pontuar_amostras(self.modelo, X)
+            tempos["classificador"] = (time.perf_counter() - t) * 1000
+        res = aplicar_cascata(d1, t1, escores, legit, self.theta_h, self.tau)
+        j = int(np.argmin(r["dist_h64"]))
+        e = int(res["entidade"][0])
+        return Veredito(rotulo="phishing" if res["phishing"][0] else "legitima",
+                        entidade=self.entidades[e] if e >= 0 else None, estagio=int(res["estagio"][0]),
+                        motivo=res["motivo"][0],
+                        escore=None if np.isnan(res["escore"][0]) else float(res["escore"][0]),
+                        d1=int(d1[0]), entidade_proxima_h=self.entidades[int(t1[0])],
+                        template_proximo_h=self.base.itens[int(r["indices"][j])]["id"],
+                        dominio=marcas.dominio_registravel(url or ""), tempos_ms=tempos,
+                        escores=None if np.isnan(escores).all() else
+                        {ent: float(v) for ent, v in zip(self.entidades, escores[0]) if not np.isnan(v)})
+
+    def analisar_pagina(self, imagem, html, url, classe=None, embedder=None):
+        """Veredito para uma página bruta: captura (caminho ou bytes), HTML (str/bytes ou None) e URL.
+        O pHash vem primeiro; o embedding e o s só são calculados se a página chegar ao estágio 2."""
+        from mhf import estrutural, visual
+        tempos = {}
+        inicio = t = time.perf_counter()
+        img = visual.abrir_imagem(imagem)
+        classe = classe or visual.classe_de_tela(img.width)
+        dobra = visual.primeira_dobra(img, classe)
+        tempos["abrir"] = (time.perf_counter() - t) * 1000
+        t = time.perf_counter()
+        consulta = {"phash64": visual.phash(dobra)}
+        tempos["phash"] = (time.perf_counter() - t) * 1000
+
+        def completar():
+            extra = {}
+            t = time.perf_counter()
+            if self.hash_bits == 256:
+                extra["phash256"] = visual.phash(dobra, bits=256)
+            if embedder is not None:
+                emb = embedder
+            else:
+                if self._embedder is None:
+                    self._embedder = visual.Embedder(self.embedding)
+                emb = self._embedder
+            extra[self.embedding] = emb.embed(dobra)
+            tempos["embedding"] = (time.perf_counter() - t) * 1000
+            t = time.perf_counter()
+            s = estrutural.extrair(html, url) if html else None
+            extra["s"], extra["elementos"] = s, (s.contagens.get("elementos") if s else None)
+            tempos["estrutural"] = (time.perf_counter() - t) * 1000
+            return extra
+
+        v = self.decidir(consulta, classe, url, completar=completar, tempos=tempos)
+        tempos["total"] = (time.perf_counter() - inicio) * 1000
+        return v
