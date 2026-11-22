@@ -21,7 +21,19 @@ import numpy as np
 from mhf import estrutural, templates, visual
 
 MODELOS = ("small", "large")
+SINAIS_S = ("hash_igual", "jaccard_caminhos", "jaccard_criticos", "sim_contagens")
+SINAIS_VIZINHOS = {"h64": ("h", "sim_h64"), "h256": ("h", "sim_h256"), "small": ("e", "cos_small"),
+                   "large": ("e", "cos_large"), "caminhos": ("s", "jaccard_caminhos")}
+_HASHES = (("phash64", 64), ("phash256", 256))
 _CAMPOS_ENTRADA = ("entidade", "variante", "origem", "timestamp")
+
+
+def palavras_do_hash(h):
+    """pHash em hexadecimal (16 ou 64 caracteres) → 1 ou 4 palavras de 64 bits, a mais significativa
+    primeiro. A distância de Hamming é a soma de np.bitwise_count do XOR das palavras."""
+    if len(h) not in (16, 64):
+        raise ValueError(f"hash de {len(h)} caracteres; esperado 16 (64 bits) ou 64 (256 bits)")
+    return np.array([int(h[i:i + 16], 16) for i in range(0, len(h), 16)], dtype=np.uint64)
 
 
 def construir_itens(pares, raiz_templates, visual_linhas, visual_emb, tabela):
@@ -72,8 +84,15 @@ class Base:
         self.emb = emb
         self._por_classe = {}
         for classe in visual.CLASSES_TELA:
-            self._por_classe[classe] = np.array([i for i, it in enumerate(itens) if it["classe"] == classe],
-                                                dtype=np.int64)
+            idx = np.array([i for i, it in enumerate(itens) if it["classe"] == classe], dtype=np.int64)
+            grupo = {"indices": idx,
+                     "emb": {m: np.ascontiguousarray(emb[m][idx]) for m in MODELOS},
+                     "s": [estrutural.ImpressaoEstrutural.de_dict(itens[i]["s"]) if itens[i]["s"] else None
+                           for i in idx]}
+            for campo, bits in _HASHES:
+                grupo[campo] = (np.stack([palavras_do_hash(itens[i][campo]) for i in idx]) if len(idx)
+                                else np.zeros((0, bits // 64), dtype=np.uint64))
+            self._por_classe[classe] = grupo
 
     @classmethod
     def carregar(cls, pasta):
@@ -90,8 +109,64 @@ class Base:
             emb[m] = v.astype(np.float32)
         return cls(itens, emb)
 
-    def indices(self, classe):
-        """Posições na base dos itens dessa classe de tela, em ordem."""
+    def _grupo(self, classe):
         if classe not in visual.CLASSES_TELA:
             raise ValueError(f"classe deve ser uma de {sorted(visual.CLASSES_TELA)}")
         return self._por_classe[classe]
+
+    def indices(self, classe):
+        """Posições na base dos itens dessa classe de tela, em ordem."""
+        return self._grupo(classe)["indices"]
+
+    def similaridades(self, consulta, classe, sinais=("h", "e", "s")):
+        """Similaridades da página com cada template da sua classe de tela, na ordem de `indices(classe)`.
+
+        `consulta` traz os campos que existirem: "phash64" e "phash256" (hexadecimal), "small" e "large"
+        (embeddings de norma 1) e "s" (ImpressaoEstrutural ou None). Nada da página é recalculado aqui.
+        `sinais` escolhe o que calcular ("h", "e", "s"); o estágio 1 da cascata só precisa de "h".
+
+        Devolve "indices" e, por sinal pedido:
+        - h: dist_h64, dist_h256 (Hamming; −1 se a consulta não tem o hash) e sim_h64, sim_h256 (1 − d/n);
+        - e: cos_small, cos_large (produto interno);
+        - s: hash_igual, jaccard_caminhos, jaccard_criticos, sim_contagens (estrutural.comparar).
+        Similaridade sem dado de um dos lados (consulta ou template sem s, por exemplo) vale NaN."""
+        if not set(sinais) <= {"h", "e", "s"}:
+            raise ValueError("sinais deve conter só 'h', 'e' e 's'")
+        g = self._grupo(classe)
+        n = len(g["indices"])
+        r = {"indices": g["indices"]}
+        if "h" in sinais:
+            for campo, bits in _HASHES:
+                sufixo = campo.removeprefix("phash")
+                if consulta.get(campo):
+                    d = np.bitwise_count(g[campo] ^ palavras_do_hash(consulta[campo])).sum(axis=1).astype(np.int64)
+                    r[f"dist_h{sufixo}"], r[f"sim_h{sufixo}"] = d, 1 - d / bits
+                else:
+                    r[f"dist_h{sufixo}"], r[f"sim_h{sufixo}"] = np.full(n, -1, np.int64), np.full(n, np.nan)
+        if "e" in sinais:
+            for m in MODELOS:
+                q = consulta.get(m)
+                r[f"cos_{m}"] = (g["emb"][m] @ np.asarray(q, np.float32)).astype(np.float64) if q is not None \
+                    else np.full(n, np.nan)
+        if "s" in sinais:
+            for k in SINAIS_S:
+                r[k] = np.full(n, np.nan)
+            q = consulta.get("s")
+            if q is not None:
+                for j, s in enumerate(g["s"]):
+                    if s is not None:
+                        for k, v in estrutural.comparar(q, s).items():
+                            r[k][j] = v
+        return r
+
+    def vizinhos(self, consulta, classe, sinal, k=5):
+        """Os k templates da classe mais parecidos com a página por um sinal (h64, h256, small, large ou
+        caminhos): lista de (índice na base, similaridade), do mais parecido para o menos. Empates ficam
+        na ordem da base; templates sem o sinal (NaN) vão para o fim."""
+        if sinal not in SINAIS_VIZINHOS:
+            raise ValueError(f"sinal deve ser um de {sorted(SINAIS_VIZINHOS)}")
+        grupo_sinal, chave = SINAIS_VIZINHOS[sinal]
+        r = self.similaridades(consulta, classe, sinais=(grupo_sinal,))
+        valores = r[chave]
+        ordem = np.argsort(-np.nan_to_num(valores, nan=-np.inf), kind="stable")[:k]
+        return [(int(r["indices"][j]), float(valores[j])) for j in ordem]
